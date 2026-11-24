@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/dns-check.json": "6ed6411af62eb4cfa6700a8cf9e0f5faa1077e14c1033dd4532b5a9bbf3116fc",
     "bin/control.d/dns-check.sh": "d36228d37df36478b5ba58572dfe44e3a873186e3289768db78f361e2635b0bf",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

@@ -91,8 +91,9 @@ class ControllerHttpsTest(unittest.TestCase):
     def test_preserves_local_rows_and_migrates_ssh(self):
         custom = "# Wartungsfenster\n\nFuture|3.0|https://github.com/example/future.git|\n"
         self.marker.write_text("Allgm|1.0|git@github.com:example/base.git|/old/key\n" + custom
-                               + "NXTS3|1.0|git@github.com:example/private.git|/old/key\n")
-        sources = {"Allgm": self.source, "NXTS3": self.source}
+                               + "ExampleOverlay|1.0|git@github.com:example/private.git|/old/key\n")
+        (self.source / "controller-overlay.json").write_text('{"schema":1,"profile":"ExampleOverlay"}')
+        sources = {"Allgm": self.source, "ExampleOverlay": self.source}
         with self.assertRaisesRegex(ValueError, "--token-file"):
             install.version_source(self.target, sources, self.work)
         result = install.version_source(self.target, sources, self.work, token_file=str(self.token))

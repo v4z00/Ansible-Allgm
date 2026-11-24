@@ -41,7 +41,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/update_hosts.yaml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/update_hosts.yaml": "8fd8986b532814acb117238747905478154560aebb55751dfc8c2bd7b77b80f4"
+    "playbooks/maintenance/update_hosts.yaml": "e561e6ed2d1122f45a3807ab4e3aa518c1cb703c32370022904e9d0866562b36"
   }
 }
 ```

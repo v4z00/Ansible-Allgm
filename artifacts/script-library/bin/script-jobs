@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+"""Local job runner, SQLite queries, resumable NDJSON and per-channel reports."""
+import argparse
+import fcntl
+import importlib.util
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import time
+
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'lib/python'))
+from job_store import Store, safe_text
+
+
+def config(paths):
+    data={}
+    for path in paths:
+        p=Path(path)
+        if p.is_symlink() or p.stat().st_mode&0o077:raise ValueError('Private configuration required')
+        with p.open(encoding='utf-8') as f:values=json.load(f)
+        if not isinstance(values,dict):raise ValueError('Configuration object required')
+        data.update(values)
+    return data
+
+
+def notify(store,category,paths,run=None,preview=False):
+    from job_notify import deliver
+    cfg=config(paths)
+    mail=cfg.get('EMAIL') or cfg.get('MAIL_TO')
+    token=cfg.get('BOT_TOKEN') or cfg.get('TELEGRAM_BOT_TOKEN')
+    chat=cfg.get('CHAT_ID') or cfg.get('TELEGRAM_CHAT_ID')
+    channels=[]
+    if mail:channels.append('mail')
+    if token and chat:channels.append('telegram')
+    if (bool(token)!=bool(chat)) or (not channels and not preview):raise ValueError('Notification configuration incomplete')
+    # Drain already pending reports first, then include this run if necessary.
+    for _ in range(3):
+        report=store.report(category,run,reserve=not preview)
+        if not report:return 0
+        if preview:print(json.dumps(report,ensure_ascii=False));return 0
+        failed=False;progress=False
+        for channel in channels:
+            if not store.claim(report['id'],channel):continue
+            progress=True
+            try:deliver(channel,report,cfg,ROOT)
+            except Exception:store.delivered(report['id'],channel,False);failed=True
+            else:store.delivered(report['id'],channel,True)
+        if failed:return 1
+        if not progress:return 75
+    return 1
+
+
+def run_job(args,store):
+    cfg=config(args.config)
+    args.max_runtime=int(cfg.get('JOB_MAX_RUNTIME_SECONDS',args.max_runtime))
+    if args.max_runtime<1:raise ValueError('Maximum runtime must be positive')
+    program=Path(args.program).absolute()
+    if not program.is_file() or program.is_symlink():raise ValueError('Job program missing or symlink')
+    lockdir=store.path.parent/'locks';lockdir.mkdir(exist_ok=True,mode=0o700)
+    import hashlib
+    with (lockdir/(hashlib.sha256(args.job.encode()).hexdigest()+'.lock')).open('a') as lock:
+        try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:return 75
+        store.recover(args.job)
+        run=store.begin(args.job,args.category)
+        env=os.environ.copy()
+        env.update(HM_JOB_RUN_ID=run,HM_JOB_DB=str(store.path),HM_JOB_CONFIGFILES=json.dumps(args.config),
+                   HM_JOB_HELPER=str(Path(__file__).resolve()),HM_JOB_MANAGED='1')
+        # Isolated logs are never ingested as raw database events.
+        logs=store.path.parent/'logs';logs.mkdir(exist_ok=True,mode=0o700)
+        log=logs/(run+'.log')
+        started=time.monotonic();proc=None;interrupted=[None];interrupted_at=[None];old={};foreground=None;tty_signal=None
+        def stop(signum,frame):
+            interrupted[0]=signum
+            interrupted_at[0]=interrupted_at[0] or time.monotonic()
+            if proc and proc.poll() is None:
+                try:os.killpg(proc.pid,signum)
+                except ProcessLookupError:pass
+        for sig in (signal.SIGTERM,signal.SIGINT):old[sig]=signal.signal(sig,stop)
+        try:
+            with log.open('x') as output:
+                os.chmod(log,0o600)
+                # A real interactive terminal is inherited for manual/interactive jobs.
+                target=None if sys.stdout.isatty() else output
+                interactive=sys.stdin.isatty() and sys.stdout.isatty()
+                options={'preexec_fn':os.setpgrp} if interactive else {'start_new_session':True}
+                if interactive:
+                    foreground=os.tcgetpgrp(sys.stdin.fileno())
+                    tty_signal=signal.signal(signal.SIGTTOU,signal.SIG_IGN)
+                proc=subprocess.Popen(['bash',str(program),*args.arguments],env=env,stdout=target,
+                                      stderr=None if target is None else subprocess.STDOUT,pass_fds=(lock.fileno(),),**options)
+                if interactive:
+                    os.tcsetpgrp(sys.stdin.fileno(),proc.pid)
+                    os.killpg(proc.pid,signal.SIGCONT)
+                while proc.poll() is None:
+                    time.sleep(0.2)
+                    if time.monotonic()-started>args.max_runtime and not interrupted[0]:
+                        stop(signal.SIGTERM,None)
+                    if interrupted[0] and time.monotonic()-interrupted_at[0]>30:
+                        try:os.killpg(proc.pid,signal.SIGKILL)
+                        except ProcessLookupError:pass
+                code=proc.returncode
+            code=128+abs(code) if code<0 else code
+            if interrupted[0]:code=128+interrupted[0]
+            # Item failures cannot be hidden by a script that accidentally exits zero.
+            items=store.details(run)[0]['items']
+            if code==0 and any(x['status']=='failed' for x in items):code=1
+            status='success' if code==0 else 'failed'
+            if code==0 and items and all(x['status']=='skipped' for x in items):status='skipped'
+            if code==0 and any(x['status']=='warning' for x in items):status='warning'
+            summary='Completed' if code==0 else 'Job failed; inspect private local log'
+            if code==78:
+                import re
+                with log.open(errors='replace') as stream:head=stream.read(65536)
+                keys=re.findall(r'^Missing configuration: ([A-Z][A-Z0-9_]*)$',head,re.M)
+                if keys:summary='Missing configuration: '+', '.join(sorted(set(keys)))
+            store.update(run,status,summary,exit_code=code,duration_seconds=time.monotonic()-started)
+        except BaseException:
+            if proc and proc.poll() is None:
+                try:os.killpg(proc.pid,signal.SIGTERM)
+                except ProcessLookupError:pass
+            store.update(run,'failed','Runner interrupted or failed',exit_code=255)
+            raise
+        finally:
+            if foreground is not None:
+                os.tcsetpgrp(sys.stdin.fileno(),foreground)
+                signal.signal(signal.SIGTTOU,tty_signal)
+            for sig,handler in old.items():signal.signal(sig,handler)
+        if args.category=='vzdump':
+            try:sent=notify(store,'vzdump',args.config,run)
+            except Exception:sent=1
+            if sent and code==0:code=1
+        store.prune(90)
+        return code
+
+
+def main():
+    os.umask(0o077)
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--db',default=os.environ.get('HM_JOB_DB','/var/lib/script-jobs/jobs.sqlite3'))
+    sub=p.add_subparsers(dest='command',required=True)
+    s=sub.add_parser('init');s.add_argument('--expectations')
+    s=sub.add_parser('run');s.add_argument('--job',required=True);s.add_argument('--program',required=True)
+    s.add_argument('--config',action='append',default=[]);s.add_argument('--category',choices=['general','vzdump'],default='general')
+    s.add_argument('--max-runtime',type=int,default=86400);s.add_argument('arguments',nargs=argparse.REMAINDER)
+    s=sub.add_parser('begin');s.add_argument('--job',required=True);s.add_argument('--category',default='general')
+    for command in ('event','item','finish'):
+        s=sub.add_parser(command);s.add_argument('--run',default=os.environ.get('HM_JOB_RUN_ID'),required='HM_JOB_RUN_ID' not in os.environ)
+        s.add_argument('--status',default='running' if command!='finish' else None,required=command=='finish',choices=['running'] if command=='event' else (['success','failed','warning','skipped'] if command=='finish' else ['running','success','failed','warning','skipped']));s.add_argument('--message',default='')
+        if command=='item':s.add_argument('--item',required=True)
+        if command=='finish':s.add_argument('--exit-code',type=int,required=True)
+    s=sub.add_parser('runs');s.add_argument('--job');s.add_argument('--status');s.add_argument('--category');s.add_argument('--limit',type=int,default=100)
+    s=sub.add_parser('details');s.add_argument('--run',required=True)
+    for command in ('export','watch'):
+        s=sub.add_parser(command);s.add_argument('--after',type=int,default=0);s.add_argument('--epoch');s.add_argument('--limit',type=int,default=200)
+        if command=='watch':s.add_argument('--seconds',type=float,default=30);s.add_argument('--poll',type=float,default=1)
+    s=sub.add_parser('ingest');s.add_argument('--source',required=True);s.add_argument('--accept-gap',action='store_true')
+    s=sub.add_parser('cursor');s.add_argument('--source',required=True)
+    s=sub.add_parser('reset-cursor');s.add_argument('--source',required=True)
+    s=sub.add_parser('health');s.add_argument('--source',required=True);s.add_argument('--status',required=True)
+    s=sub.add_parser('prune');s.add_argument('--days',type=int,default=90)
+    s=sub.add_parser('report');s.add_argument('--category',choices=['general','vzdump'],default='general');s.add_argument('--run');s.add_argument('--preview',action='store_true');s.add_argument('--config',action='append',default=[])
+    a=p.parse_args()
+    if a.command=='run' and a.arguments[:1]==['--']:a.arguments=a.arguments[1:]
+    if a.command=='run' and a.arguments==['--check-config']:
+        # A validation request is never recorded as an actual backup run.
+        return subprocess.call(['bash',a.program,'--check-config'])
+    if a.command in ('runs','details','export','watch','cursor') and not Path(a.db).exists():
+        print(json.dumps({'status':'not_attached','schema':1}));return 3
+    if a.command=='run':
+        try:a.db=config(a.config).get('JOB_DATABASE_PATH',a.db)
+        except (ValueError,OSError):pass
+    store=Store(a.db)
+    try:
+        if a.command=='init':
+            if a.expectations:
+                from job_expectations import normalize
+                with open(a.expectations,encoding='utf8') as f:entries=json.load(f)
+                row=store.db.execute("SELECT value FROM meta WHERE key='expectations'").fetchone()
+                expected=normalize(entries,json.loads(row[0]) if row else [])
+                with store.transaction():store.db.execute('INSERT OR REPLACE INTO meta VALUES(?,?)',('expectations',json.dumps(expected)))
+            result={'schema':1,'epoch':store.epoch}
+        elif a.command=='run':return run_job(a,store)
+        elif a.command=='begin':result={'run_id':store.begin(a.job,a.category)}
+        elif a.command in ('event','item','finish'):
+            store.update(a.run,a.status,a.message,item=getattr(a,'item',None),exit_code=getattr(a,'exit_code',None));result={'ok':True}
+        elif a.command=='runs':result=store.runs(a.job,a.status,a.category,a.limit)
+        elif a.command=='details':result=store.details(a.run)
+        elif a.command=='export':result=store.export(a.after,a.epoch,a.limit)
+        elif a.command=='watch':
+            until=time.monotonic()+max(0,min(a.seconds,3600));cursor=a.after;epoch=a.epoch
+            while True:
+                result=store.export(cursor,epoch,a.limit)
+                if result['gap'] or result['reset_required']:
+                    print(json.dumps({'schema':1,'type':'gap','epoch':result['epoch'],'floor':result['floor'],'cursor':cursor}),flush=True);return 2
+                for event in result['events']:print(json.dumps({'schema':1,'type':'event','epoch':result['epoch'],**event},ensure_ascii=False),flush=True)
+                print(json.dumps({'schema':1,'type':'heartbeat','epoch':result['epoch'],'cursor':result['next']},ensure_ascii=False),flush=True)
+                cursor=result['next'];epoch=result['epoch']
+                if time.monotonic()>=until:return 0
+                time.sleep(max(0.1,min(a.poll,10)))
+        elif a.command=='ingest':result={'imported':store.ingest(a.source,json.load(sys.stdin),a.accept_gap)}
+        elif a.command=='cursor':result=store.cursor(a.source)
+        elif a.command=='reset-cursor':store.reset_cursor(a.source);result={'ok':True}
+        elif a.command=='health':store.health(a.source,a.status);result={'ok':True}
+        elif a.command=='prune':result={'removed':store.prune(a.days)}
+        elif a.command=='report':return notify(store,a.category,a.config,a.run,a.preview)
+        print(json.dumps(result,ensure_ascii=False))
+        return 0
+    finally:store.close()
+
+if __name__=='__main__':
+    try:sys.exit(main())
+    except (Exception,KeyboardInterrupt):
+        print('Job operation failed; check private configuration, database and arguments.',file=sys.stderr)
+        sys.exit(1)

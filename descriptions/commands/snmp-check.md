@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/snmp-check.json": "684268949ddc94febb49407cecc8f1bd6fc04bb5311e81abd6d6ac85e7c7d4ed",
     "bin/control.d/snmp-check.sh": "0b708cb015df8985707469e58b89725ea904457e2cc41fb9318a927a24a74940",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

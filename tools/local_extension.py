@@ -176,6 +176,14 @@ def run(controller, root, files, name, limit):
             ext.require(name.startswith("playbooks/") and limit and not limit.startswith("-"), "Playbook und --limit erforderlich")
             env.update(ANSIBLE_CALLBACK_PLUGINS=str(Path(__file__).parent/"local_callbacks"),
                        ANSIBLE_CALLBACKS_ENABLED="extension_receipt", LOCAL_EXTENSION_RESULT=str(result))
+            job_configuration = controller/"config/script_jobs_controller.json"
+            if job_configuration.is_file():
+                job_data = json.loads(job_configuration.read_text())
+                subprocess.run([str(venv/"python"),str(controller/"artifacts/script-library/bin/script-jobs"),"--db",job_data["database"],"init"],check=True,stdout=subprocess.DEVNULL)
+                env["SCRIPT_JOBS_CALLBACK"] = "1"
+                env["SCRIPT_JOBS_CONTROLLER_DB"] = job_data["database"]
+                env["ANSIBLE_CALLBACK_PLUGINS"] += os.pathsep+str(controller/"tools/callbacks")
+                env["ANSIBLE_CALLBACKS_ENABLED"] += ",script_job_results"
             command = [str(venv/"ansible-playbook"), "--limit", limit, str(file)]
         else:
             ext.require(file.suffix in (".sh",".py") and not limit, "Nur Shell-/Python-Einstiege ohne --limit")

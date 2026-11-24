@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/docker-ips.json": "99904af0da7f767356b6edc4157aae43b2238bead74b17a806e07a914c0a9f86",
     "bin/control.d/docker-ips.sh": "350dede679ee4f4fa3ce0d61a7c4d3647b88ed51ecda2bfbdc5dd9f97bdab387",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

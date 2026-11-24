@@ -3,7 +3,7 @@
   gather_facts: true
   serial: "{{ 1 if (host_updates_reboot | default(false) | bool) else '100%' }}"
   any_errors_fatal: "{{ host_updates_reboot | default(false) | bool }}"
-  become: false
+  become: true
   pre_tasks:
   - name: Ausdrueckliches Ziel pruefen
     ansible.builtin.assert:

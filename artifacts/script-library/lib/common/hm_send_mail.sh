@@ -1,4 +1,5 @@
 hm_send_mail() {
+    [[ "${HM_JOB_MANAGED:-0}" != 1 ]] || return 0
     local subject="${1:?subject required}" body="${2-}" recipient="${3:-${EMAIL:-${MAIL_TO:-}}}"
     local ascii_subject ascii_body mail_cmd
     [[ -n "$recipient" ]] || return 0

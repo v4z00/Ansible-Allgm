@@ -31,7 +31,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/docker/stop_all_docker.yaml"
   ],
   "source_hashes": {
-    "playbooks/docker/stop_all_docker.yaml": "8065e4db34bdebfafc6cf500bf29562052c7ca4fdfb6371c192f573180b272ff"
+    "playbooks/docker/stop_all_docker.yaml": "07b0711efd8127c234ba8eb790f52f548681a06f1a353a6a809c8faa4c5ef869"
   }
 }
 ```

@@ -43,7 +43,7 @@ class PipeInstallTest(unittest.TestCase):
                 patch.object(pipe_install.github_https, "clone_main"), \
                 patch.object(pipe_install, "save_token") as save, patch.object(subprocess, "run") as run:
             with self.assertRaisesRegex(ValueError, "SHA-256"):
-                pipe_install.install("NXTS3", "/fixture/input", "/fixture/output")
+                pipe_install.install("ExampleOverlay", "/fixture/input", "/fixture/output")
             save.assert_not_called()
             run.assert_not_called()
             self.assertFalse(self.target.exists())

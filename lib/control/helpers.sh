@@ -5,6 +5,21 @@ ROOT_DIR="${CONTROL_PROJECT_ROOT:?}"
 cd "${ROOT_DIR}"
 LOG_DIR="${ROOT_DIR}/logs"
 
+
+run_playbook_with_jobs() {
+  if [[ -f config/script_jobs_controller.json && "${SCRIPT_JOBS_CALLBACK:-1}" != 0 ]]; then
+    local job_db
+    job_db=$(python3 -c 'import json; print(json.load(open("config/script_jobs_controller.json"))["database"])') || return
+    python3 artifacts/script-library/bin/script-jobs --db "$job_db" init >/dev/null || return
+    SCRIPT_JOBS_CALLBACK=1 SCRIPT_JOBS_CONTROLLER_DB="$job_db" \
+      ANSIBLE_CALLBACK_PLUGINS="$ROOT_DIR/tools/callbacks${ANSIBLE_CALLBACK_PLUGINS:+:$ANSIBLE_CALLBACK_PLUGINS}" \
+      ANSIBLE_CALLBACKS_ENABLED="${ANSIBLE_CALLBACKS_ENABLED:+$ANSIBLE_CALLBACKS_ENABLED,}script_job_results" \
+      ansible-playbook "$@"
+  else
+    ansible-playbook "$@"
+  fi
+}
+
 run_playbook_logged() {
   local category=$1
   local playbook=$2
@@ -13,7 +28,7 @@ run_playbook_logged() {
   mkdir -p "${LOG_DIR}"
   log_file="${LOG_DIR}/${category}-$(date -u +'%Y%m%dT%H%M%SZ').log"
   printf 'Log: %s\n' "${log_file}"
-  ANSIBLE_LOG_PATH="${log_file}" ansible-playbook "${playbook}" "$@"
+  ANSIBLE_LOG_PATH="${log_file}" run_playbook_with_jobs "${playbook}" "$@"
 }
 
 run_playbook_notified() {
@@ -28,16 +43,16 @@ run_playbook_notified() {
   notification_file=$(mktemp)
   printf 'Log: %s\n' "${log_file}"
 
-  if ANSIBLE_LOG_PATH="${log_file}" ansible-playbook "${playbook}" "$@"; then
+  if ANSIBLE_LOG_PATH="${log_file}" run_playbook_with_jobs "${playbook}" "$@"; then
     status=0
-    result=ERFOLGREICH
+    result="✅ ERFOLGREICH"
   else
     status=$?
-    result="FEHLERHAFT (Exit ${status})"
+    result="❌ FEHLERHAFT (Exit ${status})"
   fi
 
   printf '%s\nStatus: %s\nLog: %s\n' "${label}" "${result}" "${log_file}" > "${notification_file}"
-  if [[ -f playbooks/maintenance/notify.yml ]] && ! ansible-playbook playbooks/maintenance/notify.yml \
+  if [[ ! -f config/script_jobs_controller.json && -f playbooks/maintenance/notify.yml ]] && ! ansible-playbook playbooks/maintenance/notify.yml \
       -e "notification_file=${notification_file}"; then
     [[ ${status} -ne 0 ]] || status=1
   fi

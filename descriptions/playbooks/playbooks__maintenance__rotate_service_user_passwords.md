@@ -32,7 +32,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/rotate_service_user_passwords.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/rotate_service_user_passwords.yml": "e59b2a52fbb956e2b02c430a77d9877964b8a800f1067b7cfaceb4af74370f61"
+    "playbooks/maintenance/rotate_service_user_passwords.yml": "352f18b4af697e7cd121de1638cfffcca08f362cc64240590c8de5e89458b6f6"
   }
 }
 ```

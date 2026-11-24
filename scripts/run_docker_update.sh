@@ -3,6 +3,8 @@ set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
+export CONTROL_PROJECT_ROOT="${ROOT_DIR}"
+source "${ROOT_DIR}/lib/control/helpers.sh"
 playbook=playbooks/docker/update_containers.yml
 for argument in "$@"; do
   case "$argument" in
@@ -34,19 +36,19 @@ if ! grep -Eq 'hosts \([1-9][0-9]*\):' <<< "$selection"; then
   exit 2
 fi
 
-if ANSIBLE_LOG_PATH="${log_file}" ansible-playbook \
+if ANSIBLE_LOG_PATH="${log_file}" run_playbook_with_jobs \
     "$playbook" "$@"; then
   status=0
-  result=ERFOLGREICH
+  result="✅ ERFOLGREICH"
 else
   status=$?
-  result="FEHLERHAFT (Exit ${status})"
+  result="❌ FEHLERHAFT (Exit ${status})"
 fi
 
 printf 'Docker-Update %s\nStatus: %s\nLog: %s\n' \
   "${timestamp}" "${result}" "${log_file}" > "${notification_file}"
 
-if ! ansible-playbook playbooks/maintenance/notify.yml \
+if [[ ! -f config/script_jobs_controller.json ]] && ! ansible-playbook playbooks/maintenance/notify.yml \
     -e "notification_file=${notification_file}"; then
   status=1
 fi

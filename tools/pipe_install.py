@@ -98,7 +98,7 @@ def install(profile, token_file, destination):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("profile", choices=sorted(staging_manifest.PROFILES))
+    parser.add_argument("profile", type=staging_manifest.profile_name)
     parser.add_argument("--token-file", default="")
     parser.add_argument("--save-token-to")
     args = parser.parse_args()

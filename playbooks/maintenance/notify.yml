@@ -24,6 +24,9 @@
         - telegram_chat_id | default('') | length > 0
       no_log: true
 
+      register: telegram_notification
+      failed_when: not (telegram_notification.json.ok | default(false) | bool)
+
     - name: Fehlende optionale Telegram-Konfiguration anzeigen
       ansible.builtin.debug:
         msg: "Telegram ist nicht konfiguriert; der Lauf wurde ohne Nachricht abgeschlossen."

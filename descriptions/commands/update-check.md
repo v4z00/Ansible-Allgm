@@ -312,9 +312,9 @@ Der Checker meldet den Zusatznamen und prüft die Dateien auch beim Cronlauf. Fe
     "update_check/configure.py": "c6c675198f99121dbd1d6f550481b2a9190bdb25a4c19d5ec45e7da4fb1340d3",
     "update_check/probes.py": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
     "update_check/cleanup.py": "b075547b1bfbfc3483563c2d3e79ff5ec2a5b9901a879b352ed45635228b2a36",
-    "update_check/rollout.py": "d1f87001f346785631356491d1fb4afb168e075af10967f69aed49408c560601",
+    "update_check/rollout.py": "24c024677c8430dc0f7468f71d0bb902b3001d84a97f88467cbcd1dadc05a6da",
     "tools/github_https.py": "4939726758123ce18c3558bd22a668052a0bb028b62a1c71534b92ccb89e5bd5",
-    "tools/install_controller.py": "af369a6a3d1824eba91c71ba5453ff7cdef61368ec8f6f28eff40932ea046302"
+    "tools/install_controller.py": "37fbdc748c33752d842fd429a94c66bdb53face74eb2ae59978f84cab069b1d4"
   }
 }
 ```

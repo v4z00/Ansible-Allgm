@@ -1,0 +1,48 @@
+---
+- name: Job-Ergebnisse konsolidieren und kanalweise bestaetigen
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  environment:
+    SCRIPT_JOBS_CALLBACK: '0'
+  vars:
+    job_root: "{{ playbook_dir }}/../.."
+  tasks:
+    - name: Lokale Controllerkonfiguration lesen
+      ansible.builtin.include_vars:
+        file: "{{ job_root }}/config/script_jobs_controller.json"
+        name: job_controller
+      no_log: true
+    - name: Ergebnisse ueber vorhandene Inventoryverbindungen abfragen
+      ansible.builtin.command:
+        argv: ["{{ ansible_playbook_python }}", "{{ job_root }}/scripts/job_console.py", --project, "{{ job_root }}", --db, "{{ job_controller.database }}", --limit, "{{ script_jobs_targets | default(job_controller.targets) }}", collect]
+      register: job_collect
+      changed_when: false
+      failed_when: job_collect.rc not in [0, 1]
+      no_log: true
+    - name: Private Versandkonfiguration vorbereiten
+      ansible.builtin.tempfile:
+        state: file
+        prefix: job-notify-
+      register: job_notify_file
+    - name: Zusammenfassung senden
+      block:
+        - name: Vorhandene lokale Kanalwerte verwenden
+          ansible.builtin.copy:
+            content: "{{ {'EMAIL': script_jobs_mail_to | default(''), 'BOT_TOKEN': telegram_bot_token | default(''), 'CHAT_ID': telegram_chat_id | default(''), 'TELEGRAM_VALIDATE_CERTS': (tls_validate_certs | default({})).get('telegram_notification', true) | bool} | to_json }}"
+            dest: "{{ job_notify_file.path }}"
+            mode: '0600'
+          no_log: true
+        - name: Noch offene allgemeine Berichte senden
+          ansible.builtin.command:
+            argv: ["{{ ansible_playbook_python }}", "{{ job_root }}/artifacts/script-library/bin/script-jobs", --db, "{{ job_controller.database }}", report, --category, general, --config, "{{ job_notify_file.path }}"]
+          no_log: true
+      always:
+        - name: Ausschliesslich temporaere Versanddatei entfernen
+          ansible.builtin.file:
+            path: "{{ job_notify_file.path }}"
+            state: absent
+    - name: Unvollstaendige Abfrage trotz gesendetem Fehlerbericht kenntlich machen
+      ansible.builtin.assert:
+        that: job_collect.rc == 0
+        fail_msg: Zusammenfassung wurde verarbeitet, aber nicht alle Hosts konnten abgefragt werden.

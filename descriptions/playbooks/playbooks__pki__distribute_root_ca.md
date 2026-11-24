@@ -32,7 +32,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/pki/distribute_root_ca.yml"
   ],
   "source_hashes": {
-    "playbooks/pki/distribute_root_ca.yml": "65499152a5c1c81a8ff0aedaceba11c840713fcb0e55ec1b653a4eadab22e8ed"
+    "playbooks/pki/distribute_root_ca.yml": "cc023d03ab603feae4cd2d59e9634e0a7a5cb306e58d65f92ec1a286cdabbcbf"
   }
 }
 ```

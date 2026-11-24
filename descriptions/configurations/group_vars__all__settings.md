@@ -157,9 +157,9 @@ Vertrauliche Werte werden nicht dokumentiert.
       "id": "bootstrap_disable_password_auth_after_key",
       "label": "bootstrap_disable_password_auth_after_key",
       "description": "Vorhandene Konfigurationsoption aus group_vars/all/settings.yml. Standortwerte bleiben lokal; kein automatisches Setzen.",
-      "type": "string",
+      "type": "boolean",
       "required": false,
-      "sensitive": true
+      "sensitive": false
     },
     {
       "id": "features.baseline",
@@ -309,9 +309,9 @@ Vertrauliche Werte werden nicht dokumentiert.
       "id": "features.kerberos_keytabs",
       "label": "features.kerberos_keytabs",
       "description": "Vorhandene Konfigurationsoption aus group_vars/all/settings.yml. Standortwerte bleiben lokal; kein automatisches Setzen.",
-      "type": "string",
+      "type": "boolean",
       "required": false,
-      "sensitive": true
+      "sensitive": false
     },
     {
       "id": "features.telegraf",

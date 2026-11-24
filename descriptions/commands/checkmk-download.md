@@ -72,4 +72,3 @@ Explizite YAML-Eintraege fuer Agent/Plugins haben Vorrang vor CHECKMK_DOWNLOAD_I
 
 Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
 verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
-Die drei Standorteinrichter setzen Telegram ausdruecklich auf true.

@@ -1,0 +1,31 @@
+# Local host_vars only. Productive scripts and secrets never belong in Git.
+script_path: /srv/scripts
+script_jobs_source_root: /root/skripte-config
+script_jobs_database_path: /var/lib/script-jobs/jobs.sqlite3
+script_jobs_timezone: Europe/Berlin
+script_jobs_common_config:
+  EMAIL: admin@example.invalid
+  BOT_TOKEN: ''
+  CHAT_ID: ''
+script_jobs_job_config:
+  backup:
+    JOB_MAX_RUNTIME_SECONDS: 14400
+# Scripts already exist in /root/skripte-config/<inventory_hostname>/.
+# Every host receives the entire neutral library; specialties come from its local manifest.
+script_jobs:
+  - name: backup
+    script: backup.sh
+    user: root
+    args: []
+    category: general
+    cron: {minute: '0', hour: '3', weekday: '*'}
+    expected:
+      deadline_minutes: 240
+      max_runtime_minutes: 240
+    # Exact old command, only after review; other Cron entries remain untouched.
+    # legacy_command: /srv/scripts/old-backup.sh
+# Optional reusable LOCAL sets, not productive code in artifacts:
+script_jobs_sets: {}
+script_jobs_selected_sets: []
+# A Vzdump job uses category: vzdump and weekday: '1' (Monday).
+# Its fixed JSON configuration supplies guest IDs and actual backup destinations.

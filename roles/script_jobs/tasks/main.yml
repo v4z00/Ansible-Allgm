@@ -1,0 +1,173 @@
+---
+- name: Explizite Auswahl und gueltige lokale Quellen verlangen
+  ansible.builtin.assert:
+    that:
+      - ansible_limit | default('') | trim | length > 0
+      - inventory_hostname is match('^[A-Za-z0-9][A-Za-z0-9_.-]*$')
+      - script_jobs_source_root is match('^/[^\n]+$')
+      - script_jobs_target_root is match('^/[^\n]+$')
+      - script_jobs_target_root != '/'
+      - "'..' not in script_jobs_target_root.split('/')"
+      - script_jobs | type_debug == 'list'
+
+- name: Explizite Jobsets und einzelne Jobs zusammenstellen
+  ansible.builtin.assert:
+    that:
+      - script_jobs_sets is mapping
+      - script_jobs_selected_sets | type_debug == 'list'
+      - script_jobs_selected_sets | difference(script_jobs_sets.keys() | list) | length == 0
+- name: Gemeinsame Jobauswahl aufloesen
+  ansible.builtin.set_fact:
+    script_jobs_effective: "{{ script_jobs + (script_jobs_sets | dict2items | selectattr('key','in',script_jobs_selected_sets) | map(attribute='value') | flatten) }}"
+- name: Doppelte Jobnamen abweisen
+  ansible.builtin.assert:
+    that: script_jobs_effective | map(attribute='name') | unique | length == script_jobs_effective | length
+
+- name: Privates Deploymentmanifest auf dem Controller lesen
+  ansible.builtin.set_fact:
+    script_jobs_manifest: "{{ lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/deployment.json') | from_json }}"
+  no_log: true
+
+- name: Lokale Dateien gegen erlaubte Pfade und SHA-Vertrag pruefen
+  ansible.builtin.assert:
+    that:
+      - item.path is match('^(programs/[A-Za-z0-9_.-]+\.sh|[A-Za-z0-9][A-Za-z0-9_.-]+\.sh|config/[A-Za-z0-9_.-]+\.json|lib/special/[A-Za-z0-9_./-]+\.sh)$')
+      - "'..' not in item.path.split('/')"
+      - item.sha256 is match('^[a-f0-9]{64}$')
+      - item.kind in ['script', 'config', 'library']
+      - "lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/' ~ item.path, rstrip=False) | hash('sha256') == item.sha256"
+    fail_msg: Lokale Datei hat einen ungueltigen Pfad oder eine nicht freigegebene SHA.
+  loop: "{{ script_jobs_manifest.files }}"
+  no_log: true
+
+- name: Datenbankpfad zwischen Inventory und lokaler Quelle abgleichen
+  ansible.builtin.assert:
+    that: "((lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/config/common.json') | from_json) | combine(script_jobs_common_config, recursive=True)).get('JOB_DATABASE_PATH', script_jobs_database_path) == script_jobs_database_path"
+    fail_msg: Gueltige lokale Datenbankzuordnung zuerst mit dem Inventory abgleichen.
+  no_log: true
+
+
+- name: Cronparameter fuer explizit ausgewaehlte Jobs pruefen
+  ansible.builtin.assert:
+    that:
+      - item.name is match('^[A-Za-z0-9][A-Za-z0-9_.-]*$')
+      - item.script is match('^[A-Za-z0-9][A-Za-z0-9_.-]*\.sh$')
+      - item.user | default(script_jobs_owner) == script_jobs_owner
+      - item.cron is mapping
+      - item.cron.special_time | default('') in ['', 'reboot', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'annually']
+      - item.cron.special_time is defined or (item.cron.minute is defined and item.cron.hour is defined and item.cron.weekday is defined)
+      - item.args | default([]) | type_debug == 'list'
+      - script_job_category in ['general','vzdump']
+      - "script_job_category != 'vzdump' or (item.cron.special_time is not defined and item.cron.weekday | default('') | string | lower in ['1','mon'])"
+    fail_msg: Cron braucht einen expliziten Zeitplan; Vzdump ist montags (Wochentag 1).
+  loop: "{{ script_jobs_effective }}"
+  vars:
+    script_job_category: "{{ item.category | default((script_jobs_manifest.jobs | default([]) | selectattr('name','equalto',item.script) | map(attribute='category') | first) | default('general')) }}"
+  no_log: true
+
+- name: Existierende Cronaufrufe vor einer Uebernahme pruefen
+  ansible.builtin.script:
+    cmd: >-
+      {{ (role_path ~ '/../../scripts/job_cron_guard.py') | quote }}
+      --user {{ item.user | default(script_jobs_owner) | quote }}
+      --name {{ item.name | quote }} --script {{ item.script | quote }} --schedule-json {{ item.cron | to_json | quote }}
+      {% if item.legacy_command is defined %}--legacy {{ item.legacy_command | quote }}{% endif %}
+  loop: "{{ script_jobs_effective }}"
+  changed_when: false
+  when: not ansible_check_mode
+  no_log: true
+
+
+- name: Gemeinsame Library aus dem Git-Artefakt verteilen
+  ansible.builtin.include_role:
+    name: script_library
+  vars:
+    script_library_root: "{{ script_jobs_target_root }}"
+    script_library_owner: "{{ script_jobs_owner }}"
+    script_library_group: "{{ script_jobs_group }}"
+
+- name: Verzeichnisse fuer lokale Skripte anlegen
+  ansible.builtin.file:
+    path: "{{ script_jobs_target_root }}/{{ item }}"
+    state: directory
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+    mode: '0700'
+  loop: "{{ script_jobs_manifest.files | map(attribute='path') | map('dirname') | unique | list }}"
+
+- name: Ausschliesslich private Skripte, Spezialfunktionen und Konfiguration verteilen
+  ansible.builtin.copy:
+    src: "{{ script_jobs_source_root }}/{{ inventory_hostname }}/{{ item.path }}"
+    dest: "{{ script_jobs_target_root }}/{{ item.path }}"
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+    mode: "{{ '0700' if item.kind == 'script' else '0600' }}"
+  loop: "{{ script_jobs_manifest.files }}"
+  when: item.kind != 'config'
+  no_log: true
+
+- name: Gemeinsame Konfiguration mit konsistentem Datenbankpfad rendern
+  ansible.builtin.copy:
+    content: "{{ {'JOB_DATABASE_PATH': script_jobs_database_path} | combine((lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/config/common.json') | from_json) | combine(script_jobs_common_config, recursive=True)) | to_nice_json }}"
+    dest: "{{ script_jobs_target_root }}/config/common.json"
+    mode: '0600'
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+  no_log: true
+
+- name: Skriptkonfigurationen mit ausdruecklichen Hostvariablen rendern
+  ansible.builtin.copy:
+    content: "{{ (lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/' ~ item.path) | from_json) | combine(script_jobs_job_config.get((item.path | basename | regex_replace('\\.json$', '')), {}), recursive=True) | to_nice_json }}"
+    dest: "{{ script_jobs_target_root }}/{{ item.path }}"
+    mode: '0600'
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+  loop: "{{ script_jobs_manifest.files }}"
+  when: item.kind == 'config' and item.path != 'config/common.json'
+  no_log: true
+
+- name: Laufzeitdaten getrennt vom Code bereitstellen
+  ansible.builtin.file:
+    path: "{{ script_jobs_database_path | dirname }}"
+    state: directory
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+    mode: '0700'
+
+- name: Ausschliesslich Zeitplanfelder fuer lokale Erwartungen schreiben
+  ansible.builtin.template:
+    src: expectations.json.j2
+    dest: "{{ script_jobs_database_path | dirname }}/expectations.json"
+    mode: '0600'
+
+- name: SQLite initialisieren ohne Jobs auszufuehren
+  ansible.builtin.command:
+    argv: ["{{ script_jobs_target_root }}/bin/script-jobs", --db, "{{ script_jobs_database_path }}", init, --expectations, "{{ script_jobs_database_path | dirname }}/expectations.json"]
+  changed_when: false
+  become_user: "{{ script_jobs_owner }}"
+  when: not ansible_check_mode
+
+- name: Explizit zugeordnete Altaufrufe einmalig uebernehmen
+  ansible.builtin.script:
+    cmd: >-
+      {{ (role_path ~ '/../../scripts/job_cron_guard.py') | quote }}
+      --user {{ item.user | default(script_jobs_owner) | quote }}
+      --name {{ item.name | quote }} --script {{ item.script | quote }} --schedule-json {{ item.cron | to_json | quote }}
+      --legacy {{ item.legacy_command | quote }} --remove-legacy
+  loop: "{{ script_jobs_effective }}"
+  when: item.legacy_command is defined and not ansible_check_mode
+  no_log: true
+
+- name: Eigene eindeutig benannte Cronjobs verwalten
+  ansible.builtin.cron:
+    name: "script-jobs:{{ item.name }}"
+    user: "{{ item.user | default(script_jobs_owner) }}"
+    special_time: "{{ item.cron.special_time | default(omit) }}"
+    minute: "{{ item.cron.minute | default(omit) }}"
+    hour: "{{ item.cron.hour | default(omit) }}"
+    weekday: "{{ item.cron.weekday | default(omit) }}"
+    day: "{{ item.cron.day | default(omit) }}"
+    month: "{{ item.cron.month | default(omit) }}"
+    job: "{{ ((script_jobs_target_root ~ '/' ~ item.script) | quote) }}{{ (' ' ~ (item.args | map('quote') | join(' '))) if item.args | default([]) | length else '' }}"
+  loop: "{{ script_jobs_effective }}"
+  no_log: true

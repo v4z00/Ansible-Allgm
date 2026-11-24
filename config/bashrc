@@ -1,4 +1,4 @@
-# ~/.bashrc des Ansible-Ansible-Controllers
+# ~/.bashrc des Ansible-Controllers
 # Alle Funktionen und Aliase werden zentral im Projekt gepflegt.
 
 export ANSIBLE_PROJECT_ROOT="/root/ansible"

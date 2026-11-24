@@ -46,6 +46,6 @@ fi
 
 notification_file=$(mktemp)
 trap 'rm -f "${notification_file}"' EXIT
-printf 'Systemupdate: %s\nStatus: FEHLER bei Zielpruefung; kein Update gestartet.\nController-Ausgabe/Cronlog pruefen.\n' "${target_limit}" > "${notification_file}"
+printf 'Systemupdate: %s\nStatus: ❌ FEHLER bei Zielpruefung; kein Update gestartet.\nController-Ausgabe/Cronlog pruefen.\n' "${target_limit}" > "${notification_file}"
 ansible-playbook playbooks/maintenance/notify.yml -e "notification_file=${notification_file}" </dev/null || true
 exit 2

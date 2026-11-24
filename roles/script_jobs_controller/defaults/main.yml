@@ -1,0 +1,2 @@
+script_jobs_controller_db: /var/lib/script-jobs/controller.sqlite3
+script_jobs_controller_root: /root/ansible

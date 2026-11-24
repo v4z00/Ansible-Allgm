@@ -1,4 +1,5 @@
 hm_send_telegram() {
+    [[ "${HM_JOB_MANAGED:-0}" != 1 ]] || return 0
     local message="${1-}" token="${BOT_TOKEN:-${TELEGRAM_BOT_TOKEN:-${TELEGRAM_TOKEN:-}}}"
     local chat="${CHAT_ID:-${TELEGRAM_CHAT_ID:-}}" result rc
     local -a options

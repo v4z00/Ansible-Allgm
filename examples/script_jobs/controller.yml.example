@@ -1,0 +1,7 @@
+# Private controller group_vars/host_vars. No invented schedule is activated by the repo.
+script_jobs_targets: all_linux_systems
+script_jobs_controller_db: /var/lib/script-jobs/controller.sqlite3
+script_jobs_summary_cron: {minute: '30', hour: '8', weekday: '*'}
+script_jobs_mail_to: admin@example.invalid
+telegram_bot_token: ''
+telegram_chat_id: ''

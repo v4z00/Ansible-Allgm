@@ -3,8 +3,8 @@
   "id": "host_updates",
   "version": "1.0.1",
   "files": {
-    "playbooks/maintenance/update_hosts.yaml": "8fd8986b532814acb117238747905478154560aebb55751dfc8c2bd7b77b80f4",
-    "scripts/run_host_updates.sh": "ac7e02c58de735e4357af2c2bc6267da5befe864f772c9ff7467486528c68887"
+    "playbooks/maintenance/update_hosts.yaml": "e561e6ed2d1122f45a3807ab4e3aa518c1cb703c32370022904e9d0866562b36",
+    "scripts/run_host_updates.sh": "c858545ff96b3bc14bdf6a6da6413ec0ccc381a281191a9051cdc4b73c429c2d"
   },
   "scope": "Gepruefte neutrale Vorlagenquelle, kein Produktivexport",
   "version_files": [],

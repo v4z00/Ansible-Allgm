@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/ca-distribute.json": "ef37ae48dd35c45573a4d9b6aeca54d3de055e5a48e3acd369f06c42df36bec6",
     "bin/control.d/ca-distribute.sh": "772d5bd640d6b2c3e928955034154ec0102fb0861a3e4d890f272621ac5ad4d6",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

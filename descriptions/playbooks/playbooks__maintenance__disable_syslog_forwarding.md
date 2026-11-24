@@ -34,7 +34,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/disable_syslog_forwarding.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/disable_syslog_forwarding.yml": "deb8b4116e3117df5b9954179f5278db7f5d15d84828febfd38b85b5df39b1cf"
+    "playbooks/maintenance/disable_syslog_forwarding.yml": "d547d57cca67f34215e1cb1de3466027e9c4bdd4880a4ef4449cc8f8e997895e"
   }
 }
 ```

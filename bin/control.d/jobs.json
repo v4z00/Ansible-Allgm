@@ -1,0 +1,1 @@
+{"schema":1,"commands":[{"name":"jobs","description":"Lokale Job-Ergebnisse, Abfragen und Liveansicht","handler":"bin/control.d/jobs.sh","requires":["scripts/job_console.py","artifacts/script-library/lib/python/job_store.py"],"aliases":[{"name":"jobs","args":[]}]}]}

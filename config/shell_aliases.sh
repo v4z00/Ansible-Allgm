@@ -32,7 +32,7 @@ control() {
 
 _control_commands() { control list; }
 
-# help: In das Ansible-Ansible-Projekt wechseln
+# help: In das Ansible-Projekt wechseln
 ansible-cd() {
     cd "${ANSIBLE_PROJECT_ROOT}" || return
 }
@@ -160,55 +160,6 @@ git-save() {
     [[ -n "${message}" ]] || { echo "Abbruch: Keine Nachricht." >&2; return 1; }
     (cd "${ANSIBLE_PROJECT_ROOT}" && git commit -m "${message}" && git push)
 }
-
-# Bewaehrte Namen aus dem bisherigen Bestand.
-# help: Letztes Docker-Ausfuehrungslog anzeigen
-
-# help: OpenWrt-GUI einschalten
-
-# help: OpenWrt-GUI ausschalten
-
-# help: OpenWrt-Router gestaffelt neu starten
-
-# help: OpenWrt-Konfigurationen vergleichen
-
-# help: OpenWrt-Paketlisten vergleichen
-
-# help: WLAN-Kanaele und Auslastung anzeigen
-
-# help: Verbundene WLAN-Clients anzeigen
-
-# help: OpenWrt-Healthcheck starten
-
-# help: Betriebssystempakete auf Linux-Hosts aktualisieren
-
-# help: Lynis-Sicherheitsaudit samt Bericht starten
-
-# help: DNS-Aufloesung der verwalteten Hosts pruefen
-
-# help: Root-CRL erneuern und verteilen
-
-# help: Vollstaendigen Backup-Wrapper starten
-
-# help: Docker-Container aktualisieren
-
-# help: Passwoerter lokaler Service-Accounts rotieren
-
-# help: fstab-Dateien aller Linux-Hosts einsammeln
-
-# help: Dediziertes TrueNAS-Routing konfigurieren
-
-# help: Kerberos-Keytabs aus SMB-Credentials erzeugen
-
-# help: Verwaltete Mounts in /etc/fstab setzen
-
-# help: Docker-Netze und statische IPs auswerten
-
-# help: Inventargenerator ohne Dateiaenderung pruefen
-
-# help: Dynamisches Proxmox-Inventory aktualisieren
-
-# help: Vollstaendigen Inventory-Gruppenbaum anzeigen
 
 # help: Verwaltete Bashrc installieren und aktuelle Shell neu laden
 alias bashrc-install='install -m 0644 /root/ansible/config/bashrc /root/.bashrc && source /root/.bashrc'

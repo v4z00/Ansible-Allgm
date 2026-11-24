@@ -1,8 +1,10 @@
 """Exercise the normal Docker update launcher without a Docker daemon."""
+import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -17,6 +19,9 @@ class DockerUpdateTest(unittest.TestCase):
         self.runner = scripts / "run_docker_update.sh"
         source = Path(__file__).resolve().parents[2] / "scripts" / self.runner.name
         shutil.copyfile(source, self.runner)
+        helper = root / "lib/control/helpers.sh"
+        helper.parent.mkdir(parents=True)
+        shutil.copyfile(source.parents[1]/"lib/control/helpers.sh",helper)
         self.trace = root / "calls"
         driver = root / "ansible-playbook"
         driver.write_text("""#!/bin/sh
@@ -52,3 +57,36 @@ esac
     def test_diagnostic_list_does_not_start_an_update_or_notify(self):
         self.assertEqual(self.invoke("--list-hosts").returncode, 0)
         self.assertEqual(self.trace.read_text().splitlines(), ["playbooks/docker/update_containers.yml --list-hosts"])
+
+
+@unittest.skipUnless(shutil.which("ansible-playbook"), "ansible-playbook erforderlich")
+class DockerStopTest(unittest.TestCase):
+    def test_first_compose_file_and_working_directory(self):
+        play = Path(__file__).resolve().parents[2] / "playbooks/docker/stop_all_docker.yaml"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            compose = root / "Team's $HOME" / "compose file.yaml"
+            compose.parent.mkdir()
+            compose.touch()
+            projects = [{"Name": "example", "ConfigFiles": f"{compose},{root}/override.yaml"}]
+            (root / "projects.json").write_text(json.dumps(projects))
+            docker = root / "docker"
+            docker.write_text(
+                "#!/bin/sh\n"
+                'if [ "$*" = "compose ls --format json" ]; then cat "$FIXTURE/projects.json"; exit; fi\n'
+                'printf "%s\\n" "$PWD" "$@" >> "$FIXTURE/calls"\n'
+            )
+            docker.chmod(0o755)
+            inventory = root / "hosts"
+            inventory.write_text("[docker_deployment_hosts]\nfixture ansible_connection=local "
+                                 f"ansible_become=false ansible_python_interpreter='{sys.executable}'\n")
+            config = root / "ansible.cfg"
+            config.write_text("[defaults]\n")
+            env = dict(os.environ, PATH=str(root) + os.pathsep + os.environ["PATH"], FIXTURE=str(root),
+                       ANSIBLE_CONFIG=str(config), ANSIBLE_LOCAL_TEMP=str(root / "local"),
+                       ANSIBLE_REMOTE_TEMP=str(root / "remote"))
+            result = subprocess.run(["ansible-playbook", "-i", str(inventory), str(play)], cwd=root,
+                                    env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual((root / "calls").read_text().splitlines(),
+                             [str(compose.parent), "compose", "-f", str(compose), "stop"])

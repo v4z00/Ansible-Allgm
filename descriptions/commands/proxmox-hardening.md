@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/proxmox-hardening.json": "f292bf1a0bb7dbdfbe2b0650ddda45e60db219efd2c2f253aed8620d8e909392",
     "bin/control.d/proxmox-hardening.sh": "40e479417ae3705f581fecccbc5a6bd70472bda274c46ec70b14d2711f281501",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

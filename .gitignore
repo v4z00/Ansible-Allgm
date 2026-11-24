@@ -59,10 +59,10 @@ collections/
 /playbooks/backup/README.md
 /playbooks/security/sss/VALIDIERUNG.md
 
-# Local component state and legacy NXTS3 deployment settings
+# Local component state and module-specific host variables
 /versions.txt
-# The actual filename is case-sensitive in Git.
-**/NXTS3-hostvars.yml
+*-[Hh][Oo][Ss][Tt][Vv][Aa][Rr][Ss].[Yy][Mm][Ll]
+*-[Hh][Oo][Ss][Tt][Vv][Aa][Rr][Ss].[Yy][Aa][Mm][Ll]
 
 # Only the public script library belongs to Git. Other artifacts remain local.
 !/artifacts/
@@ -78,3 +78,13 @@ collections/
 !/artifacts/script-library/lib/data/
 /artifacts/script-library/lib/data/*
 !/artifacts/script-library/lib/data/mail-translations.json
+
+# Public SQLite/query backend only; operational scripts and values stay local.
+!/artifacts/script-library/bin/
+/artifacts/script-library/bin/*
+!/artifacts/script-library/bin/script-jobs
+!/artifacts/script-library/lib/python/
+/artifacts/script-library/lib/python/*
+!/artifacts/script-library/lib/python/job_store.py
+!/artifacts/script-library/lib/python/job_notify.py
+!/artifacts/script-library/lib/python/job_expectations.py

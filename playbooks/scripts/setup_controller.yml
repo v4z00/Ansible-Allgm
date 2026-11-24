@@ -1,0 +1,7 @@
+---
+- name: Lokale Ergebniskonsolidierung einrichten
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - script_jobs_controller

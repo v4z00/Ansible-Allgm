@@ -31,7 +31,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/clear_postfix_que.yaml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/clear_postfix_que.yaml": "23413bdf20510665cd2f98056c294ca64888dd053f2dfe6efb32b5a91c2dbb28"
+    "playbooks/maintenance/clear_postfix_que.yaml": "b992efd3ad8bc95b80b7e14958f520837aff7fe7a65a294fe37e532c0a7fced4"
   }
 }
 ```

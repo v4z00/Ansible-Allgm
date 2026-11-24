@@ -2,29 +2,28 @@
 
 **HTML-Wiederherstellung auf Windows, macOS und Linux:** [START-HIER.md](START-HIER.md). Windows: `start-html.bat` (WSL/Ubuntu); Mac: `start-html.command` (Homebrew); Linux: `bash start-html.sh`. Alle Dateien zusammen entpacken. Die zentrale Ansible-Einrichtung bleibt auf Debian/Ubuntu.
 
-Die ausführliche [Bedienungsanleitung für Vertrauenspersonen](BEDIENUNGSANLEITUNG.md)
-erklärt beide Zugangsarten, Dokumentations- und Tresorablagen, Verschwiegenheit,
-Wiederherstellung und KI-Hilfe. Das Playbook legt sie auch im Verzeichnis `offline/`
+Die [Bedienungsanleitung für Vertrauenspersonen](BEDIENUNGSANLEITUNG.md)
+erklärt die Übergabe, den Umgang mit den persönlichen Teilen und die Wiederherstellung. Das Playbook legt sie auch im Verzeichnis `offline/`
 ab. Platzhalter für konkrete Kontakte und Ablageorte vor der Verteilung ausfüllen.
 
-**Master (3 von 10) rekonstruiert das Vaultwarden-Master-Passwort.** Infra (2 von 6) bleibt der getrennte Infrastruktur-Zugang. Die KDBX ist die zusätzliche Offline-Notfallvariante. Ob sie dasselbe Passwort nutzt, muss separat eingerichtet, dokumentiert und getestet werden. Der Stack erstellt oder synchronisiert weder Vaultwarden-Daten noch KDBX-Dateien.
+**Master rekonstruiert das Vaultwarden-Master-Passwort.** Infra bleibt der getrennte Infrastruktur-Zugang. Die Beispielkonfiguration benötigt in beiden Bereichen zwei von drei Teilen. Die KDBX ist die zusätzliche Offline-Notfallvariante. Ob sie dasselbe Passwort nutzt, muss separat eingerichtet, dokumentiert und getestet werden. Der Stack erstellt oder synchronisiert weder Vaultwarden-Daten noch KDBX-Dateien.
 
-Dieser Ordner gehört nach `~/ansible/playbooks/SSS/` auf deinen **separaten Ansible-Host**.
+Dieser Ordner gehört nach `~/ansible/playbooks/security/sss/` auf deinen **separaten Ansible-Host**.
 Zielplattform: Debian/Ubuntu mit Ansible und Python 3. Keine Änderungen an deinem
 normalen Inventory oder anderen Hosts. Kein Docker und kein dauerhaft laufender Dienst.
 
 ## Schnellstart
 
-1. In `treuhaender.yml` die zehn Beispielpersonen durch echte Personen ersetzen.
-   Jede Master-ID 1–10 und jede Infra-ID 1–6 muss genau einmal vergeben sein.
+1. In `treuhaender.yml` die drei Beispielpersonen durch echte Personen ersetzen.
+   In der Beispielkonfiguration muss jede ID von 1 bis 3 je Bereich genau einmal vergeben sein.
    `false` bedeutet „kein Teil“. Zusätzliche Personen nur für Infra sind möglich.
 2. In `config.yml` Kontakt und konkrete Datenorte eintragen. Erst danach
    `konfiguration_bestaetigt: true` setzen. Die voreingestellten Regeln sind
-   **Master: 3 von 10**, **Infra: 2 von 6**.
+   **Master: 2 von 3**, **Infra: 2 von 3**. Für den produktiven Einsatz kannst du zum Beispiel Master auf **3 von 10** und Infra auf **2 von 6** setzen und die Anteils-IDs entsprechend vergeben.
 3. Auf dem Ansible-Host vorbereiten:
 
    ```bash
-   cd ~/ansible/playbooks/SSS
+   cd ~/ansible/playbooks/security/sss
    bash run.sh
    # Fehlende Pakete und nötige Admin-Rechte werden automatisch angefordert.
    ```
@@ -49,7 +48,7 @@ normalen Inventory oder anderen Hosts. Kein Docker und kein dauerhaft laufender 
 ## Speicherorte und Sicherung
 
 ```text
-~/ansible/playbooks/SSS/             # Code und nicht geheime Konfiguration
+~/ansible/playbooks/security/sss/             # Code und nicht geheime Konfiguration
 ├── setup.yml
 ├── run.sh
 ├── config.yml
@@ -142,7 +141,8 @@ Oben wird die Zugangsart ausgewählt: **Infrastruktur – 2 Personen** oder
 Beim Wechsel werden Eingaben und Ergebnisse geleert. Browser und lokaler Dienst
 prüfen, dass Bereich und Schwellenwert der Teile zur Auswahl passen. Diese beiden
 HTML-Modi sind auf 2 bzw. 3 Personen festgelegt; andere konfigurierte Schwellenwerte
-lassen sich nur über die Terminal-Variante wiederherstellen.
+lassen sich über die Terminal-Variante wiederherstellen. Für Master-Teile aus
+der Beispielkonfiguration mit zwei von drei Teilen das Terminal verwenden.
 Sie sendet die Teile nur an das lokale `ssss-combine`. Ein Doppelklick auf die
 HTML-Datei zeigt die Startanleitung; die Berechnung benötigt den lokalen Dienst.
 **Es ist keine eigenständig rechnende HTML-Datei.** Unter Windows startet die BAT/PowerShell Ubuntu in WSL und öffnet die Oberfläche im Windows-Browser. Auf macOS startet die COMMAND-Datei den lokalen Dienst direkt. Die jeweilige Erstinstallation muss vor einem Offline-Notfall abgeschlossen sein; siehe START-HIER.md.
@@ -162,7 +162,7 @@ nach 60 Sekunden geleert. Master dient dem Vaultwarden-Zugang mit dokumentierter
 
 Beim Erzeugen wird für Master zusätzlich nach der Art des zweiten Zugangsschlüssels gefragt. Unterstützt werden **TOTP-Einrichtungsschlüssel** oder **2FA-Wiederherstellungscode**. Ein aktueller sechsstelliger Code und ein API-client_secret sind dafür nicht vorgesehen. `0` lässt den bisherigen Passwort-only-Weg bestehen.
 
-Die drei Master-Personen erhalten mit neuen **SSS2-Teilen** gemeinsam Zugriff auf beide Angaben. Der Generator verpackt sie strukturiert; Schrägstriche und Sonderzeichen im Passwort sind kein Trennzeichen. HTML und Terminal zeigen Passwort und zweiten Zugangsschlüssel getrennt an. Das TOTP-Secret wird lokal in einen vertrauenswürdigen Authenticator übernommen, der Wiederherstellungscode im vorgesehenen 2FA-Notfallverfahren verwendet. Beide werden nach 60 Sekunden aus der HTML-Anzeige geleert.
+Mit der Beispielkonfiguration ergeben zwei unterschiedliche **SSS2-Master-Teile** beide Angaben. Der Generator verpackt sie strukturiert; Schrägstriche und Sonderzeichen im Passwort sind kein Trennzeichen. HTML und Terminal zeigen Passwort und zweiten Zugangsschlüssel getrennt an. Das TOTP-Secret wird lokal in einen vertrauenswürdigen Authenticator übernommen, der Wiederherstellungscode im vorgesehenen 2FA-Notfallverfahren verwendet. Beide werden nach 60 Sekunden aus der HTML-Anzeige geleert.
 
 **Aktualisierung:** `bash run.sh` installiert die neue Version. Danach mit `bash start-generator.sh` neue Briefe erzeugen und alle neu erzeugten Sätze kontrolliert verteilen. Ein Generatorlauf erstellt sowohl Master- als auch Infra-Teile neu. Vorhandene Ausgaben werden nicht geändert. Alte SSS1-Teile bleiben mit dem neuen Werkzeug lesbar, enthalten aber weiterhin ausschließlich das ursprünglich gesicherte Passwort. Alte Werkzeugkopien erkennen SSS2 nicht; das komplette aktuelle Offline-Paket verteilen. Alte und neue Teile niemals mischen.
 
@@ -178,7 +178,7 @@ Master-Passwort: maximal 127 UTF-8-Bytes. Zweiter Zugangsschlüssel: maximal 128
   Tippfehler-Prüfsumme. Diese ist keine Signatur und schützt nicht vor absichtlicher
   Manipulation. Originalität der Umschläge separat sicherstellen.
 - Der Generator prüft vor dem Schreiben **alle** Quoren gegen das eingegebene
-  Passwort: standardmäßig 120 Master- und 15 Infra-Kombinationen.
+  Passwort. Bei zwei von drei prüft er je drei Master- und Infra-Kombinationen.
 - Jede Erzeugung hat eine neue zufällige Satz-ID; kein Überschreiben. Teile aus
   verschiedenen Sätzen werden abgelehnt. Ein abgebrochener Schreibvorgang wird
   mit `UNVOLLSTAENDIG` markiert und darf nicht verteilt werden.
@@ -193,9 +193,9 @@ Master-Passwort: maximal 127 UTF-8-Bytes. Zweiter Zugangsschlüssel: maximal 128
 ## Abnahme vor der Verteilung
 
 1. Einen vollständigen neuen Satz erstellen; kein `UNVOLLSTAENDIG` im Ausgabeordner.
-2. Drei Master-Briefe auf dem vorbereiteten unabhängigen Notfallrechner kombinieren.
+2. Master-Briefe gemäß ihrer Schwelle auf dem vorbereiteten unabhängigen Notfallrechner kombinieren. Mit der Beispielkonfiguration zwei Briefe im Terminal verwenden.
 3. Mit dem Ergebnis den **realen Vaultwarden-Zugang** prüfen, einschließlich Konto und des gewählten zweiten Zugangsschlüssels. Wiederherstellungscodes nur gemäß dem dokumentierten Verfahren einsetzen und nach einem verbrauchenden Test den aktuellen Code neu sichern.
-4. Zwei Infra-Briefe ebenso prüfen und den dokumentierten Infra-Zugang testen. Zusätzlich die KDBX-Offline-Variante unabhängig von Vaultwarden testen und ihre Passwortzuordnung dokumentieren.
+4. Infra-Briefe gemäß ihrer Schwelle prüfen und den dokumentierten Infra-Zugang testen. Zusätzlich die KDBX-Offline-Variante unabhängig von Vaultwarden testen und ihre Passwortzuordnung dokumentieren.
 5. Persönliche HTML-Dateien in der Druckvorschau prüfen, drucken und versiegeln.
    Übergabe und Satz-ID dokumentieren, ohne Schlüssel in die Übergabeliste zu kopieren.
 6. KDBX-Dateien, Offline-Werkzeug und nötige Zusatzfaktoren vom Ansible-Host unabhängig
@@ -215,3 +215,5 @@ Ein Test startet kurz einen ausschließlich lokalen HTTP-Dienst.
 
 Referenz für Hex-Modus und CLI-Optionen:
 [Debian ssss-Handbuch](https://manpages.debian.org/bookworm/ssss/ssss.1.en.html).
+
+Der Projektcode steht unter der [MIT-Lizenz](../../../LICENSE).

@@ -66,9 +66,7 @@ def checkout(scratch, name, row, controller, branch):
     _, url, token_file = row
     install.require(not github_https.legacy_https(url),
                     f"{name}: SSH-Eintrag über den Installer auf HTTPS umstellen")
-    if name == "NXTS3":
-        install.require(token_file, f"{name}: Token-Dateipfad in versions.txt fehlt")
-    else:
+    if name.casefold() in {"allgm", "homelab"}:
         install.require(not token_file, f"{name} wird anonym geladen. Viertes Feld in versions.txt leeren.")
     root = scratch / name
     github_https.clone_branch(url, root, branch, token_file, controller)
@@ -150,12 +148,9 @@ def rollout(root, args, local_files=()):
     rows = install.read_versions(marker)
     branch = "staging" if args.staging else "main"
     saved_profile, previous_branch, baseline = managed_baseline(root)
-    nxts3 = (root / "roles/nxts3").is_dir()
-    homelab = (root / "roles/openwrt_operations").is_dir()
-    install.require(not (nxts3 and homelab), "Homelab und NXTS3 sind getrennte Controller")
-    profile = "NXTS3" if nxts3 else "Homelab" if homelab else "Allgm"
-    install.require(saved_profile in (None, profile.lower()),
-                    "Installationsnachweis und vorhandenes System passen nicht zusammen")
+    profile_id = install.installed_profile(root)
+    profile = next((name for name in rows if name.casefold() == profile_id), None)
+    install.require(profile is not None, "GitHub-URL für das installierte Profil in versions.txt eintragen")
     with tempfile.TemporaryDirectory(prefix=f"ansible-{branch}-") as tmp:
         folder = Path(tmp).resolve()
         names = ["Allgm", profile] if profile != "Allgm" else ["Allgm"]

@@ -1,0 +1,5 @@
+[
+{% for job in script_jobs_effective %}
+{{ {'job': job.name, 'cron': job.cron, 'expected': job.expected | default({}), 'timezone': script_jobs_timezone | default('')} | to_json }}{{ ',' if not loop.last else '' }}
+{% endfor %}
+]

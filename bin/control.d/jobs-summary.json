@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "jobs-summary",
+      "description": "Job-Ergebnisse konsolidieren und Zusammenfassung senden",
+      "handler": "bin/control.d/jobs-summary.sh",
+      "requires": [
+        "playbooks/scripts/summary_jobs.yml",
+        "scripts/job_console.py",
+        "scripts/job_summary.py",
+        "artifacts/script-library/bin/script-jobs"
+      ],
+      "aliases": [
+        {
+          "name": "jobs-summary",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 # Compatibility transport for legacy direct mail/mailx calls.
 hm_mail_command() {
+    [[ "${HM_JOB_MANAGED:-0}" != 1 ]] || return 0
     local requested="$1" argument expect_subject=false body binary
     shift
     local -a arguments

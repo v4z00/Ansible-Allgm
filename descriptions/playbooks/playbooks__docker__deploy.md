@@ -2,9 +2,12 @@
 
 Vorhandener Einstieg: `playbooks/docker/deploy.yml`.
 
-Im Quelltext benannte Plays/Aufgaben:
+Das Playbook importiert in dieser Reihenfolge.
 
-
+- `playbooks/docker/prepare_deployment.yml`
+- `playbooks/docker/deploy_docker_users.yml`
+- `playbooks/docker/deploy_docker_networks.yaml`
+- `playbooks/docker/deploy_docker_stacks.yml`
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 

@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/chrony-uninstall.json": "987d06254be844b074d2491d23d43454563b471505ed9b5e952abfb3788505da",
     "bin/control.d/chrony-uninstall.sh": "bf6a3bff922417cf705016317d46b3eaa8380877394082f60edb42e00eddc3ea",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

@@ -60,7 +60,7 @@ def parse_versions(lines):
         require(len(parts) == 4 and VERSION_NAME.fullmatch(parts[0])
                 and (VERSION_VALUE.fullmatch(parts[1]) or STAGING_VERSION.fullmatch(parts[1])), f"Ungültige Zeile in {VERSIONS}")
         name, version, url, token_file = parts
-        name = {"allgm": "Allgm", "homelab": "Homelab", "nxts3": "NXTS3"}.get(name.casefold(), name)
+        name = {"allgm": "Allgm", "homelab": "Homelab"}.get(name.casefold(), name)
         require(name.casefold() not in {n.casefold() for n in rows}, f"Doppeltes Modul in {VERSIONS}")
         rows[name] = (version, url, token_file)
     return rows
@@ -98,10 +98,10 @@ def remote_for(source):
 
 def version_source(dest, sources, scratch, *, token_file=None, prompt=False, branch=None):
     lines = version_lines(dest / VERSIONS, optional=True)
-    rows = parse_versions(lines)
+    rows = {name.casefold(): row for name, row in parse_versions(lines).items()}
     changes = {}
     for name, path in sources.items():
-        _, url, saved_path = rows.get(name, ("", "", ""))
+        _, url, saved_path = rows.get(name.casefold(), ("", "", ""))
         migrated = github_https.legacy_https(url)
         if migrated:
             url, saved_path = migrated, ""  # An SSH key can never serve as a token.
@@ -110,17 +110,24 @@ def version_source(dest, sources, scratch, *, token_file=None, prompt=False, bra
             url = module_url(name)
         if url:
             github_https.https_url(url)
-        if name == "NXTS3":
+        access = "anonymous"
+        if name.casefold() not in {"allgm", "homelab"}:
+            metadata = read_json(path / "controller-overlay.json")
+            access = metadata.get("authentication", "token-file")
+            require(access in {"anonymous", "token-file"}, "Unbekannte Authentifizierung im Overlay")
+        if access == "token-file":
             selected = token_file if token_file is not None else saved_path
-            if not selected and prompt and sys.stdin.isatty():
+            if not selected and prompt:
                 try:
-                    selected = input("Pfad zur lokalen Token-Datei (0600): ").strip()
-                except EOFError:
-                    selected = ""
+                    with open("/dev/tty") as tty_in, open("/dev/tty", "w") as tty_out:
+                        print("Pfad zur lokalen Token-Datei (0600): ", end="", file=tty_out, flush=True)
+                        selected = tty_in.readline().strip()
+                except OSError:
+                    pass
             require(selected, "Der private Installer benötigt --token-file PFAD zur lokalen Token-Datei")
             github_https.read_token(selected, dest, *sources.values())
         else:
-            require(not saved_path, f"{name} wird anonym geladen. Viertes Feld in versions.txt leeren.")
+            require(not saved_path and not (name.casefold() != "allgm" and token_file), f"{name} wird anonym geladen. Viertes Feld in versions.txt leeren.")
             selected = ""
         changes[name.casefold()] = "|".join((name, version_for(path, branch), url, selected))
     output = [] if VERSION_HEADER in lines else [VERSION_HEADER, VERSION_HINT]
@@ -190,7 +197,8 @@ def code_files(root, overlay=False):
 
 
 def merge_overlay(base, extension, meta, name):
-    require(meta.get("schema") == 1 and meta.get("profile") == name,
+    require(meta.get("schema") == 1 and isinstance(meta.get("profile"), str)
+            and meta["profile"].casefold() == name.casefold(),
             "Overlay-Profil stimmt nicht mit der Quelle überein")
     allowed = set(meta["replaces"])
     actual = {rel for rel in extension.keys() & base.keys() if sha(extension[rel]) != sha(base[rel])}
@@ -256,7 +264,7 @@ def add_overlay(dest, files, hashes, profile, scratch):
     require(record.is_file() and not record.is_symlink(),
             "Ziel enthält keine mit diesem Installer erstellte Installation")
     previous = read_json(record)
-    require(previous.get("schema") == 1 and previous.get("profile") in {"allgm", "homelab", "nxts3"},
+    require(previous.get("schema") == 1 and previous.get("profile") in {"allgm", profile},
             "Unbekannter Installationsnachweis")
     old = previous["files"]
     for rel, expected in old.items():
@@ -269,7 +277,7 @@ def add_overlay(dest, files, hashes, profile, scratch):
                 or stat.S_IMODE(state.stat().st_mode) != 0o600):
             os.replace(files[VERSIONS], dest / VERSIONS)
         return
-    require(previous["profile"] == "allgm" and profile in {"homelab", "nxts3"},
+    require(previous["profile"] == "allgm" and profile != "allgm",
             "Profilwechsel benötigt eine frische Installation")
     base = code_files(BASE)
     require(old == {rel: sha(path) for rel, path in base.items()},
@@ -378,15 +386,34 @@ def put_files(dest, pending, restore, validate=None):
         raise
 
 
+def installed_profile(dest):
+    """Resolve the installer receipt and markers left by older overlay installers."""
+    profiles = set()
+    if receipt_hash(dest) is not None:
+        receipt = read_json(dest / RECEIPT)
+        name = receipt.get("profile")
+        require(receipt.get("schema") == 1 and isinstance(name, str) and VERSION_NAME.fullmatch(name),
+                "Ungültiger Profilname im Installationsnachweis")
+        profiles.add(name.casefold())
+    if ((dest / "bin/control.d/.versions/homelab.json").is_file()
+            or (dest / "roles/openwrt_operations").is_dir()):
+        profiles.add("homelab")
+    for marker in (dest / "update_check/extensions").glob("*/manifest.json"):
+        name = marker.parent.name
+        if VERSION_NAME.fullmatch(name) and (dest / "roles" / name).is_dir():
+            profiles.add(name.casefold())
+    if not profiles:
+        for name in parse_versions(version_lines(dest / VERSIONS, optional=True)):
+            if (dest / "roles" / name.casefold()).is_dir():
+                profiles.add(name.casefold())
+    require(len(profiles) <= 1, "Installationsnachweis und vorhandene Profilmarker widersprechen sich")
+    return next(iter(profiles), "allgm")
+
+
 def update_controller(dest, all_files, profile, accepted, receipt_source=None, retired=()):
     require(dest.is_dir() and (dest / "bin/control").is_file(),
             "Update erwartet einen vorhandenen Ansible-Controller mit bin/control")
-    require(profile == "nxts3" or not (dest / "roles/nxts3").is_dir(),
-            "NXTS3-Bestand braucht den eigenen NXTS3-Installer")
-    require(profile == "homelab" or not (
-        (dest / "bin/control.d/.versions/homelab.json").exists()
-        or (dest / "roles/openwrt_operations").exists()),
-        "Homelab-Bestand benötigt beim Update die geprüfte Homelab-Erweiterung")
+    require(installed_profile(dest) in {"allgm", profile}, "Für diesen Bestand den passenden Overlay-Installer verwenden")
     files = update_files(all_files)
     plan, token = update_plan(dest, files, profile, retired)
     changed = plan["files"]
@@ -501,7 +528,7 @@ def main():
     action.add_argument("--rollback", metavar="BACKUP", help="Einen bestätigten Codewechsel zurücksetzen")
     parser.add_argument("--apply", metavar="PLAN_SHA256", help="Den exakt geprüften Updateplan einspielen")
     name = os.environ.get("ANSIBLE_STAGING_OVERLAY")
-    if name == "NXTS3":
+    if name and name.casefold() not in {"allgm", "homelab"}:
         parser.add_argument("--token-file", metavar="PFAD", help="Lokale Fine-Grained-Token-Datei (0600)")
     args = parser.parse_args()
     if args.apply and not args.update:
@@ -511,7 +538,7 @@ def main():
         target = args.target.absolute()
         require(target.name and not target.is_symlink(), "Eigenen Zielordner ohne Symlink angeben")
         require(not target.resolve().is_relative_to(BASE), "Ziel muss außerhalb der Quellablage liegen")
-        require(name in (None, "Homelab", "NXTS3"), "Ungültiger Installer-Aufruf")
+        require(name is None or VERSION_NAME.fullmatch(name) and name.casefold() != "allgm", "Ungültiger Installer-Aufruf")
         overlay = Path(os.environ["ANSIBLE_STAGING_SOURCE"]).resolve() if name else None
         if overlay:
             require(not target.resolve().is_relative_to(overlay), "Ziel muss außerhalb der Overlay-Quelle liegen")

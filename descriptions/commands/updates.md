@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/updates.json": "c71efc27b7b9b1bdd26adeadd9191954716a4cf765a5b6069e544e09bc05c80d",
     "bin/control.d/updates.sh": "a9bf75cb5c605fcb59e4c72d19f44c3a654b158eca3c142accffd1b7662acd4e",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

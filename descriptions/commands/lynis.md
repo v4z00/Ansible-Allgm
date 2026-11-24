@@ -65,7 +65,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/lynis.json": "967d9bdc120daa504e51a06d960a4d1a07e7e1dc56fcee03263c4e4955cad81d",
     "bin/control.d/lynis.sh": "af0c5f6f9255704c24741041209ead62452bd65197e2ee53f32dc303b331cfd8",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

@@ -1,12 +1,12 @@
-# Proxmox-Inventory nur pruefen
+# Statisches oder konfiguriertes Proxmox-Inventory prüfen
 
-Proxmox-Inventory nur pruefen
+Statisches oder konfiguriertes Proxmox-Inventory prüfen
 
 Aufruf: `bin/control inventory-check [Optionen]`.
 
 Vorhandene Kurzformen: `inv-check`, `inventory-check`.
 
-Feature: proxmox. Die aktuelle Aktivierung prueft weiterhin Control.
+Der Befehl ist unabhängig von einem Feature-Schalter verfügbar.
 
 Keine vollstaendige strukturierte Parameterbeschreibung im Bestand. Den bestehenden Terminalablauf und dessen Hilfe verwenden; keine Optionen erfinden.
 
@@ -25,7 +25,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "schema_version": 1,
   "kind": "command",
   "ref": "inventory-check",
-  "title": "Proxmox-Inventory nur pruefen",
+  "title": "Statisches oder konfiguriertes Proxmox-Inventory prüfen",
   "documented": false,
   "fields": [],
   "constraints": [],

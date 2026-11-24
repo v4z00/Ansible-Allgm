@@ -14,8 +14,8 @@ prepare_fresh_debian() {
     case "$1" in
       --target) [[ $# -ge 2 ]] || return 0; target=$2; shift 2 ;;
       --target=*) target=${1#*=}; shift ;;
-      --token-file) [[ $# -ge 2 && "${ANSIBLE_STAGING_OVERLAY:-}" == NXTS3 ]] || return 0; shift 2 ;;
-      --token-file=*) [[ "${ANSIBLE_STAGING_OVERLAY:-}" == NXTS3 ]] || return 0; shift ;;
+      --token-file) [[ $# -ge 2 && -n "${ANSIBLE_STAGING_OVERLAY:-}" && "${ANSIBLE_STAGING_OVERLAY}" != Homelab ]] || return 0; shift 2 ;;
+      --token-file=*) [[ -n "${ANSIBLE_STAGING_OVERLAY:-}" && "${ANSIBLE_STAGING_OVERLAY}" != Homelab ]] || return 0; shift ;;
       *) return 0 ;;
     esac
   done

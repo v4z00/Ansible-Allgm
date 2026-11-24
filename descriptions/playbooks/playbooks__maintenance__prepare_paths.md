@@ -31,7 +31,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/prepare_paths.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/prepare_paths.yml": "d40cec648acce6683e6f14bd534ebe630f05dcb01d77e242caa814a03904e810"
+    "playbooks/maintenance/prepare_paths.yml": "016129444b45fe81222626465482c8b9d1622f48cb62e2046902b431f83d7a95"
   }
 }
 ```

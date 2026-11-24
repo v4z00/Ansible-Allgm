@@ -31,10 +31,11 @@ Bestehende Settings/Secrets niemals mit Beispielwerten ersetzen.
   "constraints": [],
   "sources": [
     "examples/access/credentials.example.yml",
-    "group_vars/all/access.yml"
+    "examples/first_run/access.yml.example"
   ],
   "source_hashes": {
-    "examples/access/credentials.example.yml": "8d8306f1b8aaad5f1805478edd993ffd18bd7f8ff6d294bbe6b9c00ad1889ad6"
+    "examples/access/credentials.example.yml": "8d8306f1b8aaad5f1805478edd993ffd18bd7f8ff6d294bbe6b9c00ad1889ad6",
+    "examples/first_run/access.yml.example": "40a524f20980bb08fde157744cffc62b7533b5c8c5952aafc2dabbc9a9b2447a"
   }
 }
 ```

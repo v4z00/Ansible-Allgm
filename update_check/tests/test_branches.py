@@ -138,13 +138,31 @@ class BranchTests(unittest.TestCase):
         self.assertFalse(rollout.install.backup_home(self.controller).exists())
 
     def test_homelab_follows_base(self):
-        profile = "Homelab"
+        self.exercise_overlay("Homelab", "roles/openwrt_operations/tasks/main.yml")
+
+    def test_external_overlay_follows_its_receipt_and_token(self):
+        token = self.work / "test.token"
+        token.write_text("github_" + "pat_test_fixture")
+        token.chmod(0o600)
+        self.exercise_overlay("ExampleOverlay", "roles/sample_service/tasks/main.yml", str(token))
+
+    def test_legacy_overlay_marker_blocks_base_only_update(self):
+        marker = self.controller / "update_check/extensions/example/manifest.json"
+        marker.parent.mkdir(parents=True)
+        marker.write_text("{}")
+        (self.controller / "roles/example").mkdir(parents=True)
+        (self.controller / rollout.install.RECEIPT).unlink()
+        self.assertEqual(rollout.install.installed_profile(self.controller), "example")
+        with self.assertRaisesRegex(ValueError, "Overlay-Installer"):
+            rollout.install.update_controller(self.controller, {}, "allgm", None)
+        self.control("update-check", "--remote", code=2)
+
+    def exercise_overlay(self, profile, feature, token_file=""):
         self.remote = self.work / "overlay"
         self.remote.mkdir()
         self.git("init", "-q", "-b", "main")
         self.file("VERSION.txt", "4.5.6\n")
         self.file("controller-overlay.json", json.dumps({"schema": 1, "profile": profile, "replaces": []}))
-        feature = "roles/openwrt_operations/tasks/main.yml"
         (self.remote / feature).parent.mkdir(parents=True)
         self.file(feature, "---\n[]\n")
         self.commit(profile)
@@ -159,7 +177,7 @@ class BranchTests(unittest.TestCase):
         receipt["files"][feature] = rollout.install.sha(dest)
         rollout.install.write_receipt(self.controller, profile.lower(), receipt["files"], "main")
         with self.marker.open("a") as f:
-            f.write(f"{profile}|4.5.6|https://github.com/example/overlay.git|\n")
+            f.write(f"{profile}|4.5.6|https://github.com/example/overlay.git|{token_file}\n")
         self.control("update-check", "--apply", "--staging")
         self.assertIn("# staging", dest.read_text())
         versions = self.control("ansible-Version").splitlines()

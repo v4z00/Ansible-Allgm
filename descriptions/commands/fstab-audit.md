@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/fstab-audit.json": "25b5cadf8d93116199975bac9f20f88f456da966013f3cf5c2380b0f5c4a0e92",
     "bin/control.d/fstab-audit.sh": "40acea74522a3fe7802a4e953b5efbcc55e9d0925c9b6f7e098dd97948517a40",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/docker-auto-update-stop.json": "fad3a2fc2f5daa0b5af0c382ca7852e0748d3d7f3ea85b98a61721c982b981b6",
     "bin/control.d/docker-auto-update-stop.sh": "da74067ef1d4dfc547517885a0b8dc65626f326d5a091e9e7aaf5e5558136193",
-    "lib/control/helpers.sh": "2b74a20d4cca10749451010fe2b9239be3018926fcc5f3e56135b17b7e68d97f"
+    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
   }
 }
 ```

@@ -1,0 +1,7 @@
+---
+- name: Lokale Skripte und Cron mit gemeinsamer Git-Library bereitstellen
+  hosts: all_linux_systems
+  gather_facts: false
+  become: true
+  roles:
+    - script_jobs

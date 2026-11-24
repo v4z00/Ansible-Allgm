@@ -1,0 +1,10 @@
+script_jobs_source_root: /root/skripte-config
+script_jobs_target_root: "{{ script_path | default('/scripte') }}"
+script_jobs_database_path: /var/lib/script-jobs/jobs.sqlite3
+script_jobs: []
+script_jobs_owner: root
+script_jobs_group: root
+script_jobs_common_config: "{{ script_library_common_config | default({}) }}"
+script_jobs_job_config: "{{ script_library_job_config | default({}) }}"
+script_jobs_sets: {}
+script_jobs_selected_sets: []

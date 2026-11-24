@@ -31,7 +31,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/notify.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/notify.yml": "73d8909fa4d67e4b925ee1d68489bb38db6b239301ef6a13bc00661e6bb76ad2"
+    "playbooks/maintenance/notify.yml": "af8c4189415c7c8371dfcfbbda26c59fbea75be3101f6012315e08b1784c3dc0"
   }
 }
 ```
@@ -52,4 +52,3 @@ Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true)
 
 Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
 verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
-Die drei Standorteinrichter setzen Telegram ausdruecklich auf true.
