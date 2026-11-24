@@ -15,7 +15,7 @@ try:
 except ImportError:
     raise SystemExit('FEHLER: Python-Paket PyYAML fehlt. Den Python-Interpreter der Ansible-Umgebung verwenden.')
 
-CHECKER_VERSION = '1.2.0'
+CHECKER_VERSION = '1.2.1'
 VERSION_RE = re.compile(r'(?<![A-Za-z0-9])\d+\.\d+\.\d+(?:[a-zA-Z][A-Za-z0-9.-]*)?')
 class AuditError(Exception): pass
 class UniqueLoader(yaml.SafeLoader): pass

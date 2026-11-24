@@ -20,40 +20,46 @@
     - name: "Find Docker Compose Files"
       find:
         paths: "{{ docker_host_config_dir }}"
-        patterns: "docker-compose.y*ml"
+        patterns: "{{ compose_file_patterns | default(docker_compose_file_patterns | default(['docker-compose.yml', 'docker-compose.yaml', 'compose.yml', 'compose.yaml'])) }}"
         recurse: yes
       register: compose_files
 
-    # ==============================================================================
-    # 1. UPDATE LOGIK (Robust via 'Recreated' Check)
-    # ==============================================================================
-    - name: "Check and Update"
-      shell: |
-        # In das Verzeichnis des Stacks wechseln
-        cd "{{ item.path | dirname }}"
-        stack_name=$(basename "$(pwd)")
-        
-        # 1. Blind Pull: Wir laden einfach alles runter was neu ist.
-        # Output wird ignoriert, wir vertrauen nur dem 'up' Befehl.
-        docker compose pull > /dev/null 2>&1
-        
-        # 2. Apply: Wir führen 'up -d' aus und schauen, was Docker WIRKLICH tut.
-        up_output=$(docker compose up -d 2>&1)
-        
-        # 3. Analyse der Wahrheit:
-        # Docker schreibt "Recreated" (oder "Recreating"), wenn sich das Image geändert hat.
-        if echo "$up_output" | grep -qE "Recreated|Recreating"; then
-             echo "UPDATE: $stack_name" >> {{ summary_file }}
-             
-        elif echo "$up_output" | grep -q "error"; then
-             echo "ERROR: $stack_name" >> {{ summary_file }}
-        fi
+    - name: Compose-Dateien für den Pflichtcheck verlangen
+      ansible.builtin.assert:
+        that:
+          - compose_files.matched > 0
+          - (compose_files.files | map(attribute='path') | map('dirname') | unique | length) == compose_files.matched
+        fail_msg: Je Stack ist genau eine Compose-Datei erforderlich. Compose-Verzeichnisse und Suchmuster prüfen.
+
+    - name: Images aktualisieren und auf laufende oder gesunde Dienste warten
+      ansible.builtin.command:
+        argv:
+          - docker
+          - compose
+          - --file
+          - "{{ item.path }}"
+          - up
+          - --detach
+          - --pull
+          - always
+          - --wait
+          - --wait-timeout
+          - "180"
+        chdir: "{{ item.path | dirname }}"
       loop: "{{ compose_files.files }}"
-      # Fehler ignorieren, damit ein kaputter Stack nicht den ganzen Server-Check stoppt
-      ignore_errors: true
-      register: update_run
-      args:
-        executable: /bin/bash
+      loop_control:
+        label: "{{ item.path }}"
+      register: stack_update
+      changed_when: "'Recreated' in stack_update.stderr or 'Created' in stack_update.stderr"
+
+    - name: Geänderte Stacks im Updatebericht erfassen
+      ansible.builtin.lineinfile:
+        path: "{{ summary_file }}"
+        line: "UPDATE: {{ item.item.path | dirname | basename }}"
+      loop: "{{ stack_update.results }}"
+      loop_control:
+        label: "{{ item.item.path }}"
+      when: item.changed
 
     # ==============================================================================
     # 2. PRUNE LOGIK (Aggressiv & Robust)
@@ -95,3 +101,9 @@
         dest: "/tmp/docker_reports/{{ inventory_hostname }}.txt"
         flat: yes
         fail_on_missing: no
+
+- name: Docker-Quellen und Netze der aktualisierten Hosts prüfen
+  ansible.builtin.import_playbook: check_docker.yml
+
+- name: Standortabhängige Portainer-Prüfung
+  ansible.builtin.import_playbook: check_portainer.yml

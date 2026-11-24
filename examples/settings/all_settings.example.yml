@@ -173,3 +173,9 @@ checkmk_linux_plugins:
 - mk_mysql
 - mk_postgres.py
 - mk_redis
+
+# Optional je Docker-Host. Der Container-Pflichtcheck läuft bei jedem Docker-Update.
+portainer_check_enabled: false
+# portainer_check_host: portainer.example.invalid
+# portainer_check_port: 9443
+# portainer_check_timeout: 5

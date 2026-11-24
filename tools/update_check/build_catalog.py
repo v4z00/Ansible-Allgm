@@ -5,6 +5,7 @@ import yaml
 
 def build(package,template,home):
     examples=package/'examples';base=yaml.safe_load((template/'examples/first_run/settings.yml.example').read_text())
+    base.setdefault('portainer_check_enabled', False)
     extra=yaml.safe_load((examples/'checkmk/settings.example.yml').read_text());base.update(extra)
     base.update(yaml.safe_load((examples/'checkmk/plugins.example.yml').read_text()))
     # Nur neutrale Beispiele; keine Secrets oder Standortsettings lesen.
@@ -23,6 +24,11 @@ def build(package,template,home):
                 if isinstance(value,dict):walk(value,full+'.')
         walk(values)
     descriptions={
+      'portainer_check_enabled':'Zusätzlichen TCP-Test für Portainer nach dem Pflichtcheck aktivieren.',
+      'portainer_check_host':'Optionales TCP-Ziel. Ohne Eintrag gilt die Ansible-Adresse des Docker-Hosts.',
+      'portainer_check_port':'TCP-Port für den optionalen Portainer-Test.',
+      'portainer_check_timeout':'Wartezeit für den Portainer-TCP-Test in Sekunden.',
+
       'checkmk_server':'Adresse und Port des Checkmk-Agent-Receivers fuer die TLS-Registrierung.',
       'checkmk_server_url':'HTTPS-Basisadresse der Checkmk-Weboberflaeche/API, ohne Site-Unterpfad.',
       'checkmk_site':'Name der Checkmk-Site; wird fuer API- und Agentregistrierung verwendet.',

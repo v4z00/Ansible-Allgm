@@ -73,6 +73,15 @@ def approve(bundle, name, expected):
     record(manifest, data)
 
 
+def new_supplement(parent, target, name):
+    ext.supplement_name(name)
+    ext.require(ext.scan(parent, delivery=True)["status"] == "OK", "Standortpaket vor der Zuordnung prüfen")
+    identifier = ext.read_json(parent / "register.json")["id"]
+    target.mkdir(mode=0o700)
+    (target / "code").mkdir(mode=0o700)
+    record(target / "register.json", {"schema": 1, "id": identifier, "supplement": name, "files": {}})
+
+
 @contextmanager
 def locked(controller):
     path = controller.parent / ("." + controller.name + ".controller-lock")
@@ -94,24 +103,30 @@ def exchange(old, new):
 
 def install(controller, bundle):
     source = ext.read_json(ext.path_in(bundle, "register.json"))
-    ext.require(ext.scan(bundle)["status"] == "OK", "Lieferbestand unvollständig oder verändert")
+    ext.require(ext.scan(bundle, delivery=True)["status"] == "OK", "Lieferbestand unvollständig oder verändert")
     dest = ext.location(controller)
     pin = ext.marker(controller)
     identifier = source["id"]
+    if "supplement" in source:
+        ext.require(pin.is_file() and dest.is_dir(), "Zuerst das lokale Standortpaket registrieren")
     if pin.exists() or pin.is_symlink():
         ext.require(ext.regular(pin).read_text().strip() == identifier, "Falsche Umgebung")
     current = {}
     if dest.exists() or dest.is_symlink():
         ext.require(ext.inspect(controller)["status"] == "OK", "Bestehender lokaler Bestand benötigt Prüfung")
         current = ext.read_json(dest / "register.json")["files"]
-    ext.require(set(current) <= set(source["files"]), "Lieferung lässt bereits registrierte Pfade weg")
+    owner = source.get("supplement")
+    merged = current.copy()
     for name, entry in source["files"].items():
+        ext.require(not ext.overlaps_base(controller, name), f"Pfad oder Rolle bereits im Controller belegt: {name}")
         ext.require(set(entry) == {"sha256", "cleanup"} and policy(ext.path_in(bundle/"code", name)) == entry["cleanup"],
                     "Die Lieferung muss aktive, markierte Dateien enthalten")
-    merged = dict(source["files"])
-    for name, entry in current.items():
-        if "archive" in entry and entry["sha256"] == merged[name]["sha256"]:
-            merged[name] = entry
+        previous = current.get(name)
+        if previous is not None:
+            ext.require(previous.get("supplement") == owner, f"Pfad bereits durch anderes Paket belegt: {name}")
+            if previous["sha256"] == entry["sha256"]:
+                continue  # Keep this revision's archive and run receipt.
+        merged[name] = {**entry, "supplement": owner} if owner else entry
     if dest.is_dir() and merged == current:
         print("Lokaler Bestand aktuell.")
         return
@@ -122,16 +137,16 @@ def install(controller, bundle):
         else:
             stage.mkdir(mode=0o700)
             (stage/"code").mkdir(mode=0o700)
-        for name, entry in merged.items():
-            if "archive" not in entry:
+        for name in source["files"]:
+            entry = merged[name]
+            if entry != current.get(name):
                 target = ext.path_in(stage/"code", name)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(ext.path_in(bundle/"code", name), target)
                 target.chmod(0o600)
-                if name not in current or entry != current[name]:
-                    proof = ext.path_in(stage, "runs/" + name + ".json")
-                    proof.unlink(missing_ok=True)
-        record(stage/"register.json", {**source, "files": merged})
+                proof = ext.path_in(stage, "runs/" + name + ".json")
+                proof.unlink(missing_ok=True)
+        record(stage/"register.json", {"schema": 1, "id": identifier, "files": merged})
         ext.require(ext.scan(stage, identifier)["status"] == "OK", "Kopie besteht SHA-Prüfung nicht")
         if not pin.exists():
             write(pin, identifier + "\n")
@@ -151,7 +166,7 @@ def run(controller, root, files, name, limit):
     env = os.environ.copy()
     venv = controller / ".venv/bin"
     env.update(PYTHONDONTWRITEBYTECODE="1", PATH=str(venv)+os.pathsep+env.get("PATH",""), ANSIBLE_CONFIG=str(controller/"ansible.cfg"),
-               ANSIBLE_ROLES_PATH=os.pathsep.join(map(str,[root/"code/roles",controller/"roles"])),
+               ANSIBLE_ROLES_PATH=os.pathsep.join(map(str,[controller/"roles",root/"code/roles"])),
                LOCAL_CONTROLLER_ROOT=str(controller), LOCAL_EXTENSION_ROOT=str(root))
     receipt = ext.path_in(root, "runs/"+name+".json")
     receipt.unlink(missing_ok=True)  # A failed or interrupted retry invalidates previous success.
@@ -229,11 +244,18 @@ def main(argv=None):
     p.add_argument("--controller",type=Path,default=Path("/root/ansible"))
     sub=p.add_subparsers(dest="action",required=True)
     a=sub.add_parser("approve");a.add_argument("bundle",type=Path);a.add_argument("path");a.add_argument("sha256")
+    a = sub.add_parser("new-supplement", help="Leeres Zusatzpaket für einen lokalen Standort anlegen")
+    a.add_argument("parent", type=Path)
+    a.add_argument("target", type=Path)
+    a.add_argument("name")
     a=sub.add_parser("install");a.add_argument("bundle",type=Path)
     a=sub.add_parser("run");a.add_argument("path");a.add_argument("--limit")
     a=sub.add_parser("archive");a.add_argument("path");a.add_argument("--confirm-sha")
     args=p.parse_args(argv)
     os.umask(0o077)
+    if args.action == "new-supplement":
+        new_supplement(args.parent.absolute(), args.target.absolute(), args.name)
+        return
     if args.action=="approve":
         bundle=args.bundle.absolute()
         ext.require(not bundle.is_symlink() and bundle.is_dir(), "Lieferverzeichnis fehlt")

@@ -1,4 +1,4 @@
-Controllerpruefung 1.1.0: Profile, Datei-SHA und optionale Bereinigung.
+Controllerprüfung für Profile, Datei-SHA und optionale Bereinigung.
 Mit `--remote` den freigegebenen Branch `main` über HTTPS prüfen, mit `--apply`
 übernehmen. `--auto` nutzt dieselben Zugangsdaten im Cronlauf. Die lokale
 `versions.txt` enthält pro Modul Version, HTTPS-Origin und optional den Pfad
@@ -8,7 +8,7 @@ und Modus `0600` haben.
 
 ## Lokale SHA-Prüfung
 
-`--only local` zeigt den getrennten Dateibericht. Der Cronlauf mit `--auto` meldet den Status vor dem Git-Abruf. Unbekannte, fehlende oder geänderte lokale Dateien sowie beschädigte Archive blockieren die Übernahme. Die Anleitung für Erstinstallation, Laufbeleg und Archivierung steht im Basis-README.
+`--only local` zeigt den getrennten Dateibericht. Der Cronlauf mit `--auto` meldet den Status vor dem Git-Abruf. Unbekannte, fehlende oder geänderte lokale Dateien sowie beschädigte Archive blockieren die Übernahme. Der Bericht nennt bei einzeln gelieferten Zusätzen den Paketnamen. Ein Namenskonflikt mit einem Basisplaybook oder einer Basisrolle wird als `BASIS_KONFLIKT` gemeldet. Die Anleitung für Erstinstallation, Laufbeleg und Archivierung steht im Basis-README.
 
 ```json
 {
@@ -187,7 +187,7 @@ und Modus `0600` haben.
   "source_hashes": {
     "bin/control.d/update-check.json": "6831f40480f7f59fc7aad9ea2c7870711732800df934ac38539786a97c3a48aa",
     "bin/control.d/update-check.sh": "7cc1fc9287cff92e352ad038519366d7dfd04d4efe99d1c70d980de0c62ac807",
-    "update_check/check.py": "0ca2288a7f3c618a71a3abe68e92b5467dcd4e6ce573f7c66fa4580ed59b8b97",
+    "update_check/check.py": "491f9095e5dcdd05d33d259eb381c8e2d83f6c0ff8fe2624a6eeb2b92cccb6d4",
     "update_check/configure.py": "c6c675198f99121dbd1d6f550481b2a9190bdb25a4c19d5ec45e7da4fb1340d3",
     "update_check/probes.py": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
     "update_check/cleanup.py": "b075547b1bfbfc3483563c2d3e79ff5ec2a5b9901a879b352ed45635228b2a36"

@@ -3,7 +3,11 @@
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "update_check"))
+from staging_manifest import public_library
 
 FORBIDDEN={'group_vars','host_vars','inventory','artifacts','collections','x','_local','logs','reports','.git','.ssh','state'}
 def sha(p):
@@ -13,9 +17,9 @@ def sha(p):
     return h.hexdigest()
 def safe(root,rel):
     p=Path(rel)
-    if p.is_absolute() or '..' in p.parts or '\\' in rel or any(part in FORBIDDEN for part in p.parts):raise ValueError('Kein Codepfad: '+rel)
+    if p.is_absolute() or '..' in p.parts or '\\' in rel or (any(part in FORBIDDEN for part in p.parts) and not public_library(rel)):raise ValueError('Kein Codepfad: '+rel)
     result=(root/p).resolve()
-    if not result.is_relative_to(root) or not result.is_file():raise ValueError('Release-Datei fehlt oder verlaesst Releasewurzel: '+rel)
+    if not result.is_relative_to(root) or (public_library(rel) and result != root/p) or not result.is_file():raise ValueError('Release-Datei fehlt oder verlaesst Releasewurzel: '+rel)
     return result
 
 def main():

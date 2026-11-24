@@ -122,3 +122,103 @@ class LocalExtensionsTest(unittest.TestCase):
         self.install()
         with self.assertRaises(ValueError):
             cli.archive(self.controller,self.root,self.register(),self.name,ext.sha(self.source))
+
+    def supplement(self, slug, name):
+        bundle = self.bundle.parent / slug
+        cli.new_supplement(self.bundle, bundle, slug)
+        path = bundle / "code" / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(self.source.read_bytes())
+        cli.approve(bundle, name, ext.sha(path))
+        return bundle
+
+    def test_additions_survive_site_updates_and_archive(self):
+        self.install()
+        name = "scripts/extra.sh"
+        first = self.supplement("extra", name)
+        second = self.supplement("other", "scripts/other.sh")
+        cli.install(self.controller, first)
+        cli.install(self.controller, second)
+        cli.run(self.controller, self.root, self.register()["files"], name, None)
+        cli.archive(self.controller, self.root, self.register(), name, ext.sha(self.source))
+        archived = self.register()["files"][name]
+        self.source.write_text(self.source.read_text() + "# revision 2\n")
+        self.approve()
+        self.install()
+        cli.install(self.controller, first)
+        self.assertEqual(archived, self.register()["files"][name])
+        self.assertEqual(self.register()["files"]["scripts/other.sh"]["supplement"], "other")
+        self.assertEqual((self.root / "code" / self.name).read_bytes(), self.source.read_bytes())
+        self.assertTrue(ext.passed(ext.inspect(self.controller)))
+        path = first / "code" / name
+        path.write_bytes(self.source.read_bytes())
+        cli.approve(first, name, ext.sha(path))
+        cli.install(self.controller, first)
+        self.assertNotIn("archive", self.register()["files"][name])
+        self.assertFalse((self.root / "runs" / (name + ".json")).exists())
+
+    def test_package_collisions_fail_without_modifying_any_owner(self):
+        self.install()
+        name = "scripts/extra.sh"
+        extra = self.supplement("extra", name)
+        cli.install(self.controller, extra)
+        before = self.register()
+        for bundle in (self.supplement("collision", self.name), self.supplement("other", name)):
+            with self.assertRaisesRegex(ValueError, "anderes Paket"):
+                cli.install(self.controller, bundle)
+        (self.bundle / "code" / name).write_bytes(self.source.read_bytes())
+        cli.approve(self.bundle, name, ext.sha(self.source))
+        with self.assertRaisesRegex(ValueError, "anderes Paket"):
+            self.install()
+        self.assertEqual(before, self.register())
+
+    def test_git_role_and_playbook_names_are_reserved(self):
+        self.install()
+        for name in ("roles/shared/tasks/extra.yml", "playbooks/example.yml"):
+            reserved = self.controller / ("roles/shared" if name.startswith("roles/") else name)
+            reserved.parent.mkdir(parents=True, exist_ok=True)
+            if name.startswith("roles/"):
+                reserved.mkdir()
+            else:
+                reserved.touch()
+            slug = "role" if name.startswith("roles/") else "play"
+            bundle = self.supplement(slug, name)
+            with self.assertRaisesRegex(ValueError, "Controller belegt"):
+                cli.install(self.controller, bundle)
+
+    def test_modified_supplement_blocks_auto_before_checkout(self):
+        self.install()
+        name = "scripts/extra.sh"
+        cli.install(self.controller, self.supplement("extra", name))
+        target = self.root / "code" / name
+        target.write_text("local edit")
+        with patch.object(rollout, "checkout", side_effect=AssertionError("unexpected checkout")):
+            out = io.StringIO()
+            with redirect_stdout(out):
+                self.assertEqual(rollout.main(["--auto", "--json", "--root", str(self.controller)]), 1)
+        report = json.loads(out.getvalue())
+        self.assertFalse(report["applied"])
+        row = next(r for r in report["local_extensions"]["files"] if r["path"] == name)
+        self.assertEqual((row["supplement"], row["status"]), ("extra", "SHA_ABWEICHUNG"))
+        self.assertEqual(target.read_text(), "local edit")
+
+    def test_supplement_requires_registered_matching_site(self):
+        extra = self.supplement("extra", "scripts/extra.sh")
+        with self.assertRaisesRegex(ValueError, "Standortpaket"):
+            cli.install(self.controller, extra)
+        self.install()
+        data = ext.read_json(extra / "register.json")
+        data["id"] = "0" * 32
+        cli.record(extra / "register.json", data)
+        with self.assertRaisesRegex(ValueError, "Falsche Umgebung"):
+            cli.install(self.controller, extra)
+
+    def test_later_delivery_never_deletes_registered_files(self):
+        self.install()
+        data = ext.read_json(self.bundle / "register.json")
+        self.source.unlink()
+        data["files"].clear()
+        cli.record(self.bundle / "register.json", data)
+        self.install()
+        self.assertIn(self.name, self.register()["files"])
+        self.assertTrue((self.root / "code" / self.name).is_file())

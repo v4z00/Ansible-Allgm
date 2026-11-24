@@ -8,7 +8,10 @@
       "feature": "docker",
       "requires": [
         "lib/control/helpers.sh",
-        "scripts/run_docker_update.sh"
+        "scripts/run_docker_update.sh",
+        "playbooks/docker/update_containers.yml",
+        "playbooks/docker/check_docker.yml",
+        "playbooks/docker/check_portainer.yml"
       ],
       "aliases": [
         {

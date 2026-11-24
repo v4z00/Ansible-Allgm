@@ -4,6 +4,10 @@ Docker-Container aktualisieren
 
 Aufruf: `bin/control docker-update [Optionen]`.
 
+Der Update-Lauf prüft den Laufzustand jedes aktualisierten Stacks sowie Quellen und Netze. Eine nicht bestandene Prüfung führt zu einem Fehler. Nur der zusätzliche TCP-Test für Portainer wird mit `portainer_check_enabled: true` in den lokalen Hostvariablen aktiviert.
+
+Für einen ausführenden Lauf begrenzt `--limit` die Hosts. Tagfilter und ein Einstieg mitten im Playbook würden Pflichtprüfungen auslassen und werden abgewiesen. Syntax-, Listen- und Checkmodus dienen der Vorschau.
+
 Vorhandene Kurzformen: `docker-update-run`, `docker-update`.
 
 Feature: docker. Die aktuelle Aktivierung prueft weiterhin Control.
@@ -34,7 +38,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "bin/control.d/docker-update.sh"
   ],
   "source_hashes": {
-    "bin/control.d/docker-update.json": "64972b09739a1b6cc4c8b0e8a29108ee38d746f5e1d0f0de21608e7ab07276e3",
+    "bin/control.d/docker-update.json": "f43ab973642b6db693086ac2a13d82ede8b94185fe50007c22ccd5e0c7fca098",
     "bin/control.d/docker-update.sh": "473e7c7fcf7bc2bb8402d6ac602d0e4c47fba2acd42387a4716cd283553b2cdf"
   }
 }

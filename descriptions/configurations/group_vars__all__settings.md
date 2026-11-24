@@ -1086,6 +1086,38 @@ Vertrauliche Werte werden nicht dokumentiert.
       "required": false,
       "sensitive": false,
       "default": true
+    },
+    {
+      "id": "portainer_check_enabled",
+      "label": "portainer_check_enabled",
+      "type": "boolean",
+      "required": false,
+      "sensitive": false,
+      "description": "Zusätzlichen TCP-Test für Portainer nach dem Pflichtcheck aktivieren."
+    },
+    {
+      "id": "portainer_check_host",
+      "label": "portainer_check_host",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "description": "Optionales TCP-Ziel. Ohne Eintrag gilt die Ansible-Adresse des Docker-Hosts."
+    },
+    {
+      "id": "portainer_check_port",
+      "label": "portainer_check_port",
+      "type": "integer",
+      "required": false,
+      "sensitive": false,
+      "description": "TCP-Port für den optionalen Portainer-Test."
+    },
+    {
+      "id": "portainer_check_timeout",
+      "label": "portainer_check_timeout",
+      "type": "integer",
+      "required": false,
+      "sensitive": false,
+      "description": "Wartezeit für den Portainer-TCP-Test in Sekunden."
     }
   ],
   "constraints": [],
@@ -1093,7 +1125,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "examples/settings/all_settings.example.yml"
   ],
   "source_hashes": {
-    "examples/settings/all_settings.example.yml": "60fb5ad7f27e12d935fdab485d5c14f84acdf3bb9bb9cc51a408d2e843b911e6"
+    "examples/settings/all_settings.example.yml": "6c08dd222fa9c8c19a0d75b747591fa83415e2161094098a430a16c4c0d51779"
   }
 }
 ```

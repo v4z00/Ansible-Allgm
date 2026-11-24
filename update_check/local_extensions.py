@@ -18,6 +18,12 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def supplement_name(value):
+    require(isinstance(value, str) and re.fullmatch(r"[a-z][a-z0-9-]{0,63}", value),
+            "Ungültiger Name für lokales Zusatzpaket")
+    return value
+
+
 def path_in(root, relative):
     require(isinstance(relative, str) and all(PART.fullmatch(p) for p in relative.split("/")),
             "Ungültiger relativer Pfad")
@@ -79,12 +85,25 @@ def archive_proof(root, name, entry):
     return proof
 
 
-def scan(root, expected_id=None):
+def overlaps_base(controller, name):
+    parts = Path(name).parts
+    if "roles" in parts[:-1]:
+        # Ansible also finds roles relative to a playbook. A role owns its whole directory.
+        role = controller / "roles" / parts[parts.index("roles") + 1]
+        if role.exists() or role.is_symlink():
+            return True
+    target = controller / name
+    return target.exists() or target.is_symlink()
+
+
+def scan(root, expected_id=None, controller=None, *, delivery=False):
     register = read_json(path_in(root, "register.json"))
     require(isinstance(register, dict) and register.get("schema") == 1
             and isinstance(register.get("id"), str) and IDENT.fullmatch(register["id"])
             and isinstance(register.get("files"), dict), "Register ungültig")
     require(expected_id in (None, register["id"]), "Register gehört zu einem anderen lokalen Bestand")
+    if "supplement" in register:
+        supplement_name(register["supplement"])
     code = path_in(root, "code")
     require(code.is_dir(), "Lokales Codeverzeichnis fehlt")
     actual = set()
@@ -93,6 +112,9 @@ def scan(root, expected_id=None):
     for current, dirs, names in os.walk(code, onerror=fail):
         for item in dirs + names:
             path = Path(current) / item
+            if delivery and item == ".DS_Store" and item in names:
+                regular(path)  # Finder metadata is never copied into the registered code.
+                continue
             rel = path.relative_to(code).as_posix()
             path_in(code, rel)
             if item in names:
@@ -106,6 +128,8 @@ def scan(root, expected_id=None):
         if name in register["files"]:
             require(isinstance(entry, dict) and isinstance(entry.get("sha256"), str) and HEX.fullmatch(entry["sha256"])
                     and entry.get("cleanup") in (KEEP, ONCE), "Ungültiger Dateieintrag")
+            if "supplement" in entry:
+                row["supplement"] = supplement_name(entry["supplement"])
             row["approved_sha256"] = entry["sha256"]
             if "archive" in entry:
                 archive_proof(root, name, entry)
@@ -115,6 +139,8 @@ def scan(root, expected_id=None):
             else:
                 row["measured_sha256"] = sha(path)
                 status = "OK" if row["measured_sha256"] == entry["sha256"] else "SHA_ABWEICHUNG"
+        if status == "OK" and controller and overlaps_base(controller, name):
+            status = "BASIS_KONFLIKT"
         row["status"] = status
         rows.append(row)
     return {"status": "OK" if all(row["status"] in ("OK","ARCHIVIERT") for row in rows) else "PRUEFBEDARF",
@@ -133,7 +159,7 @@ def inspect(controller):
                     "Eigentümer oder Schreibrechte des lokalen Registers prüfen")
         identifier = regular(pin).read_text().strip()
         require(IDENT.fullmatch(identifier), "Ungültige lokale Registrierung")
-        return scan(root, identifier)
+        return scan(root, identifier, controller)
     except (OSError, ValueError, TypeError, KeyError, AttributeError) as error:
         return {"status": "FEHLER", "error": str(error), "files": []}
 
@@ -145,7 +171,8 @@ def passed(report):
 def display(report):
     print("Lokale Erweiterungen (SHA-256):", report["status"])
     for row in report["files"]:
-        print(" ", row["status"], row["path"])
+        origin = f" [Zusatz {row['supplement']}]" if "supplement" in row else ""
+        print(" ", row["status"], row["path"] + origin)
         if row["status"] == "SHA_ABWEICHUNG":
             print("   Soll:", row["approved_sha256"], "Ist:", row["measured_sha256"])
     if "error" in report:

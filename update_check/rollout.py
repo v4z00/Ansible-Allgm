@@ -86,7 +86,7 @@ def managed_baseline(root):
     return None, legacy
 
 
-def guards(root, combined, temporary):
+def guards(root, combined, temporary, local_files=()):
     stage = temporary / "prospective"
     stage.mkdir()
     install.copy_code(combined, stage)
@@ -97,7 +97,10 @@ def guards(root, combined, temporary):
               if row["severity"] == "error" or row["required"] and row["severity"] == "warning"]
     issues.extend({k: row[k] for k in ("key", "path", "status") if k in row} for row in variables["errors"])
     release = check.load_json(here / "release.json")
-    return issues, check.check_registry(stage, release.get("feature_defaults"), settings_root=root)["issues"]
+    registry_issues = check.check_registry(stage, release.get("feature_defaults"), settings_root=root)["issues"]
+    local_conflicts = [row["path"] for row in local_files if row["status"] == "OK"
+                       and local_extensions.overlaps_base(stage, row["path"])]
+    return issues, registry_issues, local_conflicts
 
 
 def prune(root, days):
@@ -112,7 +115,7 @@ def prune(root, days):
             shutil.rmtree(item)
 
 
-def rollout(root, args):
+def rollout(root, args, local_files=()):
     marker = root / install.VERSIONS
     private_file(marker)
     rows = install.read_versions(marker)
@@ -135,7 +138,7 @@ def rollout(root, args):
             sources[profile] = overlay
             combined = install.merge_overlay(combined, extension,
                                              manifest.load(overlay / "controller-overlay.json"), profile)
-        variable_issues, registry_issues = guards(root, combined, folder)
+        variable_issues, registry_issues, local_conflicts = guards(root, combined, folder, local_files)
         combined[install.VERSIONS] = install.version_source(root, sources, folder)
         candidates = install.update_files(combined)
         plan, token = install.update_plan(root, candidates, profile.lower())
@@ -148,8 +151,9 @@ def rollout(root, args):
             )
         ]
         result = {"profile": profile, "changes": sorted(changes), "conflicts": conflicts,
-                  "variables": variable_issues, "registry": registry_issues, "applied": False}
-        if variable_issues or registry_issues or conflicts:
+                  "variables": variable_issues, "registry": registry_issues,
+                  "local_conflicts": local_conflicts, "applied": False}
+        if variable_issues or registry_issues or conflicts or local_conflicts:
             return 1, result
         if args.apply or args.auto:
             if changes or saved_profile is None:
@@ -195,14 +199,15 @@ def main(argv=None):
                 else:
                     print("Update wegen der lokalen SHA-Prüfung blockiert.")
                 return 1
-            status, result = rollout(root, args)
+            status, result = rollout(root, args, local["files"])
             result["local_extensions"] = local
         if args.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:
             print(f"{result['profile']} main · {len(result['changes'])} Änderungen")
             for label, field in (("Codepfad", "changes"), ("Lokaler Konflikt", "conflicts"),
-                                 ("Variable", "variables"), ("Registry", "registry")):
+                                 ("Variable", "variables"), ("Registry", "registry"),
+                                 ("Pfadkonflikt mit lokaler Erweiterung", "local_conflicts")):
                 for value in result[field]:
                     print(label, value if isinstance(value, str) else " ".join(value.values()))
             for line in result.get("result", ()):

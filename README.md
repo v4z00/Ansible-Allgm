@@ -110,3 +110,35 @@ Der letzte Befehl zeigt die Vorschau. Nach Prüfung der Aufrufer archiviert `pyt
 Für dauerhafte Dateien verwende `# bereinigung: behalten`. In YAML stehen beide Kommentarzeilen direkt unter `---`, in ausführbaren Skripten unter der Shebang. Lokale Playbooks liegen unter `code/playbooks/` und laufen mit `python3 tools/local_extension.py run playbooks/beispiel.yml --limit ZIELGRUPPE`. Jede Änderung zuerst in der privaten Pflegequelle prüfen, mit ihrer neuen SHA freigeben und das Paket erneut installieren. Eine unveränderte archivierte Revision bleibt archiviert.
 
 `bin/control update-check` meldet lokale Erweiterungen in einem eigenen Abschnitt. `--json` enthält dafür `local_extensions`. Der bestehende Cron-Aufruf mit `--auto` prüft die lokalen SHA-256 vor dem Git-Abruf. Fehlende, zusätzliche oder veränderte Dateien blockieren den Wechsel. Ein Controller ohne eingerichtete Erweiterungen arbeitet wie bisher. Cron führt lokale Aufgaben und Archivierungen niemals selbst aus.
+
+## Ein Zusatzplaybook zu einem vorhandenen Standort liefern
+
+Die gemeinsamen Playbooks und Rollen unter `/root/ansible` beziehen ihre Updates aus Git. Für eine standortspezifische Aufgabe ein eigenes Playbook mit eindeutigem Namen schreiben. Es darf die regulären Basisrollen aufrufen. Ein lokales Zusatzpaket trägt dieselbe Standortkennung wie das vorhandene Standortpaket und einen eigenen Namen. Beide können getrennt gepflegt werden.
+
+Im privaten Arbeitsverzeichnis das vorhandene Standortpaket als ersten Parameter angeben. Der zweite Parameter ist ein neuer Ordner. Beispiel für Debian:
+
+```bash
+werkzeug=/root/ansible/tools/local_extension.py
+python3 "$werkzeug" new-supplement ./standort ./zusatz dienstpruefung
+mkdir -p ./zusatz/code/playbooks
+cp ./local_dienst_pruefen.yml ./zusatz/code/playbooks/
+datei=playbooks/local_dienst_pruefen.yml
+sha=$(sha256sum "./zusatz/code/$datei" | cut -d ' ' -f 1)
+python3 "$werkzeug" approve ./zusatz "$datei" "$sha"
+```
+
+Das oben beschriebene Kommentarformat gilt auch für den Zusatz. Das Standortpaket muss auf dem Ziel bereits registriert sein. Den Ordner `zusatz` auf diesen Controller kopieren. Dort als root registrieren und überprüfen:
+
+```bash
+cd /root/ansible
+python3 tools/local_extension.py install /root/eingang/zusatz
+bin/control update-check --only local
+```
+
+Der Checker meldet den Zusatznamen und prüft die Dateien auch beim Cronlauf. Fehlt eine lokale Datei in einer späteren Standortlieferung, bleibt die registrierte Revision erhalten. Nur eine bewusste Lieferung desselben lokalen Pakets kann dessen Datei aktualisieren. Ein fremder Paketpfad oder eine gleichnamige Controllerrolle blockiert die Übernahme. Den fachlichen Lauf separat und mit konkreter Zielauswahl starten, etwa mit `python3 tools/local_extension.py run playbooks/local_dienst_pruefen.yml --limit ZIELHOST`.
+
+## Docker-Update und Portainer
+
+`bin/control docker-update --limit ZIELHOST` wartet bei jedem aktualisierten Compose-Stack auf laufende Dienste oder deren erfolgreichen Healthcheck (bis zu 180 Sekunden je Stack). Danach prüft es die Compose-Quellen und Docker-Netze. Ein Fehler lässt den Lauf fehlschlagen.
+
+Nur der zusätzliche TCP-Test für Portainer ist schaltbar. In den **lokalen Hostvariablen** des betreffenden Docker-Hosts `portainer_check_enabled: true` setzen. Mit `false` oder ohne Eintrag entfällt der Verbindungsversuch. Standardmäßig prüft der Controller die Ansible-Adresse des Hosts auf Port 9443 mit fünf Sekunden Wartezeit. Ein abweichendes Ziel ist über `portainer_check_host`, `portainer_check_port` und `portainer_check_timeout` konfigurierbar. Der Einzelaufruf lautet `.venv/bin/ansible-playbook playbooks/docker/check_portainer.yml --limit ZIELHOST`.

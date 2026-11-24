@@ -7,9 +7,12 @@ Im Quelltext benannte Plays/Aufgaben:
 - Docker Container Updates (Ansible Watchtower)
 - Clean Summary File
 - Find Docker Compose Files
-- Check and Update
+- Pro Stack die Images aktualisieren und bis zu 180 Sekunden auf laufende bzw. gesunde Dienste warten
+- Fehler beim Start oder Healthcheck als fehlgeschlagenes Update melden
 - Prune Images and Log
 - Fetch Report to Management Server
+- Docker-Quellen und Netze prüfen
+- Portainer-TCP-Test für ausdrücklich aktivierte Hosts ausführen
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 
@@ -33,7 +36,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/docker/update_containers.yml"
   ],
   "source_hashes": {
-    "playbooks/docker/update_containers.yml": "d0a7b2e6df7cafc3921fb6672943eeaa87992c3c31c95d34267b7f435865aa0a"
+    "playbooks/docker/update_containers.yml": "513144530ef76378ae40c8757d9375546bab2e3350989650bc620b6859e7b309"
   }
 }
 ```
