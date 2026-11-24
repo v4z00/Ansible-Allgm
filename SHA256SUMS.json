@@ -511,7 +511,7 @@
       "mode": "0644"
     },
     "descriptions/README.txt": {
-      "sha256": "58ac49c536d3e275014d35f14fbe812ff1364bfe955d26e070362c0bd17660e4",
+      "sha256": "a36ba68968b2fffbd1441d4e48e26e391e73a0296d1184d3426a58feebf031ed",
       "mode": "0644"
     },
     "descriptions/commands/apache-certificate.md": {
@@ -595,7 +595,7 @@
       "mode": "0644"
     },
     "descriptions/commands/docker-update.md": {
-      "sha256": "ae832cbbc40f75c6f2e6e27d2f7992957654df8dae163da941ce0e144b22d73c",
+      "sha256": "4f10eb6288ab48ade153b5cf329f270bf16b00e4ffe1a1ad008ac5612286931c",
       "mode": "0644"
     },
     "descriptions/commands/docker-users-export.md": {
@@ -703,7 +703,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "e822018456043c8eb0804ee686589b34aaae108837fdb3237de0418ab1a5a129",
+      "sha256": "d73e49a7d40e00e757dfd9b3fcce5acde391a1ea7a6760fd797754148f6ddd44",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -720,6 +720,14 @@
     },
     "descriptions/configurations/group_vars__all__settings.md": {
       "sha256": "25e397a006c45d3042a501b0eaf1f04983b0a6af403bf63258b3c48e70a836fe",
+      "mode": "0644"
+    },
+    "descriptions/configurations/installation-allgm.md": {
+      "sha256": "e51f85983923d6e221abfdfe4ce5d1356da51832c45946293ba1c7c822176545",
+      "mode": "0644"
+    },
+    "descriptions/configurations/script-library.md": {
+      "sha256": "631ea179da63d0f79a72b48d87754ab406f5c1e59acd37ddec943e046fc5346f",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__base.md": {
