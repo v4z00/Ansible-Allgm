@@ -17,6 +17,7 @@ import tempfile
 import time
 
 import check
+import local_extensions
 import staging_manifest as manifest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
@@ -185,7 +186,17 @@ def main(argv=None):
             if args.rollback:
                 install.rollback_controller(root, args.rollback)
                 return 0
+            local = local_extensions.inspect(root)
+            if not args.json:
+                local_extensions.display(local)
+            if not local_extensions.passed(local):
+                if args.json:
+                    print(json.dumps({"applied": False, "local_extensions": local}))
+                else:
+                    print("Update wegen der lokalen SHA-Prüfung blockiert.")
+                return 1
             status, result = rollout(root, args)
+            result["local_extensions"] = local
         if args.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:

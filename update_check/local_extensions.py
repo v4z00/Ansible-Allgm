@@ -1,0 +1,152 @@
+"""Read-only SHA-256 inventory of separately installed controller extensions."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import stat
+
+HEX = re.compile(r"[0-9a-f]{64}\Z")
+IDENT = re.compile(r"[a-f0-9]{32}\Z")
+PART = re.compile(r"[a-zA-Z0-9_-][a-zA-Z0-9._-]*\Z")
+KEEP = "behalten"
+ONCE = "nach-erfolg-archivieren"
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def path_in(root, relative):
+    require(isinstance(relative, str) and all(PART.fullmatch(p) for p in relative.split("/")),
+            "Ungültiger relativer Pfad")
+    current = root
+    require(not root.is_symlink(), "Verknüpftes Stammverzeichnis")
+    for part in relative.split("/"):
+        current = current / part
+        require(not current.is_symlink(), "Symlink im lokalen Bestand")
+    return current
+
+
+def regular(path):
+    st = path.lstat()
+    require(stat.S_ISREG(st.st_mode) and st.st_nlink == 1, "Reguläre Datei ohne weitere Hardlinks erforderlich")
+    return path
+
+
+def sha(path):
+    digest = hashlib.sha256()
+    with regular(path).open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def read_json(path):
+    def unique(pairs):
+        result = dict(pairs)
+        require(len(result) == len(pairs), "Doppelter JSON-Schlüssel")
+        return result
+    return json.loads(regular(path).read_text(encoding="utf8"), object_pairs_hook=unique)
+
+
+def location(controller):
+    return controller.with_name(controller.name + "-local")
+
+
+def marker(controller):
+    directory = controller / ".local"
+    require(not directory.is_symlink(), "Verknüpftes Zustandsverzeichnis")
+    return directory / "local-extension-id"
+
+
+def checksum_line(value):
+    return value + "  datei\n"
+
+
+def archive_proof(root, name, entry):
+    history = entry["archive"]
+    require(isinstance(history, str) and IDENT.fullmatch(history), "Ungültige Archivkennung")
+    directory = path_in(root, "archiv/" + history)
+    proof = read_json(path_in(directory, "BELEG.json"))
+    expected = entry["sha256"]
+    require(proof["path"] == name and proof["approved_sha256"] == proof["archived_sha256"] == expected
+            and proof["run"]["sha256"] == expected and proof["run"]["exit_code"] == 0
+            and proof["run"]["path"] == name, "Unpassender Archivbeleg")
+    require(regular(path_in(directory, "SHA256SUMS")).read_text() == checksum_line(expected)
+            and sha(path_in(directory, "datei")) == expected, "Archiv-SHA weicht ab")
+    return proof
+
+
+def scan(root, expected_id=None):
+    register = read_json(path_in(root, "register.json"))
+    require(isinstance(register, dict) and register.get("schema") == 1
+            and isinstance(register.get("id"), str) and IDENT.fullmatch(register["id"])
+            and isinstance(register.get("files"), dict), "Register ungültig")
+    require(expected_id in (None, register["id"]), "Register gehört zu einem anderen lokalen Bestand")
+    code = path_in(root, "code")
+    require(code.is_dir(), "Lokales Codeverzeichnis fehlt")
+    actual = set()
+    def fail(error):
+        raise error
+    for current, dirs, names in os.walk(code, onerror=fail):
+        for item in dirs + names:
+            path = Path(current) / item
+            rel = path.relative_to(code).as_posix()
+            path_in(code, rel)
+            if item in names:
+                actual.add(rel)
+    rows = []
+    for name in sorted(actual | set(register["files"])):
+        path = path_in(code, name)
+        entry = register["files"].get(name)
+        row = {"path": name}
+        status = "NICHT_REGISTRIERT"
+        if name in register["files"]:
+            require(isinstance(entry, dict) and isinstance(entry.get("sha256"), str) and HEX.fullmatch(entry["sha256"])
+                    and entry.get("cleanup") in (KEEP, ONCE), "Ungültiger Dateieintrag")
+            row["approved_sha256"] = entry["sha256"]
+            if "archive" in entry:
+                archive_proof(root, name, entry)
+                status = "ARCHIVIERT" if name not in actual else "ARCHIVIERUNG_OFFEN"
+            elif name not in actual:
+                status = "FEHLT"
+            else:
+                row["measured_sha256"] = sha(path)
+                status = "OK" if row["measured_sha256"] == entry["sha256"] else "SHA_ABWEICHUNG"
+        row["status"] = status
+        rows.append(row)
+    return {"status": "OK" if all(row["status"] in ("OK","ARCHIVIERT") for row in rows) else "PRUEFBEDARF",
+            "files": rows}
+
+
+def inspect(controller):
+    try:
+        root = location(controller)
+        pin = marker(controller)
+        if not root.exists() and not root.is_symlink() and not pin.exists() and not pin.is_symlink():
+            return {"status": "NICHT_EINGERICHTET", "files": []}
+        for path in (root, regular(pin), regular(path_in(root, "register.json"))):
+            attributes = path.lstat()
+            require(attributes.st_uid == os.geteuid() and not (attributes.st_mode & 0o022),
+                    "Eigentümer oder Schreibrechte des lokalen Registers prüfen")
+        identifier = regular(pin).read_text().strip()
+        require(IDENT.fullmatch(identifier), "Ungültige lokale Registrierung")
+        return scan(root, identifier)
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as error:
+        return {"status": "FEHLER", "error": str(error), "files": []}
+
+
+def passed(report):
+    return report["status"] in ("OK", "NICHT_EINGERICHTET")
+
+
+def display(report):
+    print("Lokale Erweiterungen (SHA-256):", report["status"])
+    for row in report["files"]:
+        print(" ", row["status"], row["path"])
+        if row["status"] == "SHA_ABWEICHUNG":
+            print("   Soll:", row["approved_sha256"], "Ist:", row["measured_sha256"])
+    if "error" in report:
+        print(" ", report["error"])

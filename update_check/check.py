@@ -9,12 +9,13 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from staging_manifest import public_library
+import local_extensions
 try:
     import yaml
 except ImportError:
     raise SystemExit('FEHLER: Python-Paket PyYAML fehlt. Den Python-Interpreter der Ansible-Umgebung verwenden.')
 
-CHECKER_VERSION = '1.1.0'
+CHECKER_VERSION = '1.2.0'
 VERSION_RE = re.compile(r'(?<![A-Za-z0-9])\d+\.\d+\.\d+(?:[a-zA-Z][A-Za-z0-9.-]*)?')
 class AuditError(Exception): pass
 class UniqueLoader(yaml.SafeLoader): pass
@@ -407,7 +408,7 @@ def audit(root,here,only=None):
         if only==manifest['id'] or (only is None and live_manifest is None):
             report['extensions'].append(check_component(root,manifest,features))
     if only is None or only=='registry': report['registry']=check_registry(root,features)
-    known={x['id'] for x in report['components']+extension_manifests}|{'settings','registry','cleanup'}
+    known={x['id'] for x in report['components']+extension_manifests}|{'settings','registry','cleanup','local'}
     if only and only not in known: raise AuditError('UNBEKANNTE_KOMPONENTE')
     code_ok=bool(report['components']) and all(c['status']=='OK' for c in report['components'])
     report['controller_release_verified']=only is None and code_ok and all(c['status']=='OK' for c in report['extensions'])
@@ -423,10 +424,15 @@ def audit(root,here,only=None):
             plan=load_json(here/'cleanup_plan.json');report['cleanup']=module.preview(root,plan,external=False)
             report['cleanup']['receipt']=module.receipt_status(root,plan)
         except module.CleanupError:raise AuditError('BEREINIGUNGSPLAN_ODER_PROJEKT_UNGUELTIG') from None
+    if only in (None, 'local'):
+        report['local_extensions'] = local_extensions.inspect(root)
+        bad = bad or not local_extensions.passed(report['local_extensions'])
     report['status']='PRUEFBEDARF' if bad else 'OK'
     return report
 
 def display(report,details,color='auto'):
+    if 'local_extensions' in report:
+        local_extensions.display(report['local_extensions'])
     import os
     enabled=color=='always' or (color=='auto' and sys.stdout.isatty() and 'NO_COLOR' not in os.environ)
     palette={'ok':'32','info':'36','warning':'33','error':'31'}

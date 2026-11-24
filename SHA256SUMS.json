@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67",
+      "sha256": "1f930dd1f133c1f97a94fe3acb8db34372cf4c01ffdb2b3ff4ca72f9494121e9",
       "mode": "0644"
     },
     "artifacts/script-library/lib/common/hm_check_mount.sh": {
@@ -703,7 +703,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "f6dc2c587714de01256d8f643231a686886664a9b0f1020f2bdb247626dc3c07",
+      "sha256": "4171a09e369f64af16fc4b2765b0339ffd0f25bd38083acdf1845b9ed2133de0",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -1506,6 +1506,14 @@
       "sha256": "5ffcc7081875a976c94768665ad63deb60c100f7ccda1e9bf7a5e007e0b42096",
       "mode": "0644"
     },
+    "tools/local_callbacks/extension_receipt.py": {
+      "sha256": "dba3e0b117c848b03ab6f2b487d27da3fd91f09ea7c804c827f64879225e7990",
+      "mode": "0644"
+    },
+    "tools/local_extension.py": {
+      "sha256": "9a85046719430d57b9ce4d458205c6ef4d8e3b01b2dcdb506446190f9c9dc1d4",
+      "mode": "0644"
+    },
     "tools/pipe_install.py": {
       "sha256": "a787639f1efdb397f0538f129f1fb6681924e29a3fa1582d475ee40f7a843d82",
       "mode": "0644"
@@ -1519,11 +1527,11 @@
       "mode": "0644"
     },
     "update_check/VERSION.txt": {
-      "sha256": "1575e1af4a95f12f70b4ee6a6adce8160953d93ea17dc2611b90883ccc3ad3b8",
+      "sha256": "1e5b51cde515396a9fa762909cf8ca6584ccc564b325d2eebeea76175fe95c4d",
       "mode": "0644"
     },
     "update_check/check.py": {
-      "sha256": "0772f74e4c72ce0617c61b1080e13e86657cb791cc4b3bcbb696d6c34740b94e",
+      "sha256": "0ca2288a7f3c618a71a3abe68e92b5467dcd4e6ce573f7c66fa4580ed59b8b97",
       "mode": "0644"
     },
     "update_check/check.sh": {
@@ -1543,7 +1551,11 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "913157ec4f382e48ad476a710d87baf1f3a7598622b0e5e266a5cd39a1718674",
+      "sha256": "1400b55745d0925dae2040e227cbfa224972dc3baf9026365d8571f36b5303fb",
+      "mode": "0644"
+    },
+    "update_check/local_extensions.py": {
+      "sha256": "3fd3b84c4d4cd645cdc3c972b56cead8ca9078f21f532860bc95d8127f70ef6d",
       "mode": "0644"
     },
     "update_check/manifests/bootstrap.json": {
@@ -1551,7 +1563,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "41890d6412b7dea52a37d5e5f8a276b66e77b76dea44ebfea1a6ef14ba9cd555",
+      "sha256": "c3c59ae53b5d7b32c57b0000cdaf5f6deed34bbe380801de00cf4ec55a0d91a1",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1563,7 +1575,7 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "e0d4a9d2bc7bc6ba2b972f29243c91232c8a0fcf05d7b1369a1613808a4fa757",
+      "sha256": "86551888ca82c152e44fb9b36c295f58ba11eec2a9b996e25190edeb1a04c7a4",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1575,11 +1587,11 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "c03aba06f7b86d4aad30f603c434d42ba5ff4b5acadf3247525a94b84e1e72e6",
+      "sha256": "b9344c14b73762eaba7bf0331e15ba5d8b2fd7d6fc84f296cc12c5ffa4dad219",
       "mode": "0644"
     },
     "update_check/rollout.py": {
-      "sha256": "dea940bbbe2fefee6e7446e9c5a167da1f59ec929b21415e409672d8dda8f9a3",
+      "sha256": "0fb0bd49202e711e2f0ed3372e8af6c3ed7ed1ed2cfb33e8f6d5f501b56cb3da",
       "mode": "0644"
     },
     "update_check/settings_catalog.json": {
@@ -1600,6 +1612,10 @@
     },
     "update_check/tests/test_https.py": {
       "sha256": "46eb139201cab01990b68b13faa040e87317755a4d15c28eae76af64c6ee2d52",
+      "mode": "0644"
+    },
+    "update_check/tests/test_local_extensions.py": {
+      "sha256": "7c674364f73194a5294ba6722d00478ffd163fc41f16cdf5a4114a64e3549f80",
       "mode": "0644"
     },
     "update_check/tests/test_pipe_install.py": {

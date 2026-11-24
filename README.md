@@ -1,6 +1,6 @@
 Hallöchen, das ist mein Repo für Ansible auf Debian. Hier findest du die Rollen, den Update-Check und die Bash-Funktionen, auf denen meine weiteren Ansible-Projekte aufbauen.
 
-Ich entwickle dieses Projekt mit KI-Unterstützung. Ich programmiere selbst. Für die vielen Details zwischen einer Idee und einem getesteten Update fehlt mir im Alltag oft die Zeit. Die KI hilft mir beim Schreiben und Testen. Welche Änderungen ich übernehme, entscheide ich selbst.
+Ich programmiere selbst nur selten. Die Ideen und Anforderungen kommen von mir. Beim Schreiben und Testen des Codes hilft mir KI. Welche Änderungen ich übernehme, entscheide ich selbst.
 
 Bitte probier die Playbooks zuerst mit Testdaten aus und prüfe vor dem Ausführen die Zielhosts. Wenn dir ein Fehler auffällt oder du eine einfachere Lösung kennst, schreib mir gern ein Issue oder schick einen Pull Request. Ich schaue mir die Vorschläge an und übernehme, was zum Projekt passt.
 
@@ -73,3 +73,40 @@ curl -fsSLo hm_log.sh https://raw.githubusercontent.com/v4z00/Ansible-Allgm/main
 ```
 
 Die SHA-256-Werte jeder Datei stehen in `SHA256SUMS.json`.
+
+## Aufbau und lokale Erweiterungen
+
+| Pfad | Zweck |
+|---|---|
+| `bin/control` | Einstieg für Betrieb und Update-Check |
+| `playbooks/`, `roles/` | Gemeinsame, über Git aktualisierte Abläufe |
+| `tools/local_extension.py` | Lokale Dateien freigeben, installieren, ausführen und archivieren |
+| `/root/ansible-local/code/` | Separat installierte Rollen, Playbooks, Skripte und lokale Variablendateien |
+| `/root/ansible-local/register.json` | Freigegebene Pfade und SHA-256 |
+| `/root/ansible-local/runs/`, `archiv/` | Lokale Ausführungs- und Archivbelege |
+
+Nach der oben beschriebenen Basisinstallation kann ein eigenes Erweiterungspaket hinzukommen. Lege es außerhalb eines Git-Checkouts an. Für ein erstes Beispiel auf einem Debian-Controller als root:
+
+```bash
+mkdir -p /root/mein-paket/code/scripts
+cat > /root/mein-paket/code/scripts/beispiel.sh <<'SH'
+#!/bin/bash
+# manuell-integriert: ja
+# bereinigung: nach-erfolg-archivieren
+echo 'Lokale Beispielaufgabe abgeschlossen.'
+SH
+cd /root/ansible
+datei=scripts/beispiel.sh
+sha=$(sha256sum "/root/mein-paket/code/$datei" | cut -d ' ' -f 1)
+python3 tools/local_extension.py approve /root/mein-paket "$datei" "$sha"
+python3 tools/local_extension.py install /root/mein-paket
+bin/control update-check --only local
+python3 tools/local_extension.py run "$datei"
+python3 tools/local_extension.py archive "$datei"
+```
+
+Der letzte Befehl zeigt die Vorschau. Nach Prüfung der Aufrufer archiviert `python3 tools/local_extension.py archive "$datei" --confirm-sha "$sha"` diese Dateiversion. Im ausgegebenen Archivordner liegen die Datei, `BELEG.json` mit freigegebenem SHA-256, gemessenem Archiv-SHA und Laufnachweis sowie `SHA256SUMS`. Dort prüft `sha256sum -c SHA256SUMS` die archivierten Bytes.
+
+Für dauerhafte Dateien verwende `# bereinigung: behalten`. In YAML stehen beide Kommentarzeilen direkt unter `---`, in ausführbaren Skripten unter der Shebang. Lokale Playbooks liegen unter `code/playbooks/` und laufen mit `python3 tools/local_extension.py run playbooks/beispiel.yml --limit ZIELGRUPPE`. Jede Änderung zuerst in der privaten Pflegequelle prüfen, mit ihrer neuen SHA freigeben und das Paket erneut installieren. Eine unveränderte archivierte Revision bleibt archiviert.
+
+`bin/control update-check` meldet lokale Erweiterungen in einem eigenen Abschnitt. `--json` enthält dafür `local_extensions`. Der bestehende Cron-Aufruf mit `--auto` prüft die lokalen SHA-256 vor dem Git-Abruf. Fehlende, zusätzliche oder veränderte Dateien blockieren den Wechsel. Ein Controller ohne eingerichtete Erweiterungen arbeitet wie bisher. Cron führt lokale Aufgaben und Archivierungen niemals selbst aus.
