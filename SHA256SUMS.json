@@ -986,6 +986,10 @@
       "sha256": "bc8a42249c4c37a111f7974043e2c1acf58b5b49c7b9f5341187f1592213621b",
       "mode": "0644"
     },
+    "descriptions/releases/allgm.md": {
+      "sha256": "a9d53b1c0c303f0219aae60ac0fc1ae363feceb3aaf6be23c0c0eb9ad7283c03",
+      "mode": "0644"
+    },
     "descriptions/releases/general-1.0.0.txt": {
       "sha256": "38478bc3052e83f2a15c2801e28976ace34de4dc1577a5ce9cd7e8547dd03587",
       "mode": "0644"

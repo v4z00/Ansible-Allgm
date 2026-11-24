@@ -4,6 +4,8 @@ Beim Programmieren hilft mir KI. Wenn dir ein Fehler auffällt oder du etwas ein
 
 Der Projektcode steht unter der [MIT-Lizenz](LICENSE).
 
+[Changelog](descriptions/releases/allgm.md) · [GitHub-Releases](https://github.com/v4z00/Ansible-Allgm/releases)
+
 Ich entwickle und teste auf `staging`. Freigegebene Änderungen kommen nach `main`.
 
 - [Auf Debian installieren oder einen bestehenden Controller übernehmen](descriptions/configurations/installation-allgm.md)
