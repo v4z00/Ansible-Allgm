@@ -1,4 +1,4 @@
-"""GitHub main over HTTPS for controller checkouts and the first private clone."""
+"""GitHub branches over HTTPS for controller checkouts and the first private clone."""
 
 import argparse
 import os
@@ -65,6 +65,12 @@ def credential(operation):
 
 
 def clone_main(url, target, token_file="", controller=DEFAULT_ROOT):
+    clone_branch(url, target, "main", token_file, controller)
+
+
+def clone_branch(url, target, branch, token_file="", controller=DEFAULT_ROOT):
+    if branch not in ("main", "staging"):
+        raise ValueError("Unbekannter Update-Branch")
     https_url(url)
     target = target.absolute()
     if token_file:
@@ -86,15 +92,19 @@ def clone_main(url, target, token_file="", controller=DEFAULT_ROOT):
             cmd += ["-c", "credential.useHttpPath=true", "-c", "credential.helper=!exec " + helper]
             env.update(CONTROLLER_GIT_URL=url, CONTROLLER_TOKEN_FILE=token_file,
                        CONTROLLER_ROOT=str(controller.resolve()))
-        cmd += ["clone", "--quiet", "--no-tags", "--single-branch", "--branch", "main",
+        cmd += ["clone", "--quiet", "--no-tags", "--single-branch", "--branch", branch,
                 "--depth", "1", "--", url, str(target)]
         try:
             result = subprocess.run(cmd, cwd=home, env=env, stdin=subprocess.DEVNULL,
                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
         except (OSError, subprocess.TimeoutExpired):
-            raise ValueError("GitHub main konnte über HTTPS nicht geladen werden") from None
+            raise ValueError(f"GitHub {branch} konnte über HTTPS nicht geladen werden") from None
         if result.returncode:
-            raise ValueError("GitHub main konnte über HTTPS nicht geladen werden. Repo-URL und Leseberechtigung prüfen.")
+            raise ValueError(f"GitHub {branch} konnte über HTTPS nicht geladen werden. Branch, Repo-URL und Leseberechtigung prüfen.")
+        ref = subprocess.run(["git", "-C", str(target), "symbolic-ref", "-q", "HEAD"], env=env,
+                             capture_output=True, timeout=15)
+        if ref.returncode or ref.stdout.strip() != f"refs/heads/{branch}".encode():
+            raise ValueError(f"GitHub-Branch {branch} fehlt")
 
 
 def main():

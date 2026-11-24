@@ -365,7 +365,7 @@ def check_registry(root,features=None,settings_root=None):
 def audit(root,here,only=None):
     installed = root / ".controller-install.json"
     receipt = load_json(installed) if installed.is_file() and not installed.is_symlink() else {}
-    live_manifest = receipt.get("files") if receipt.get("schema") == 1 and receipt.get("source") == "main" else None
+    live_manifest = receipt.get("files") if receipt.get("schema") == 1 and receipt.get("source") in ("main", "staging") else None
     if live_manifest is None:
         seal=load_json(here/'integrity.json')
         for rel,wanted in seal.get('files',{}).items():
@@ -385,10 +385,10 @@ def audit(root,here,only=None):
     report['features']={k:('aktiv' if v is True else 'deaktiviert' if v is False else 'ungeprueft') for k,v in features.items()}
     if live_manifest is not None:
         report['controller_profile']=receipt['profile']
-        report['expected_controller_release']='main'
+        report['expected_controller_release']=receipt['source']
         if only in (None,'controller_basis'):
             report['components'].append(check_component(root,{
-                'schema':1,'id':'controller_basis','version':'main','files':live_manifest,
+                'schema':1,'id':'controller_basis','version':receipt['source'],'files':live_manifest,
             }))
     else:
         for rel in release['manifests']:
@@ -490,10 +490,17 @@ def display(report,details,color='auto'):
 
 
 def main():
-    if any(arg in {"--remote", "--apply", "--auto", "--rollback"} for arg in sys.argv[1:]):
+    if "--versions" in sys.argv[1:]:
+        from rollout import show_versions
+        parser = argparse.ArgumentParser(description="Installierte Module und Versionen anzeigen")
+        parser.add_argument("--versions", action="store_true")
+        parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+        return show_versions(parser.parse_args().root)
+    if any(arg in {"--remote", "--apply", "--auto", "--rollback", "--staging"} for arg in sys.argv[1:]):
         import rollout
         return rollout.main(sys.argv[1:])
-    parser=argparse.ArgumentParser(description=__doc__)
+    parser=argparse.ArgumentParser(description=__doc__,
+        epilog="Git-Update: --remote für main, --staging für staging. Mit --apply übernehmen. --auto verwendet immer main.")
     parser.add_argument('--root',type=Path,default=Path(__file__).resolve().parent.parent)
     parser.add_argument('--json',action='store_true',help='Strukturierter Bericht ohne Settings-/Credentialwerte')
     parser.add_argument('--details',action='store_true',help='Auch passende und optionale Settingsfelder auflisten')

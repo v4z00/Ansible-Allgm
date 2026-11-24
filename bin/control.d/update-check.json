@@ -23,6 +23,18 @@
         {
           "name": "update-check",
           "args": []
+        },
+        {
+          "name": "ansible-Version",
+          "args": [
+            "--versions"
+          ]
+        },
+        {
+          "name": "ansible-version",
+          "args": [
+            "--versions"
+          ]
         }
       ]
     }

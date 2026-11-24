@@ -1,2 +1,3 @@
 # Modul|Version|Repo-URL|Token-Dateipfad
-Allgm|0.2.1|https://github.com/v4z00/Ansible-Allgm.git|
+# Lokaler Stand: main 0.2.2, staging s0.2.2. Pro Modul gibt es eine Zeile.
+Allgm|s0.2.2|https://github.com/v4z00/Ansible-Allgm.git|

@@ -41,7 +41,7 @@ def registry():
     for name, command in commands.items():
         for shortcut in command.get('aliases', []):
             alias = shortcut['name']
-            if not NAME.fullmatch(alias) or alias in aliases or alias in BUILTINS:
+            if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9-]*', alias) or alias in aliases or alias in BUILTINS:
                 raise ValueError('Ungueltiger oder doppelter Shortcut: ' + alias)
             if alias in commands and alias != name:
                 raise ValueError('Shortcut kollidiert mit Befehl: ' + alias)

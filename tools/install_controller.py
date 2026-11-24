@@ -40,6 +40,7 @@ VERSIONS = "versions.txt"
 VERSION_HEADER = "# Modul|Version|Repo-URL|Token-Dateipfad"
 VERSION_HINT = "# HTTPS: öffentlich mit leerem vierten Feld, privat mit absolutem Token-Dateipfad (0600)."
 VERSION_VALUE = re.compile(r"[0-9]+(?:\.[0-9]+)+(?:[-+][A-Za-z0-9.-]+)?\Z")
+STAGING_VERSION = re.compile(r"s[0-9]+\.[0-9]+\.[0-9]+\Z")
 VERSION_NAME = re.compile(r"[A-Za-z][A-Za-z0-9_-]*\Z")
 
 
@@ -57,7 +58,7 @@ def parse_versions(lines):
             continue
         parts = line.split("|")
         require(len(parts) == 4 and VERSION_NAME.fullmatch(parts[0])
-                and VERSION_VALUE.fullmatch(parts[1]), f"Ungültige Zeile in {VERSIONS}")
+                and (VERSION_VALUE.fullmatch(parts[1]) or STAGING_VERSION.fullmatch(parts[1])), f"Ungültige Zeile in {VERSIONS}")
         name, version, url, token_file = parts
         name = {"allgm": "Allgm", "homelab": "Homelab", "nxts3": "NXTS3"}.get(name.casefold(), name)
         require(name.casefold() not in {n.casefold() for n in rows}, f"Doppeltes Modul in {VERSIONS}")
@@ -73,9 +74,15 @@ def module_url(name):
     return f"https://github.com/v4z00/Ansible-{name}.git"
 
 
-def version_for(source):
+def version_for(source, branch=None):
     value = (source / "VERSION.txt").read_text().strip()
     require(VERSION_VALUE.fullmatch(value), "VERSION.txt enthält keine gültige Version")
+    if branch is None and (source / ".git").exists():
+        ref = subprocess.run(["git", "-C", str(source), "symbolic-ref", "-q", "HEAD"], capture_output=True)
+        branch = "staging" if ref.stdout.strip() == b"refs/heads/staging" else "main"
+    if branch == "staging":
+        require(STAGING_VERSION.fullmatch("s" + value), "Staging benötigt eine dreiteilige Version x.x.x")
+        return "s" + value
     return value
 
 
@@ -89,7 +96,7 @@ def remote_for(source):
     return github_https.legacy_https(url) or github_https.https_url(url)
 
 
-def version_source(dest, sources, scratch, *, token_file=None, prompt=False):
+def version_source(dest, sources, scratch, *, token_file=None, prompt=False, branch=None):
     lines = version_lines(dest / VERSIONS, optional=True)
     rows = parse_versions(lines)
     changes = {}
@@ -115,7 +122,7 @@ def version_source(dest, sources, scratch, *, token_file=None, prompt=False):
         else:
             require(not saved_path, f"{name} wird anonym geladen. Viertes Feld in versions.txt leeren.")
             selected = ""
-        changes[name.casefold()] = "|".join((name, version_for(path), url, selected))
+        changes[name.casefold()] = "|".join((name, version_for(path, branch), url, selected))
     output = [] if VERSION_HEADER in lines else [VERSION_HEADER, VERSION_HINT]
     for line in lines:
         output.append(changes.pop(line.partition("|")[0].casefold(), line))
@@ -314,17 +321,20 @@ def receipt_hash(dest):
     return sha(path) if path.exists() else None
 
 
-def update_plan(dest, files, profile):
+def update_plan(dest, files, profile, retired=()):
     data = {"schema": 1, "target": str(dest.resolve()), "profile": profile,
             "previous_receipt": receipt_hash(dest), "files": {}}
-    for rel, src in sorted(files.items()):
+    for rel in sorted(files.keys() | set(retired)):
+        src = files.get(rel)
         location = require_safe(dest, rel)
         require(not location.exists() or location.is_file(),
                 f"Codepfad kollidiert mit lokaler Ablage: {rel}")
         before = sha(location) if location.exists() else None
-        after = sha(src)
+        if src is None and before is None:
+            continue
+        after = sha(src) if src is not None else None
         before_mode = stat.S_IMODE(location.stat().st_mode) if before is not None else None
-        after_mode = stat.S_IMODE(src.stat().st_mode)
+        after_mode = stat.S_IMODE(src.stat().st_mode) if src is not None else None
         if before != after or before_mode is None or (before_mode ^ after_mode) & (0o777 if rel == VERSIONS else 0o100):
             data["files"][rel] = {
                 "before": before, "after": after,
@@ -368,7 +378,7 @@ def put_files(dest, pending, restore, validate=None):
         raise
 
 
-def update_controller(dest, all_files, profile, accepted, receipt_source=None):
+def update_controller(dest, all_files, profile, accepted, receipt_source=None, retired=()):
     require(dest.is_dir() and (dest / "bin/control").is_file(),
             "Update erwartet einen vorhandenen Ansible-Controller mit bin/control")
     require(profile == "nxts3" or not (dest / "roles/nxts3").is_dir(),
@@ -378,7 +388,7 @@ def update_controller(dest, all_files, profile, accepted, receipt_source=None):
         or (dest / "roles/openwrt_operations").exists()),
         "Homelab-Bestand benötigt beim Update die geprüfte Homelab-Erweiterung")
     files = update_files(all_files)
-    plan, token = update_plan(dest, files, profile)
+    plan, token = update_plan(dest, files, profile, retired)
     changed = plan["files"]
     if not changed and not receipt_source:
         print("Der verwaltete Code entspricht bereits dem Staging-Stand.")
@@ -386,7 +396,9 @@ def update_controller(dest, all_files, profile, accepted, receipt_source=None):
     if not accepted:
         for rel, hashes in changed.items():
             before = hashes["before"]
-            if before is None:
+            if hashes["after"] is None:
+                print(f"ENTFERNEN {rel}  {before[:12]}")
+            elif before is None:
                 print(f"NEU       {rel}")
             else:
                 print(f"ERSETZEN  {rel}  {before[:12]} → {hashes['after'][:12]}  {hashes['before_mode']:04o} → {hashes['after_mode']:04o}")
@@ -406,24 +418,30 @@ def update_controller(dest, all_files, profile, accepted, receipt_source=None):
             old[RECEIPT] = dest / RECEIPT
         copy_code(old, saved)
         copy_code(old, restore)
-        copy_code({rel: files[rel] for rel in changed}, new)
+        copy_code({rel: files[rel] for rel in changed if rel in files}, new)
         for rel, hashes in changed.items():
-            require(sha(new / rel) == hashes["after"]
-                    and stat.S_IMODE((new / rel).stat().st_mode) == hashes["after_mode"]
-                    and (hashes["before"] is None or sha(saved / rel) == hashes["before"]),
-                    f"Datei hat sich während der Vorbereitung geändert: {rel}")
-        require(update_plan(dest, files, profile)[1] == token, "Bestand wurde während der Vorbereitung geändert")
+            if hashes["after"] is not None:
+                require(sha(new / rel) == hashes["after"]
+                        and stat.S_IMODE((new / rel).stat().st_mode) == hashes["after_mode"],
+                        f"Kopie weicht vom Updateplan ab: {rel}")
+            if hashes["before"] is not None:
+                require(sha(saved / rel) == hashes["before"],
+                        f"Datei hat sich während der Vorbereitung geändert: {rel}")
+        require(update_plan(dest, files, profile, retired)[1] == token, "Bestand wurde während der Vorbereitung geändert")
         write_receipt(new, profile, {rel: sha(src) for rel, src in files.items()}, receipt_source)
         def verify_installed():
             for rel, hashes in changed.items():
                 target = dest / rel
+                if hashes["after"] is None:
+                    require(not target.exists() and not target.is_symlink(), f"Datei noch vorhanden: {rel}")
+                    continue
                 require(sha(target) == hashes["after"]
                         and stat.S_IMODE(target.stat().st_mode) == hashes["after_mode"],
                         f"Kontrolle nach Installation fehlgeschlagen: {rel}")
         plan["installed_receipt"] = sha(new / RECEIPT)
         (saved / "plan.json").write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n")
         os.rename(saved, backups / name)
-        put_files(dest, {rel: new / rel for rel in (*changed, RECEIPT)},
+        put_files(dest, {rel: new / rel if rel in files or rel == RECEIPT else None for rel in (*changed, RECEIPT)},
                   {rel: restore / rel for rel in old}, verify_installed)
     print(f"Aktualisiert: {len(changed)} Codepfade. Sicherung: {backups / name}")
     print(f"Rückweg: --rollback {name}")
@@ -446,11 +464,14 @@ def rollback_controller(dest, name):
         current = {}
         original = {}
         for rel, hashes in plan["files"].items():
-            target = require_safe(dest, rel, file_required=True)
-            require(sha(target) == hashes["after"]
-                    and stat.S_IMODE(target.stat().st_mode) == hashes["after_mode"],
-                    f"Datei seit Update verändert: {rel}")
-            current[rel] = target
+            target = require_safe(dest, rel)
+            if hashes["after"] is None:
+                require(not target.exists(), f"Datei seit Update wieder angelegt: {rel}")
+            else:
+                require(target.is_file() and sha(target) == hashes["after"]
+                        and stat.S_IMODE(target.stat().st_mode) == hashes["after_mode"],
+                        f"Datei seit Update verändert: {rel}")
+                current[rel] = target
             if hashes["before"] is not None:
                 source = require_safe(backup, rel, file_required=True)
                 require(sha(source) == hashes["before"]
@@ -465,7 +486,7 @@ def rollback_controller(dest, name):
             original[RECEIPT] = source
         copy_code(current, revert)
         copy_code(original, saved)
-        put_files(dest, {rel: saved / rel if rel in original else None for rel in current},
+        put_files(dest, {rel: saved / rel if rel in original else None for rel in (*plan["files"], RECEIPT)},
                   {rel: revert / rel for rel in current})
     print(f"Controller-Code aus {name} zurückgesetzt.")
 
