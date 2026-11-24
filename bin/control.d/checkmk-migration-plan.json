@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "checkmk-migration-plan",
+      "description": "CheckMK-Altbestand interaktiv dem Inventory zuordnen",
+      "handler": "bin/control.d/checkmk-migration-plan.sh",
+      "feature": "checkmk",
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/plan_checkmk_migration.py"
+      ],
+      "aliases": [
+        {
+          "name": "checkmk-migration-plan",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

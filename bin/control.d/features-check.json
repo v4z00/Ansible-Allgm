@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "features-check",
+      "description": "Feature-Schalter und lokale Umgebung pruefen; keine Settings aendern",
+      "handler": "bin/control.d/features-check.sh",
+      "feature": null,
+      "requires": [
+        "scripts/feature_audit.py",
+        "scripts/feature_catalog.json"
+      ],
+      "aliases": [
+        {
+          "name": "features-check",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

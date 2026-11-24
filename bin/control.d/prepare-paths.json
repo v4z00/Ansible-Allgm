@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "prepare-paths",
+      "description": "Skript- und Backup-Pfade pruefen",
+      "handler": "bin/control.d/prepare-paths.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/prepare_paths.yml"
+      ],
+      "aliases": [
+        {
+          "name": "prepare-paths",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

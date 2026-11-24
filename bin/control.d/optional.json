@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "optional",
+      "description": "Optionale Standortdienste ausrollen",
+      "handler": "bin/control.d/optional.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/optional.yml"
+      ],
+      "aliases": [
+        {
+          "name": "optional",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

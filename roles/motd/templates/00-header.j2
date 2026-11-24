@@ -1,0 +1,21 @@
+#!/bin/sh
+# Managed by Ansible - {{ site_name }} MOTD
+
+if [ -t 1 ] && [ "${TERM:-dumb}" != "dumb" ]; then
+  cyan='\033[1;36m'
+  white='\033[1;37m'
+  reset='\033[0m'
+else
+  cyan=''
+  white=''
+  reset=''
+fi
+
+printf '\n%b+--------------------------------------------------------------+%b\n' "$cyan" "$reset"
+printf '%b|%b  %b%-58.58s%b  %b|%b\n' "$cyan" "$reset" "$white" '{{ site_name | upper }} // SYSTEM STATUS' "$reset" "$cyan" "$reset"
+printf '%b|%b  %-58.58s  %b|%b\n' "$cyan" "$reset" 'Host: {{ ansible_hostname }}' "$cyan" "$reset"
+printf '%b|%b  %-58.58s  %b|%b\n' "$cyan" "$reset" 'Verwaltet durch: {{ site_managed_by }}' "$cyan" "$reset"
+{% if motd_show_hap | default(false) | bool %}
+printf '%b|%b  %-58.58s  %b|%b\n' "$cyan" "$reset" 'HAP: {{ motd_hap }}' "$cyan" "$reset"
+{% endif %}
+printf '%b+--------------------------------------------------------------+%b\n\n' "$cyan" "$reset"

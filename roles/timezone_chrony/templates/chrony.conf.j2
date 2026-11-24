@@ -1,0 +1,17 @@
+# Managed by Ansible
+{% if chrony_prefer_default_gateway | default(false) | bool and ansible_default_ipv4.gateway | default('') | length > 0 %}
+server {{ ansible_default_ipv4.gateway }} iburst prefer
+{% else %}
+{% for ntp_pool in chrony_ntp_pools | default([]) %}
+pool {{ ntp_pool }} iburst{{ ' prefer' if loop.first else '' }}
+{% endfor %}
+{% for ntp_server in chrony_ntp_servers | default([]) %}
+server {{ ntp_server }} iburst{{ ' prefer' if loop.first and chrony_ntp_pools | default([]) | length == 0 else '' }}
+{% endfor %}
+{% endif %}
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
+bindcmdaddress 127.0.0.1
+bindcmdaddress ::1

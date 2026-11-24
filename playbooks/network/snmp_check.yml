@@ -1,0 +1,133 @@
+---
+- name: SNMP-Zugaenge der Netzwerkgeraete pruefen
+  hosts: snmp_devices
+  connection: local
+  gather_facts: false
+
+  vars:
+    snmp_credentials: "{{ network_device_credentials_selected }}"
+    snmp_mode: >-
+      {{ network_monitoring_type | default(network_access_type) }}
+
+  pre_tasks:
+    - name: SNMP-Client auf dem Controller pruefen
+      ansible.builtin.command: /usr/bin/snmpget --version
+      changed_when: false
+      run_once: true
+      delegate_to: localhost
+
+    - name: Fehlende SNMPv2-Community verdeckt abfragen
+      ansible.builtin.pause:
+        prompt: "SNMPv2-Community fuer {{ inventory_hostname }} eingeben"
+        echo: false
+      when:
+        - snmp_mode == 'snmp_v2'
+        - snmp_credentials.snmp_community | default('') | length == 0
+      register: snmp_v2_prompt
+      no_log: true
+
+    - name: SNMPv2-Community fuer den Test festlegen
+      ansible.builtin.set_fact:
+        snmp_v2_community: >-
+          {{ snmp_credentials.snmp_community
+             | default(snmp_v2_prompt.user_input | default(''), true) }}
+      when: snmp_mode == 'snmp_v2'
+      no_log: true
+
+    - name: SNMP-Konfiguration validieren
+      ansible.builtin.assert:
+        that:
+          - snmp_mode in ['snmp_v2', 'snmp_v3']
+          - network_credential_id is defined
+          - snmp_credentials | length > 0
+          - snmp_mode != 'snmp_v2' or snmp_v2_community | default('') | length > 0
+          - snmp_mode != 'snmp_v3' or snmp_credentials.snmp_username | default('') | length > 0
+          - snmp_mode != 'snmp_v3' or snmp_credentials.snmp_auth_password | default('') | length > 0
+          - snmp_mode != 'snmp_v3' or snmp_credentials.snmp_priv_password | default('') | length > 0
+        fail_msg: "SNMP-Credentials fuer {{ inventory_hostname }} sind unvollstaendig."
+      no_log: true
+
+  tasks:
+    - name: SNMPv2-Verbindung pruefen
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/snmpget
+          - -v2c
+          - -c
+          - "{{ snmp_v2_community }}"
+          - -t
+          - "{{ snmp_timeout | string }}"
+          - -r
+          - "{{ snmp_retries | string }}"
+          - "{{ ansible_host }}:{{ snmp_port }}"
+          - 1.3.6.1.2.1.1.1.0
+      when: snmp_mode == 'snmp_v2'
+      changed_when: false
+      no_log: true
+      delegate_to: localhost
+      register: snmp_v2_result
+      failed_when: false
+
+    - name: Fehlgeschlagenen SNMPv2-Zugriff einordnen
+      ansible.builtin.fail:
+        msg: >-
+          SNMPv2-Zugriff auf {{ inventory_hostname }} fehlgeschlagen:
+          {{ 'Zeitueberschreitung oder UDP/161 nicht erreichbar'
+             if ('Timeout' in (snmp_v2_result.stderr | default('')) or
+                 'No Response' in (snmp_v2_result.stderr | default('')))
+             else 'Community oder Geraetekonfiguration pruefen' }}.
+      when:
+        - snmp_mode == 'snmp_v2'
+        - snmp_v2_result.rc | default(0) != 0
+
+    - name: SNMPv3-Verbindung pruefen
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/snmpget
+          - -v3
+          - -l
+          - "{{ snmp_v3_security_level }}"
+          - -u
+          - "{{ snmp_credentials.snmp_username }}"
+          - -a
+          - "{{ snmp_v3_auth_protocol }}"
+          - -A
+          - "{{ snmp_credentials.snmp_auth_password }}"
+          - -x
+          - "{{ snmp_v3_priv_protocol }}"
+          - -X
+          - "{{ snmp_credentials.snmp_priv_password }}"
+          - -t
+          - "{{ snmp_timeout | string }}"
+          - -r
+          - "{{ snmp_retries | string }}"
+          - "{{ ansible_host }}:{{ snmp_port }}"
+          - 1.3.6.1.2.1.1.1.0
+      when: snmp_mode == 'snmp_v3'
+      changed_when: false
+      no_log: true
+      delegate_to: localhost
+      register: snmp_v3_result
+      failed_when: false
+
+    - name: Fehlgeschlagenen SNMPv3-Zugriff einordnen
+      ansible.builtin.fail:
+        msg: >-
+          SNMPv3-Zugriff auf {{ inventory_hostname }} fehlgeschlagen:
+          {% set error = snmp_v3_result.stderr | default('') %}
+          {{ 'Zeitueberschreitung oder UDP/161 nicht erreichbar'
+             if ('Timeout' in error or 'No Response' in error)
+             else 'SNMPv3-Benutzer unbekannt'
+             if 'Unknown user name' in error
+             else 'Authentifizierung fehlgeschlagen'
+             if 'Authentication failure' in error
+             else 'Entschluesselung fehlgeschlagen'
+             if 'Decryption error' in error
+             else 'Benutzer, Protokolle und Kennwoerter am Geraet pruefen' }}.
+      when:
+        - snmp_mode == 'snmp_v3'
+        - snmp_v3_result.rc | default(0) != 0
+
+    - name: Erfolgreichen SNMP-Zugriff melden
+      ansible.builtin.debug:
+        msg: "SNMP-Zugriff auf {{ inventory_hostname }} erfolgreich."

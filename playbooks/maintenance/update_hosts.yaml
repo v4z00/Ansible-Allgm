@@ -1,0 +1,37 @@
+- name: Debian-Pakete aktualisieren
+  hosts: all_linux_systems
+  gather_facts: true
+  serial: "{{ 1 if (host_updates_reboot | default(false) | bool) else '100%' }}"
+  any_errors_fatal: "{{ host_updates_reboot | default(false) | bool }}"
+  become: false
+  pre_tasks:
+  - name: Ausdrueckliches Ziel pruefen
+    ansible.builtin.assert:
+      that:
+      - ansible_limit | default('') | length > 0
+      fail_msg: Mit --limit HOST oder GRUPPE starten.
+  tasks:
+  - name: Debian-Ziel pruefen
+    ansible.builtin.assert:
+      that:
+      - ansible_facts.os_family == 'Debian'
+  - name: Paketindex und Pakete aktualisieren
+    ansible.builtin.apt:
+      update_cache: true
+      upgrade: dist
+      autoremove: true
+      autoclean: true
+  - name: Optionalen Neustart nach Paketupdate pruefen und ausfuehren
+    when: host_updates_reboot | default(false) | bool
+    block:
+    - name: Neustartanforderung pruefen
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: host_update_reboot_required
+    - name: Bei Neustartanforderung rebooten und Rueckkehr abwarten
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        post_reboot_delay: 15
+      when:
+      - host_update_reboot_required.stat.exists | default(false) | bool
+      - not ansible_check_mode

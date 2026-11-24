@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "proxmox-hardening",
+      "description": "PVE-GUI und PBS-Port haerten",
+      "handler": "bin/control.d/proxmox-hardening.sh",
+      "feature": "proxmox",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/security/proxmox_stack_hardening.yml"
+      ],
+      "aliases": [
+        {
+          "name": "proxmox-hardening",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

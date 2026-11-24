@@ -1,0 +1,50 @@
+---
+- name: Evaluate Lynis Reports
+  hosts: localhost
+  connection: local
+  vars:
+    local_base_dir: "{{ controller_report_dir }}/lynis"
+    target_hosts: "{{ groups['all_linux_systems'] }}"
+
+  tasks:
+    - name: Parse Lynis Hardening Index
+      shell: "grep 'hardening_index' {{ local_base_dir }}/{{ item }}/report.dat | cut -d= -f2"
+      register: hardening_scores
+      loop: "{{ target_hosts }}"
+      changed_when: false
+      failed_when: false
+
+    - name: Parse Critical Warnings
+      shell: "grep 'warning\\[\\]' {{ local_base_dir }}/{{ item }}/report.dat | cut -d= -f2"
+      register: critical_warnings
+      loop: "{{ target_hosts }}"
+      changed_when: false
+      failed_when: false
+
+    - name: Render Summary to Variable
+      set_fact:
+        summary_report: "{{ lookup('template', playbook_dir ~ '/../../templates/lynis_summary.j2') }}"
+
+    - name: "SECURITY AUDIT ZUSAMMENFASSUNG"
+      pause:
+        prompt: |
+          {{ summary_report }}
+
+          Drücke ENTER um die Auswertung zu schließen...
+
+    - name: Create CSV Export Header
+      lineinfile:
+        path: "{{ local_base_dir }}/summary.csv"
+        line: "Host;Hardening_Index;Warnings_Count"
+        create: yes
+        mode: '0644'
+      run_once: true
+
+    - name: Update CSV Export data
+      lineinfile:
+        path: "{{ local_base_dir }}/summary.csv"
+        line: "{{ item.0 }};{{ item.1.stdout | default('0') }};{{ item.2.stdout_lines | length }}"
+      with_together:
+        - "{{ target_hosts }}"
+        - "{{ hardening_scores.results }}"
+        - "{{ critical_warnings.results }}"

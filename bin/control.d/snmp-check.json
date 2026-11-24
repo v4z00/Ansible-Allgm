@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "snmp-check",
+      "description": "SNMPv2-/SNMPv3-Zugaenge pruefen",
+      "handler": "bin/control.d/snmp-check.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/network/snmp_check.yml"
+      ],
+      "aliases": [
+        {
+          "name": "snmp-check",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

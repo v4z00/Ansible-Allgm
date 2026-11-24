@@ -1,0 +1,5 @@
+---
+# The venv already contains the dependencies of this collection.
+collections:
+  - name: checkmk.general
+    version: '8.5.1'

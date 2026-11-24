@@ -1,0 +1,16 @@
+[defaults]
+inventory = inventory
+roles_path = roles
+collections_path = collections
+interpreter_python = auto_silent
+retry_files_enabled = False
+host_key_checking = True
+nocows = True
+home = .local/ansible
+local_tmp = .local/ansible/tmp
+
+[inventory]
+unparsed_is_failed = True
+
+[ssh_connection]
+pipelining = True

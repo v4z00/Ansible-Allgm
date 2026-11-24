@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "inventory-check",
+      "description": "Statisches oder konfiguriertes Proxmox-Inventory prüfen",
+      "handler": "bin/control.d/inventory-check.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/update_inventory.sh"
+      ],
+      "aliases": [
+        {
+          "name": "inv-check",
+          "args": []
+        },
+        {
+          "name": "inventory-check",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

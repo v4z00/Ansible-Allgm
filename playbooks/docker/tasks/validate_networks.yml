@@ -1,0 +1,35 @@
+---
+- name: Netzwerkliste pruefen
+  ansible.builtin.assert:
+    that:
+      - docker_networks | default([]) is sequence
+      - docker_networks | default([]) is not string
+      - docker_networks | default([]) is not mapping
+
+- name: Netzwerkdefinitionen validieren
+  ansible.builtin.assert:
+    that:
+      - item is mapping
+      - item.name is defined
+      - item.name is string
+      - item.name | trim | length > 0
+      - item.state | default('present') in ['present', 'absent']
+    fail_msg: "Ungueltige Netzwerkdefinition auf {{ inventory_hostname }}."
+  loop: "{{ docker_networks | default([]) }}"
+  loop_control:
+    label: "{{ item.name | default('unbenannt') }}"
+
+- name: Eindeutige Netzwerknamen pruefen
+  ansible.builtin.assert:
+    that:
+      - docker_networks | default([]) | map(attribute='name') | unique | length == docker_networks | default([]) | length
+    fail_msg: "Doppelte Netzwerknamen auf {{ inventory_hostname }}."
+
+- name: Explizite IPv4- und optionale IPv6-IPAM-Konfiguration pruefen
+  ansible.builtin.assert:
+    that:
+      - item | docker_network_ipam | length > 0
+  loop: "{{ docker_networks | default([]) }}"
+  when: item.state | default('present') == 'present'
+  loop_control:
+    label: "{{ item.name }}"

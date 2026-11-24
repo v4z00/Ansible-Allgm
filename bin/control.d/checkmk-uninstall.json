@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "checkmk-uninstall",
+      "description": "CheckMK-Agent gezielt entfernen",
+      "handler": "bin/control.d/checkmk-uninstall.sh",
+      "feature": "checkmk",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/checkmk/uninstall_agent.yml"
+      ],
+      "aliases": [
+        {
+          "name": "checkmk-uninstall",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

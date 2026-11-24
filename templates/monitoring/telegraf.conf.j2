@@ -1,0 +1,47 @@
+[agent]
+  interval = "10s"
+  round_interval = true
+  metric_batch_size = 1000
+  metric_buffer_limit = 100000
+  collection_jitter = "0s"
+  flush_interval = "10s"
+  flush_jitter = "0s"
+  precision = "0s"
+  hostname = ""
+  omit_hostname = false
+
+## VictoriaMetrics nimmt Influx Line Protocol direkt entgegen. Der Name des
+## Telegraf-Plugins bezeichnet das Protokoll, nicht eine eingesetzte InfluxDB.
+[[outputs.influxdb]]
+  urls = ["{{ victoriametrics_url }}"]
+  database = "{{ victoriametrics_database }}"
+{% if victoriametrics_username | default('') | length > 0 %}
+  username = "{{ victoriametrics_username }}"
+  password = "{{ victoriametrics_password }}"
+{% endif %}
+  skip_database_creation = true
+  exclude_retention_policy_tag = true
+  insecure_skip_verify = {{ (not ((tls_validate_certs | default({})).get('telegraf_metrics_output', tls_validate_certs_default | default(not (victoriametrics_insecure_skip_verify | default(false) | bool))) | bool)) | lower }}
+  timeout = "10s"
+  content_encoding = "gzip"
+
+[[inputs.cpu]]
+  percpu = true
+  totalcpu = true
+  collect_cpu_time = false
+  report_active = false
+[[inputs.mem]]
+[[inputs.disk]]
+  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
+[[inputs.net]]
+[[inputs.system]]
+
+{% if inventory_hostname in groups.get('checkmk_proxmox_hosts', []) or telegraf_enable_proxmox_input | default(false) | bool %}
+[[inputs.proxmox]]
+  base_url = "https://{{ ansible_host }}:8006/api2/json"
+  api_token = "{{ (proxmox_api_tokens | default({})).get(inventory_hostname, proxmox_api_token | default('')) }}"
+  node_name = "{{ inventory_hostname }}"
+  insecure_skip_verify = {{ (not ((tls_validate_certs | default({})).get('telegraf_proxmox_input', tls_validate_certs_default | default(true)) | bool)) | lower }}
+  response_timeout = "10s"
+  additional_vmstats_tags = ["vmid", "status"]
+{% endif %}

@@ -1,0 +1,8 @@
+# Nur gezielte Checkmk-Ausnahmen; in den EINEN vorhandenen TLS-Block einfuegen.
+tls_validate_certs:
+  checkmk_agent_download: false
+  checkmk_plugin_download: false
+  checkmk_folders: false
+  checkmk_managed_host: false
+  checkmk_agent_activation: false
+  telegram_notification: true

@@ -1,0 +1,145 @@
+---
+- name: CheckMK-Konfiguration und Secrets pruefen
+  ansible.builtin.assert:
+    that:
+      - checkmk_server_url | length > 0
+      - checkmk_server | length > 0
+      - checkmk_site | length > 0
+      - checkmk_registration_user | length > 0
+      - checkmk_registration_password | length > 0
+      - ansible_host is defined
+      - checkmk_target_folder | default(checkmk_default_folder) | length > 0
+    fail_msg: "CheckMK-Endpunkte, Zielordner und Credentials zentral konfigurieren."
+  no_log: true
+
+- name: CheckMK-Agentpaket lokal pruefen
+  ansible.builtin.stat:
+    path: "{{ checkmk_agent_package_src }}"
+  delegate_to: localhost
+  become: false
+  register: checkmk_agent_artifact
+
+- name: Fehlendes CheckMK-Agentpaket melden
+  ansible.builtin.assert:
+    that: checkmk_agent_artifact.stat.exists
+    fail_msg: >-
+      Agentpaket fehlt unter {{ checkmk_agent_package_src }}.
+      Mit bin/control checkmk-download laden oder manuell ablegen.
+
+- name: CheckMK-Hostname festlegen
+  ansible.builtin.set_fact:
+    cmk_hostname: "{{ checkmk_hostname | default(inventory_hostname) | trim }}"
+
+- name: CheckMK-Host zentral anlegen oder verschieben
+  checkmk.general.host:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_managed_host', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    name: "{{ cmk_hostname }}"
+    folder: "{{ checkmk_target_folder | default(checkmk_default_folder) }}"
+    update_attributes:
+      ipaddress: "{{ ansible_host }}"
+      alias: "{{ checkmk_alias | default(inventory_hostname) }}"
+    state: present
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: CheckMK-Aenderungen vor Registrierung aktivieren
+  checkmk.general.activation:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_agent_activation', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    sites: ["{{ checkmk_site }}"]
+    redirect: true
+    force_foreign_changes: false
+  delegate_to: localhost
+  become: false
+  run_once: true
+  no_log: true
+
+- name: CheckMK-Agentpaket kopieren
+  ansible.builtin.copy:
+    src: "{{ checkmk_agent_package_src }}"
+    dest: "{{ checkmk_agent_package_tmp }}"
+    mode: '0644'
+
+- name: CheckMK-Agent installieren
+  ansible.builtin.apt:
+    deb: "{{ checkmk_agent_package_tmp }}"
+    state: present
+
+- name: CheckMK-Pluginliste bestimmen
+  ansible.builtin.set_fact:
+    checkmk_selected_plugins: >-
+      {{
+        (checkmk_linux_base_plugins if checkmk_enable_base_plugins | default(true) | bool else [])
+        + (checkmk_docker_plugins if checkmk_enable_docker | default(false) | bool else [])
+        + (checkmk_smart_plugins if checkmk_enable_smart | default(false) | bool else [])
+        + (checkmk_cups_plugins if checkmk_enable_cups | default(false) | bool else [])
+        + (checkmk_webserver_plugins if checkmk_enable_webserver | default(false) | bool else [])
+        + (checkmk_database_plugins if checkmk_enable_database | default(false) | bool else [])
+      }}
+
+- name: CheckMK-Pluginverzeichnisse anlegen
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ checkmk_plugin_base_dir }}"
+    - "{{ checkmk_plugin_base_dir }}/300"
+    - "{{ checkmk_plugin_base_dir }}/3600"
+
+- name: Vorhandene CheckMK-Plugins verteilen
+  ansible.builtin.copy:
+    src: "{{ checkmk_plugins_src_dir }}/{{ item.name }}"
+    dest: >-
+      {{ checkmk_plugin_base_dir }}/{{ (item.interval | string ~ '/') if item.interval is not none else '' }}{{ item.name }}
+    mode: '0755'
+  loop: "{{ checkmk_selected_plugins }}"
+
+- name: CheckMK-TLS-Status auslesen
+  ansible.builtin.command: cmk-agent-ctl status --json
+  register: cmk_agent_status
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: CheckMK-Agent per TLS registrieren
+  ansible.builtin.command:
+    argv:
+      - cmk-agent-ctl
+      - register
+      - --hostname
+      - "{{ cmk_hostname }}"
+      - --server
+      - "{{ checkmk_server }}"
+      - --site
+      - "{{ checkmk_site }}"
+      - --user
+      - "{{ checkmk_registration_user }}"
+      - --password
+      - "{{ checkmk_registration_password }}"
+      - --trust-cert
+  when: cmk_hostname not in (cmk_agent_status.stdout | default(''))
+  changed_when: true
+  no_log: true
+
+- name: CheckMK-Agent-Socket aktivieren
+  ansible.builtin.systemd:
+    name: check-mk-agent.socket
+    state: started
+    enabled: true
+
+- name: Temporaeres Agentpaket entfernen
+  ansible.builtin.file:
+    path: "{{ checkmk_agent_package_tmp }}"
+    state: absent
+

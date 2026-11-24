@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "mail-test",
+      "description": "Testmail ueber die verwalteten Hosts senden",
+      "handler": "bin/control.d/mail-test.sh",
+      "feature": "postfix",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/test_mail.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "mail-test",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

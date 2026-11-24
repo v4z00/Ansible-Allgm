@@ -1,0 +1,147 @@
+---
+- name: Wildcard-Zertifikat auf Apache-Webserver verteilen
+  hosts: checkmk_webserver_hosts
+  become: true
+  gather_facts: false
+  serial: 1
+
+  vars:
+    apache_certificate_source_directory: "{{ apache_certificate_root }}/{{ apache_certificate_year }}"
+    apache_certificate_source: "{{ apache_certificate_source_directory }}/certificate.crt"
+    apache_intermediate_source: "{{ apache_certificate_source_directory }}/intermediate1.crt"
+    apache_private_key_source: "{{ apache_certificate_source_directory }}/wildcard_example_org_unencrypted.key"
+    apache_certificate_directory: /cert
+    apache_certificate_target: /cert/cert.cert
+    apache_private_key_target: /cert/key.key
+
+  pre_tasks:
+    - name: Quelldateien auf dem Controller pruefen
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ apache_certificate_source }}"
+        - "{{ apache_intermediate_source }}"
+        - "{{ apache_private_key_source }}"
+      register: apache_certificate_source_files
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: Ausgewaehlten Zertifikatspfad anzeigen
+      ansible.builtin.debug:
+        msg: "Zertifikatsquelle: {{ apache_certificate_source_directory }}"
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: Vollstaendige Quelldateien verlangen
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.isreg
+          - item.stat.size | int > 0
+        fail_msg: "Quelldatei fehlt oder ist leer: {{ item.item }}"
+      loop: "{{ apache_certificate_source_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: Entschluesselten privaten Schluessel pruefen
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - pkey
+          - -in
+          - "{{ apache_private_key_source }}"
+          - -noout
+          - -passin
+          - "pass:"
+      changed_when: false
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: Public-Key-Fingerabdruck des privaten Schluessels ermitteln
+      ansible.builtin.shell: >-
+        set -o pipefail;
+        openssl pkey -in {{ apache_private_key_source | quote }} -pubout -outform DER
+        | openssl dgst -sha256
+      args:
+        executable: /bin/bash
+      register: apache_private_key_fingerprint
+      changed_when: false
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: Public-Key-Fingerabdruck des Zertifikats ermitteln
+      ansible.builtin.shell: >-
+        set -o pipefail;
+        openssl x509 -in {{ apache_certificate_source | quote }} -pubkey -noout
+        | openssl pkey -pubin -outform DER
+        | openssl dgst -sha256
+      args:
+        executable: /bin/bash
+      register: apache_certificate_fingerprint
+      changed_when: false
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: Zusammengehoerendes Zertifikat und Schluessel verlangen
+      ansible.builtin.assert:
+        that:
+          - (apache_private_key_fingerprint.stdout | trim) == (apache_certificate_fingerprint.stdout | trim)
+        fail_msg: "certificate.crt und der entschluesselte private Schluessel passen nicht zusammen. Es wird nichts verteilt."
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+  tasks:
+    - name: Zielverzeichnis fuer Apache-Zertifikat anlegen
+      ansible.builtin.file:
+        path: "{{ apache_certificate_directory }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Zertifikat mit Intermediate-Zertifikat verteilen
+      ansible.builtin.copy:
+        content: |-
+          {{ lookup('ansible.builtin.file', apache_certificate_source) | trim }}
+          {{ lookup('ansible.builtin.file', apache_intermediate_source) | trim }}
+        dest: "{{ apache_certificate_target }}"
+        owner: root
+        group: root
+        mode: "0644"
+        backup: true
+      notify:
+        - Apache-Konfiguration pruefen
+        - Apache neu starten
+
+    - name: Entschluesselten privaten Schluessel verteilen
+      ansible.builtin.copy:
+        src: "{{ apache_private_key_source }}"
+        dest: "{{ apache_private_key_target }}"
+        owner: root
+        group: root
+        mode: "0600"
+        backup: true
+      no_log: true
+      notify:
+        - Apache-Konfiguration pruefen
+        - Apache neu starten
+
+  handlers:
+    - name: Apache-Konfiguration pruefen
+      ansible.builtin.command: apache2ctl configtest
+      changed_when: false
+
+    - name: Apache neu starten
+      ansible.builtin.service:
+        name: apache2
+        state: restarted
+

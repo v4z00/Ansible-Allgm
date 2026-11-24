@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "wan-check",
+      "description": "Externe HTTP-Erreichbarkeit pruefen",
+      "handler": "bin/control.d/wan-check.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/wan_check.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "wan-check",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

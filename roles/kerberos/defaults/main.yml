@@ -1,0 +1,8 @@
+---
+kerberos_realm: ""
+kerberos_kdcs: []
+kerberos_admin_server: "{{ kerberos_kdcs | first | default('') }}"
+kerberos_dns_lookup_realm: false
+kerberos_dns_lookup_kdc: false
+kerberos_force_tcp: true
+kerberos_fix_cifs_upcall: true

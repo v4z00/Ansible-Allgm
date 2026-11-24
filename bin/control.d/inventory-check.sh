@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "${CONTROL_PROJECT_ROOT:?}/lib/control/helpers.sh"
+scripts/update_inventory.sh --check

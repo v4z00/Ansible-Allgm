@@ -1,0 +1,128 @@
+---
+- name: Liste zusaetzlicher SSH-Listenadressen validieren
+  ansible.builtin.assert:
+    that:
+      - (ssh_listen_addresses | default([]) | type_debug) == 'list'
+    fail_msg: "ssh_listen_addresses muss eine YAML-Liste lokaler IP-Adressen sein."
+
+- name: Zusaetzliche SSH-Listenadressen auf lokale Zuordnung pruefen
+  ansible.builtin.assert:
+    that:
+      - item is string
+      - item in ((ansible_all_ipv4_addresses | default([])) + (ansible_all_ipv6_addresses | default([])))
+    fail_msg: >-
+      SSH-Listenadresse {{ item }} ist keine auf {{ inventory_hostname }}
+      erkannte lokale IP. Adresse zuerst am Zielhost einrichten und Facts neu lesen.
+  loop: "{{ ssh_listen_addresses | default([]) }}"
+
+- name: SSH-Authentifizierungsmodus validieren
+  ansible.builtin.assert:
+    that:
+      - ansible_auth_mode in ['password_all', 'key_only', 'password_users_only']
+    fail_msg: >-
+      Ungueltiger ansible_auth_mode '{{ ansible_auth_mode | default('nicht gesetzt') }}'.
+      Erlaubt sind password_all, key_only und password_users_only.
+
+- name: Break-Glass-Kennwort pruefen
+  ansible.builtin.assert:
+    that: ssh_breakglass_password | length > 0
+    fail_msg: "ssh_breakglass_password fehlt in secrets.yml."
+  when:
+    - ssh_breakglass_enabled | bool
+    - inventory_hostname not in ssh_breakglass_excluded_hosts
+  no_log: true
+
+- name: Break-Glass-Benutzer anlegen
+  ansible.builtin.user:
+    name: "{{ ssh_breakglass_user }}"
+    uid: "{{ ssh_breakglass_uid }}"
+    password: "{{ ssh_breakglass_password | password_hash('sha512', ssh_breakglass_password_salt) }}"
+    update_password: always
+    shell: /bin/rbash
+    home: "{{ ssh_breakglass_home }}"
+    create_home: true
+    state: present
+  when:
+    - ssh_breakglass_enabled | bool
+    - inventory_hostname not in ssh_breakglass_excluded_hosts
+  no_log: true
+
+- name: Eingeschraenktes Break-Glass-Bin-Verzeichnis anlegen
+  ansible.builtin.file:
+    path: "{{ ssh_breakglass_home }}/bin"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when:
+    - ssh_breakglass_enabled | bool
+    - inventory_hostname not in ssh_breakglass_excluded_hosts
+
+- name: Ausschliesslich su fuer Break-Glass bereitstellen
+  ansible.builtin.file:
+    src: /bin/su
+    dest: "{{ ssh_breakglass_home }}/bin/su"
+    state: link
+    owner: root
+    group: root
+    force: true
+  when:
+    - ssh_breakglass_enabled | bool
+    - inventory_hostname not in ssh_breakglass_excluded_hosts
+
+- name: Eingeschraenktes Break-Glass-Profil installieren
+  ansible.builtin.copy:
+    dest: "{{ ssh_breakglass_home }}/.bash_profile"
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      export PATH="$HOME/bin"
+      readonly PATH
+      export HISTFILE=/dev/null
+  when:
+    - ssh_breakglass_enabled | bool
+    - inventory_hostname not in ssh_breakglass_excluded_hosts
+
+- name: SSH-Drop-in-Verzeichnis sicherstellen
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Einbindung der SSH-Drop-ins sicherstellen
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^Include\s+/etc/ssh/sshd_config\.d/\*\.conf$'
+    line: 'Include /etc/ssh/sshd_config.d/*.conf'
+    insertbefore: BOF
+
+- name: Direkte Root-Login-Freigaben in sshd_config deaktivieren
+  ansible.builtin.replace:
+    path: /etc/ssh/sshd_config
+    regexp: '^([ \t]*)(PermitRootLogin[ \t]+.*)$'
+    replace: '\1# \2'
+  notify: SSH neu starten
+
+- name: Gehärtete SSH-Konfiguration verteilen
+  ansible.builtin.template:
+    src: 00-managed-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/00-managed-hardening.conf
+    owner: root
+    group: root
+    mode: '0600'
+    backup: true
+  notify: SSH neu starten
+
+- name: Gesamte SSH-Konfiguration validieren
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+
+- name: SSH-Handler jetzt ausfuehren
+  ansible.builtin.meta: flush_handlers
+
+- name: Nach SSH-Neustart auf Verbindung warten
+  ansible.builtin.wait_for_connection:
+    timeout: 30

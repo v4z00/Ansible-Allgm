@@ -1,0 +1,31 @@
+---
+- name: Netzwerk nur auslesen
+  community.docker.docker_network_info:
+    name: "{{ network_definition.name }}"
+  register: observed_network
+  no_log: true
+
+- name: Gewuenschte Existenz pruefen
+  ansible.builtin.assert:
+    that:
+      - observed_network.exists == (network_definition.state | default('present') == 'present')
+    fail_msg: "{{ network_definition.name }}: Existenz weicht vom Soll ab. Es wurde nichts geaendert."
+
+- name: Treiber und IPv6-Schalter pruefen
+  ansible.builtin.assert:
+    that:
+      - observed_network.network.Driver == network_definition.driver | default('bridge')
+      - observed_network.network.EnableIPv6 == network_definition.enable_ipv6 | default(false) | bool
+      - observed_network.network.Internal == network_definition.internal | default(false) | bool
+    fail_msg: "{{ network_definition.name }}: Treiber/Internal/IPv6 weicht vom Soll ab."
+  when: observed_network.exists
+
+- name: IPv4- und IPv6-Subnetze samt Gateway pruefen
+  ansible.builtin.assert:
+    that:
+      - observed_network.network.IPAM.Config | selectattr('Subnet', 'defined') | selectattr('Subnet', 'equalto', expected_ipam.subnet) | selectattr('Gateway', 'defined') | selectattr('Gateway', 'equalto', expected_ipam.gateway) | list | length == 1
+    fail_msg: "{{ network_definition.name }}: Subnetz/Gateway fehlt oder weicht vom Soll ab."
+  loop: "{{ (network_definition | docker_network_ipam) if observed_network.exists else [] }}"
+  loop_control:
+    loop_var: expected_ipam
+    label: "{{ expected_ipam.subnet }}"

@@ -1,0 +1,42 @@
+---
+- name: Gemeinsame Linux-Baseline
+  hosts: all_linux_systems:!opnsense_firewall
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Unterstuetztes Betriebssystem pruefen
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == 'Debian'
+        fail_msg: "Die gemeinsame Baseline unterstuetzt derzeit Debian/Ubuntu/Proxmox."
+
+  roles:
+    - role: baseline
+      when: features.baseline | bool
+      tags: [baseline, packages]
+    - role: timezone_chrony
+      when: features.chrony | bool
+      tags: [baseline, chrony, time]
+    - role: fail2ban
+      when: features.fail2ban | bool
+      tags: [baseline, fail2ban, security]
+    - role: motd
+      when: features.motd | bool
+      tags: [baseline, motd]
+    - role: security_ssh
+      when: features.ssh_hardening | bool
+      tags: [hardening, ssh]
+    - role: security_base
+      when: features.security_base | bool
+      tags: [hardening, security]
+    - role: accounting
+      when: features.accounting | bool
+      tags: [hardening, audit]
+    - role: security_tools
+      when: features.security_tools | bool
+      tags: [hardening, security_tools]
+    - role: rsyslog
+      when: features.rsyslog | bool and inventory_hostname in groups.get('rsyslog_clients', [])
+      tags: [optional, rsyslog]
+

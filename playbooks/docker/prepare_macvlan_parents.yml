@@ -1,0 +1,46 @@
+---
+- name: Docker-Macvlan-Konfigurationsnetze vorbereiten
+  hosts: docker_deployment_hosts
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: Macvlan-Definitionen validieren
+      ansible.builtin.assert:
+        that:
+          - item.name is match('^[A-Za-z0-9_.-]+$')
+          - item.subnet is ansible.utils.ipaddr('network')
+          - item.gateway is ansible.utils.ipaddr
+          - item.parent is match('^[A-Za-z0-9_.:-]+$')
+        fail_msg: "Ungueltige docker_macvlan_config_networks-Definition: {{ item }}"
+      loop: "{{ docker_macvlan_config_networks | default([]) }}"
+      loop_control:
+        label: "{{ item.name | default('unbenannt') }}"
+  tasks:
+    - name: Config-only-Macvlan-Netze ermitteln
+      ansible.builtin.command:
+        argv: [docker, network, inspect, "{{ item.name }}"]
+      loop: "{{ docker_macvlan_config_networks | default([]) }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: macvlan_existing
+      changed_when: false
+      failed_when: false
+
+    - name: Fehlende Config-only-Macvlan-Netze anlegen
+      ansible.builtin.command:
+        argv:
+          - docker
+          - network
+          - create
+          - --config-only
+          - --subnet
+          - "{{ item.item.subnet }}"
+          - --gateway
+          - "{{ item.item.gateway }}"
+          - -o
+          - "parent={{ item.item.parent }}"
+          - "{{ item.item.name }}"
+      loop: "{{ macvlan_existing.results | default([]) }}"
+      when: item.rc != 0
+      loop_control:
+        label: "{{ item.item.name }}"

@@ -1,0 +1,22 @@
+---
+- name: PAM- und Security-Werkzeuge installieren
+  ansible.builtin.apt:
+    name:
+      - libpam-tmpdir
+      - debsums
+      - apt-show-versions
+      - needrestart
+      - libpam-pwquality
+      - rkhunter
+    state: present
+
+- name: Needrestart non-interaktiv konfigurieren
+  ansible.builtin.copy:
+    dest: /etc/needrestart/conf.d/ansible.conf
+    content: |
+      # Managed by Ansible
+      $nrconf{restart} = 'l';
+    owner: root
+    group: root
+    mode: '0644'
+

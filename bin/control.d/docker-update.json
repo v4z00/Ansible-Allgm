@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "docker-update",
+      "description": "Docker-Container aktualisieren",
+      "handler": "bin/control.d/docker-update.sh",
+      "feature": "docker",
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/run_docker_update.sh"
+      ],
+      "aliases": [
+        {
+          "name": "docker-update-run",
+          "args": []
+        },
+        {
+          "name": "docker-update",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

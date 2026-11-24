@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "mount-all",
+      "description": "Alle fstab-Mounts ausfuehren",
+      "handler": "bin/control.d/mount-all.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/mount_all.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "mount-all",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

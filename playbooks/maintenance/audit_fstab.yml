@@ -1,0 +1,16 @@
+---
+- name: "Audit: Alle fstab Dateien einsammeln"
+  hosts: all_linux_systems
+  become: yes
+  tasks:
+    - name: "Ordner für Audit-Logs lokal erstellen"
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/../../x/reports/fstab_audit"
+        state: directory
+      delegate_to: localhost
+
+    - name: "fstab Datei vom Host abholen"
+      ansible.builtin.fetch:
+        src: /etc/fstab
+        dest: "{{ playbook_dir }}/../../x/reports/fstab_audit/{{ inventory_hostname }}_fstab"
+        flat: yes

@@ -1,0 +1,41 @@
+#!/bin/sh
+# Managed by Ansible - package update summary
+
+if [ -t 1 ] && [ "${TERM:-dumb}" != "dumb" ]; then
+  blue='\033[1;34m'
+  green='\033[1;32m'
+  yellow='\033[1;33m'
+  reset='\033[0m'
+else
+  blue=''
+  green=''
+  yellow=''
+  reset=''
+fi
+
+printf '%b-- UPDATES ----------------------------------------------------%b\n' "$blue" "$reset"
+
+if [ -x /usr/lib/update-notifier/apt-check ]; then
+  update_info=$(/usr/lib/update-notifier/apt-check 2>&1 || true)
+  packages=$(printf '%s' "$update_info" | cut -d';' -f1)
+  security=$(printf '%s' "$update_info" | cut -d';' -f2)
+else
+  packages=$(apt list --upgradable 2>/dev/null | tail -n +2 | wc -l | tr -d ' ')
+  security='unbekannt'
+fi
+
+case "${packages:-0}" in
+  0)
+    printf '  %bOK%b  System ist laut vorhandenem Paketindex aktuell.\n' "$green" "$reset"
+    ;;
+  *)
+    printf '  %b!%b   %s Paketupdate(s) verfuegbar' "$yellow" "$reset" "$packages"
+    if [ "${security}" != 'unbekannt' ]; then
+      printf ', davon %s Sicherheitsupdate(s)' "$security"
+    fi
+    printf '.\n'
+    printf '      Details: apt list --upgradable\n'
+    ;;
+esac
+
+printf '\n'

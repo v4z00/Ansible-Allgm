@@ -1,0 +1,14 @@
+checkmk_linux_plugins:
+  - mk_apt
+  - mk_logwatch.py
+  - mk_inventory.linux
+  - netstat.linux
+  - mk_docker.py
+  - nginx_status.py
+  - apache_status.py
+  - mk_mysql
+  - mk_postgres.py
+  - mk_redis
+# Optional nur bei Verwendung und Verfuegbarkeit auf der eigenen Site:
+#  - smart
+#  - mk_cups_queues

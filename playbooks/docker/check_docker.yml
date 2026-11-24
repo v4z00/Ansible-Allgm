@@ -1,0 +1,48 @@
+---
+- name: Docker-Quellen und vorhandene Netzwerke nur lesend pruefen
+  hosts: docker_deployment_hosts
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Netzwerkdefinitionen pruefen
+      ansible.builtin.import_tasks: tasks/validate_networks.yml
+
+  tasks:
+    - name: Compose-Quellen auf dem Controller pruefen ohne Konfiguration auszugeben
+      delegate_to: localhost
+      become: false
+      ansible.builtin.command:
+        argv:
+          - "{{ ansible_playbook_python }}"
+          - "{{ playbook_dir }}/../../scripts/check_docker_sources.py"
+        stdin: >-
+          {{ {'base': (local_base_dir | default(docker_local_base_dir)),
+              'host': inventory_hostname,
+              'patterns': (compose_file_patterns | default(docker_compose_file_patterns | default(['docker-compose.yml', 'docker-compose.yaml', 'compose.yml', 'compose.yaml']))),
+              'networks': (docker_networks | default([]))} | to_json }}
+      register: source_check
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      no_log: true
+
+    - name: Ausschliesslich bereinigte Pruefergebnisse anzeigen
+      ansible.builtin.debug:
+        msg: "{{ source_check.stdout_lines | default(['Pruefprogramm konnte nicht ausgefuehrt werden.']) }}"
+
+    - name: Compose-Pruefung muss erfolgreich sein
+      ansible.builtin.assert:
+        that: source_check.rc | default(1) == 0
+        fail_msg: "Quellpruefung fehlgeschlagen. Python3/PyYAML und Docker Compose v2 auf dem Controller erforderlich."
+
+    - name: Tatsächliche Docker-Netze mit dem Soll vergleichen
+      ansible.builtin.include_tasks:
+        file: tasks/check_network.yml
+        apply:
+          tags: [docker_live]
+      loop: "{{ docker_networks | default([]) }}"
+      loop_control:
+        loop_var: network_definition
+        label: "{{ network_definition.name }}"
+      tags: [docker_live]

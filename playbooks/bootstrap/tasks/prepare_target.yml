@@ -1,0 +1,113 @@
+---
+- name: Root-Key-Zugang pruefen
+  ansible.builtin.command:
+    argv:
+      - ssh
+      - -o
+      - BatchMode=yes
+      - -o
+      - PasswordAuthentication=no
+      - -o
+      - KbdInteractiveAuthentication=no
+      - -o
+      - StrictHostKeyChecking=accept-new
+      - -o
+      - ConnectTimeout=5
+      - -p
+      - "{{ bootstrap_entry.port | default(22) | string }}"
+      - "root@{{ hostvars[bootstrap_entry.name].ansible_host }}"
+      - "true"
+  register: bootstrap_root_key_test
+  changed_when: false
+  failed_when: false
+
+- name: Konfigurierte Erstzugangskennwoerter bestimmen
+  ansible.builtin.set_fact:
+    bootstrap_profile_password: >-
+      {{
+        (bootstrap_host_credentials | default({})).get(bootstrap_entry.name, {}).get('password', '')
+        or lookup('ansible.builtin.env', bootstrap_entry.password_env | default(''))
+      }}
+    bootstrap_profile_become_password: >-
+      {{
+        (bootstrap_host_credentials | default({})).get(bootstrap_entry.name, {}).get('become_password', '')
+        or lookup('ansible.builtin.env', bootstrap_entry.become_password_env | default(''))
+      }}
+  when: bootstrap_root_key_test.rc != 0
+  no_log: true
+
+- name: Fehlendes SSH-Passwort interaktiv abfragen
+  ansible.builtin.pause:
+    prompt: >-
+      SSH-Passwort fuer {{ bootstrap_entry.user | default('root') }}
+      auf {{ bootstrap_entry.name }}
+    echo: false
+  register: bootstrap_password_prompt
+  when:
+    - bootstrap_root_key_test.rc != 0
+    - bootstrap_profile_password | default('') | length == 0
+  no_log: true
+
+- name: Fehlendes Become-Passwort interaktiv abfragen
+  ansible.builtin.pause:
+    prompt: >-
+      sudo-/su-/Root-Passwort fuer {{ bootstrap_entry.name }}
+      (leer = SSH-Passwort)
+    echo: false
+  register: bootstrap_become_password_prompt
+  when:
+    - bootstrap_root_key_test.rc != 0
+    - bootstrap_entry.user | default('root') != 'root'
+    - bootstrap_profile_become_password | default('') | length == 0
+  no_log: true
+
+- name: Effektive Erstzugangskennwoerter bestimmen
+  ansible.builtin.set_fact:
+    bootstrap_effective_password: >-
+      {{
+        bootstrap_profile_password | default('')
+        or bootstrap_password_prompt.user_input | default('')
+      }}
+    bootstrap_effective_become_password: >-
+      {{
+        bootstrap_profile_become_password | default('')
+        or bootstrap_become_password_prompt.user_input | default('')
+        or bootstrap_profile_password | default('')
+        or bootstrap_password_prompt.user_input | default('')
+      }}
+  when: bootstrap_root_key_test.rc != 0
+  no_log: true
+
+- name: Erstzugang muss ein Kennwort besitzen
+  ansible.builtin.assert:
+    that: bootstrap_effective_password | length > 0
+    fail_msg: "Fuer {{ bootstrap_entry.name }} wurde kein Erstzugangskennwort angegeben."
+  when: bootstrap_root_key_test.rc != 0
+  no_log: true
+
+- name: Host mit vorhandenem Root-Key vormerken
+  ansible.builtin.add_host:
+    name: "bootstrap_key_{{ bootstrap_entry.name }}"
+    groups: bootstrap_key_ready
+    bootstrap_inventory_name: "{{ bootstrap_entry.name }}"
+    ansible_host: "{{ hostvars[bootstrap_entry.name].ansible_host }}"
+    ansible_port: "{{ bootstrap_entry.port | default(22) }}"
+    ansible_user: root
+    ansible_password: ""
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
+  when: bootstrap_root_key_test.rc == 0
+
+- name: Host mit individuellem Erstzugang vormerken
+  ansible.builtin.add_host:
+    name: "bootstrap_{{ bootstrap_entry.name }}"
+    groups: bootstrap_runtime
+    bootstrap_inventory_name: "{{ bootstrap_entry.name }}"
+    ansible_host: "{{ hostvars[bootstrap_entry.name].ansible_host }}"
+    ansible_port: "{{ bootstrap_entry.port | default(22) }}"
+    ansible_user: "{{ bootstrap_entry.user | default('root') }}"
+    ansible_password: "{{ bootstrap_effective_password }}"
+    ansible_become_password: "{{ bootstrap_effective_become_password }}"
+    bootstrap_requested_become: "{{ bootstrap_entry.become_method | default('auto') }}"
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
+  when: bootstrap_root_key_test.rc != 0
+  no_log: true

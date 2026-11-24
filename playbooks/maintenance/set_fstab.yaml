@@ -1,0 +1,200 @@
+---
+- name: Zentral definierte Mounts verwalten
+  hosts: all_linux_systems
+  become: true
+  gather_facts: false
+
+  vars:
+    storage_vars_path: "{{ playbook_dir }}/../../host_vars/{{ inventory_hostname }}/storage.yml"
+
+  pre_tasks:
+    - name: Hostbezogene Storage-Definition suchen
+      ansible.builtin.stat:
+        path: "{{ storage_vars_path }}"
+      delegate_to: localhost
+      become: false
+      register: storage_vars_file
+      tags: [storage, fstab]
+
+    - name: Hostbezogene Storage-Definition laden
+      ansible.builtin.include_vars:
+        file: "{{ storage_vars_path }}"
+        name: storage_definition
+      when: storage_vars_file.stat.exists
+      tags: [storage, fstab]
+
+    - name: Verwaltete Mounts festlegen
+      ansible.builtin.set_fact:
+        host_managed_mounts: >-
+          {{ (storage_definition | default({})).managed_mounts | default([]) }}
+      tags: [storage, fstab]
+
+    - name: Eindeutige Mountnamen und Mountpunkte pruefen
+      ansible.builtin.assert:
+        that:
+          - host_managed_mounts | map(attribute='name') | list | unique | length == host_managed_mounts | length
+          - host_managed_mounts | map(attribute='path') | list | unique | length == host_managed_mounts | length
+        fail_msg: >-
+          managed_mounts auf {{ inventory_hostname }} enthaelt doppelte Namen
+          oder Mountpunkte.
+      tags: [storage, fstab]
+
+    - name: Mountdefinitionen validieren
+      ansible.builtin.assert:
+        that:
+          - item.name is defined
+          - item.name | string | length > 0
+          - item.path is defined
+          - item.path | string is match('^/')
+          - item.state | default('mounted') in ['mounted', 'present', 'unmounted', 'absent']
+          - item.state | default('mounted') == 'absent' or item.src is defined
+          - item.state | default('mounted') == 'absent' or item.fstype is defined
+          - item.state | default('mounted') == 'absent' or item.opts is defined
+          - item.healthcheck_cron is not defined or item.healthcheck_cron.split() | length == 5
+          - item.refresh_cron is not defined or item.refresh_cron.split() | length == 5
+          - item.healthcheck_cron is not defined or item.refresh_cron is not defined
+        fail_msg: "Ungueltiger managed_mounts-Eintrag auf {{ inventory_hostname }}: {{ item }}"
+      loop: "{{ host_managed_mounts }}"
+      loop_control:
+        label: "{{ item.name | default('unbenannt') }}"
+      tags: [storage, fstab]
+
+    - name: Benoetigte Mounttypen bestimmen
+      ansible.builtin.set_fact:
+        active_mount_fstypes: >-
+          {{ (
+            (host_managed_mounts | selectattr('state', 'undefined') | list)
+            +
+            (host_managed_mounts
+              | selectattr('state', 'defined')
+              | rejectattr('state', 'equalto', 'absent')
+              | list)
+          ) | map(attribute='fstype') | list }}
+      tags: [storage, fstab]
+
+  tasks:
+    - name: CIFS-Client installieren
+      ansible.builtin.package:
+        name: cifs-utils
+        state: present
+      when: "'cifs' in active_mount_fstypes"
+      tags: [storage, fstab, packages]
+
+    - name: NFS-Client installieren
+      ansible.builtin.package:
+        name: nfs-common
+        state: present
+      when: "'nfs' in active_mount_fstypes or 'nfs4' in active_mount_fstypes"
+      tags: [storage, fstab, packages]
+
+    - name: BindFS installieren
+      ansible.builtin.package:
+        name: bindfs
+        state: present
+      when: "'fuse' in active_mount_fstypes"
+      tags: [storage, fstab, packages]
+
+    - name: Bereits eingehängte Mountpunkte erkennen
+      ansible.builtin.command:
+        argv:
+          - findmnt
+          - --mountpoint
+          - "{{ item.path }}"
+      loop: "{{ host_managed_mounts }}"
+      loop_control:
+        label: "{{ item.path }}"
+      register: managed_mountpoint_status
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      tags: [storage, fstab]
+
+    - name: Mountpunkte anlegen
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "{{ item.directory_mode | default('0755') }}"
+      loop: "{{ host_managed_mounts }}"
+      loop_control:
+        label: "{{ item.path }}"
+        index_var: mount_index
+      when:
+        - item.state | default('mounted') != 'absent'
+        - managed_mountpoint_status.results[mount_index].rc != 0
+      tags: [storage, fstab]
+
+    - name: Mounts in fstab eintragen und optional einhaengen
+      ansible.posix.mount:
+        path: "{{ item.path }}"
+        src: "{{ item.src | default(omit) }}"
+        fstype: "{{ item.fstype | default(omit) }}"
+        opts: "{{ item.opts | default(omit) }}"
+        dump: "{{ item.dump | default(0) }}"
+        passno: "{{ item.passno | default(0) }}"
+        state: >-
+          {{ item.state | default(
+            (item.mount_now | default(true) | bool) | ternary('mounted', 'present')
+          ) }}
+        backup: true
+      loop: "{{ host_managed_mounts }}"
+      loop_control:
+        label: "{{ item.name }} -> {{ item.path }}"
+      notify: systemd nach fstab-Aenderung neu laden
+      tags: [storage, fstab]
+
+    - name: Optionalen Mount-Healthcheck als Cronjob pflegen
+      ansible.builtin.cron:
+        name: "Managed mount healthcheck - {{ item.name }}"
+        minute: "{{ (item.healthcheck_cron | default('* * * * *')).split()[0] }}"
+        hour: "{{ (item.healthcheck_cron | default('* * * * *')).split()[1] }}"
+        day: "{{ (item.healthcheck_cron | default('* * * * *')).split()[2] }}"
+        month: "{{ (item.healthcheck_cron | default('* * * * *')).split()[3] }}"
+        weekday: "{{ (item.healthcheck_cron | default('* * * * *')).split()[4] }}"
+        job: "timeout 5 mountpoint -q {{ item.path | quote }} || /usr/bin/mount {{ item.path | quote }}"
+        user: root
+        state: >-
+          {{ 'present' if item.healthcheck_cron is defined
+             and item.state | default('mounted') != 'absent' else 'absent' }}
+      loop: "{{ host_managed_mounts }}"
+      loop_control:
+        label: "{{ item.name }}"
+      tags: [storage, fstab, cron]
+
+    - name: Optionalen Kerberos-Refresh als Cronjob pflegen
+      ansible.builtin.cron:
+        name: "Managed mount refresh - {{ item.name }}"
+        minute: "{{ (item.refresh_cron | default('* * * * *')).split()[0] }}"
+        hour: "{{ (item.refresh_cron | default('* * * * *')).split()[1] }}"
+        day: "{{ (item.refresh_cron | default('* * * * *')).split()[2] }}"
+        month: "{{ (item.refresh_cron | default('* * * * *')).split()[3] }}"
+        weekday: "{{ (item.refresh_cron | default('* * * * *')).split()[4] }}"
+        job: >-
+          /usr/bin/umount -lf {{ item.path | quote }};
+          for i in 1 2 3 4 5; do ! mountpoint -q {{ item.path | quote }} && break || sleep 1; done;
+          /usr/bin/mount {{ item.path | quote }}
+        user: root
+        state: >-
+          {{ 'present' if item.refresh_cron is defined
+             and item.state | default('mounted') != 'absent' else 'absent' }}
+      loop: "{{ host_managed_mounts }}"
+      loop_control:
+        label: "{{ item.name }}"
+      tags: [storage, fstab, cron]
+
+    - name: fstab-Handler jetzt ausfuehren
+      ansible.builtin.meta: flush_handlers
+      tags: [storage, fstab]
+
+    - name: fstab validieren
+      ansible.builtin.command:
+        cmd: findmnt --verify --verbose
+      changed_when: false
+      when: not ansible_check_mode
+      tags: [storage, fstab]
+
+  handlers:
+    - name: systemd nach fstab-Aenderung neu laden
+      ansible.builtin.systemd:
+        daemon_reload: true

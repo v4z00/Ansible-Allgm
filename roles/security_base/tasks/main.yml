@@ -1,0 +1,34 @@
+---
+- name: Rechtlichen Login-Banner setzen
+  ansible.builtin.copy:
+    dest: "{{ item }}"
+    content: |
+      *************************************************************************
+      * WARNUNG: Unbefugter Zugriff auf dieses System ist streng untersagt.   *
+      * Alle Aktivitaeten werden protokolliert und ueberwacht.                *
+      *************************************************************************
+    owner: root
+    group: root
+    mode: '0644'
+  loop: [/etc/issue, /etc/issue.net]
+
+- name: login.defs haerten
+  ansible.builtin.lineinfile:
+    path: /etc/login.defs
+    regexp: "^{{ item.key }}\\s+"
+    line: "{{ item.key }}\t{{ item.value }}"
+    state: present
+  loop:
+    - {key: PASS_MAX_DAYS, value: "{{ hardening_pass_max_days }}"}
+    - {key: PASS_MIN_DAYS, value: "{{ hardening_pass_min_days }}"}
+    - {key: PASS_WARN_AGE, value: "{{ hardening_pass_warn_age }}"}
+    - {key: UMASK, value: "{{ hardening_umask }}"}
+    - {key: SHA_CRYPT_MIN_ROUNDS, value: '5000'}
+    - {key: SHA_CRYPT_MAX_ROUNDS, value: '5000'}
+
+- name: Verwaiste Pakete optional entfernen
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+  when: hardening_autoremove | bool
+

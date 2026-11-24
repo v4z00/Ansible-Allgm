@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "bootstrap",
+      "description": "SSH-Key verteilen; Passwortabschaltung nur bei Freigabe",
+      "handler": "bin/control.d/bootstrap.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/run_bootstrap.py",
+        "playbooks/bootstrap.yml",
+        "playbooks/bootstrap/root_access.yml",
+        "playbooks/bootstrap/tasks/prepare_target.yml",
+        "roles/bootstrap_ssh/tasks/main.yml",
+        "roles/bootstrap_ssh/defaults/main.yml",
+        "roles/bootstrap_ssh/handlers/main.yml"
+      ],
+      "aliases": [
+        {
+          "name": "bootstrap",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

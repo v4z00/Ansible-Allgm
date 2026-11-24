@@ -1,0 +1,63 @@
+#!/bin/sh
+# Managed by Ansible - live system information
+
+if [ -t 1 ] && [ "${TERM:-dumb}" != "dumb" ]; then
+  blue='\033[1;34m'
+  green='\033[1;32m'
+  red='\033[1;31m'
+  reset='\033[0m'
+else
+  blue=''
+  green=''
+  red=''
+  reset=''
+fi
+
+print_section() {
+  printf '%b-- %s ------------------------------------------------------%b\n' "$blue" "$1" "$reset"
+}
+
+print_info() {
+  printf '  %b%-20s%b %s\n' "$green" "$1" "$reset" "$2"
+}
+
+if [ -r /etc/os-release ]; then
+  # shellcheck disable=SC1091
+  . /etc/os-release
+  os_info=${PRETTY_NAME:-${NAME:-Linux}}
+else
+  os_info=$(uname -s)
+fi
+
+fqdn=$(hostname -f 2>/dev/null || hostname)
+ip_addresses=$(hostname -I 2>/dev/null | xargs 2>/dev/null || true)
+uptime_info=$(uptime -p 2>/dev/null | sed 's/^up //' || true)
+load_info=$(awk '{print $1 " / " $2 " / " $3}' /proc/loadavg 2>/dev/null || printf 'N/A')
+memory_info=$(free -h 2>/dev/null | awk '/^Mem:/ {print $3 " / " $2 " benutzt, " $7 " verfuegbar"}')
+disk_info=$(df -hP / 2>/dev/null | awk 'NR == 2 {print $3 " / " $2 " benutzt (" $5 "), " $4 " frei"}')
+cpu_info=$(awk -F: '/model name/ {gsub(/^[ \t]+/, "", $2); print $2; exit}' /proc/cpuinfo 2>/dev/null)
+cpu_count=$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '?')
+virtualization=$(systemd-detect-virt 2>/dev/null || printf 'bare-metal')
+active_users=$(who 2>/dev/null | wc -l | tr -d ' ')
+
+print_section 'SYSTEM'
+print_info 'Betriebssystem' "${os_info} ($(uname -m))"
+print_info 'Hostname' "${fqdn}"
+print_info 'Kernel' "$(uname -r)"
+print_info 'Virtualisierung' "${virtualization}"
+print_info 'IP-Adressen' "${ip_addresses:-keine erkannt}"
+
+printf '\n'
+print_section 'RESSOURCEN'
+print_info 'CPU' "${cpu_info:-unbekannt} (${cpu_count} Threads)"
+print_info 'Arbeitsspeicher' "${memory_info:-N/A}"
+print_info 'Root-Dateisystem' "${disk_info:-N/A}"
+print_info 'Laufzeit' "${uptime_info:-N/A}"
+print_info 'Systemlast' "${load_info} (1 / 5 / 15 Min.)"
+print_info 'Aktive Benutzer' "${active_users:-0}"
+
+if [ -f /run/reboot-required ]; then
+  printf '\n%b  ! Neustart erforderlich%b\n' "$red" "$reset"
+fi
+
+printf '\n'

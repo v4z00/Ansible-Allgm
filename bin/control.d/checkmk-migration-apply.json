@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "checkmk-migration-apply",
+      "description": "CheckMK sichern und den gespeicherten Plan anwenden",
+      "handler": "bin/control.d/checkmk-migration-apply.sh",
+      "feature": "checkmk",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/checkmk/migrate_hosts.yml"
+      ],
+      "aliases": [
+        {
+          "name": "checkmk-migration-apply",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

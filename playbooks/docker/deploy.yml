@@ -1,0 +1,5 @@
+---
+- ansible.builtin.import_playbook: prepare_deployment.yml
+- ansible.builtin.import_playbook: deploy_docker_users.yml
+- ansible.builtin.import_playbook: deploy_docker_networks.yaml
+- ansible.builtin.import_playbook: deploy_docker_stacks.yml

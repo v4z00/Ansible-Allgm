@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "postfix-queue-clear",
+      "description": "Postfix-Warteschlange leeren",
+      "handler": "bin/control.d/postfix-queue-clear.sh",
+      "feature": "postfix",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/clear_postfix_que.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "postfix-queue-clear",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

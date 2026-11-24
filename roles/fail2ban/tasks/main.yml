@@ -1,0 +1,81 @@
+---
+- name: Fail2ban installieren
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+
+- name: Mailziele fuer aktivierte Benachrichtigungen validieren
+  ansible.builtin.assert:
+    that:
+      - not (fail2ban_enable_notifications | bool) or (fail2ban_admin_email | default('') | length > 0)
+      - not (fail2ban_enable_ticket_notifications | bool) or (fail2ban_ticket_email | default('') | length > 0)
+    fail_msg: >-
+      Fuer aktivierte Fail2ban-Mailbenachrichtigungen muss die passende
+      Admin- beziehungsweise Ticketsystem-Adresse gesetzt sein.
+
+- name: Stille Mailaction fuer Ticketsysteme installieren
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/action.d/ticketsystem_silent_mail.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Includes]
+      before = sendmail-whois-lines.conf
+
+      [Definition]
+      actionstart = /bin/true
+      actionstop = /bin/true
+      actioncheck = /bin/true
+      actionunban = /bin/true
+  notify: Fail2ban neu starten
+  when: fail2ban_enable_ticket_notifications | bool
+
+- name: Stille Mailaction bei deaktivierten Ticketbenachrichtigungen entfernen
+  ansible.builtin.file:
+    path: /etc/fail2ban/action.d/ticketsystem_silent_mail.conf
+    state: absent
+  notify: Fail2ban neu starten
+  when: not (fail2ban_enable_ticket_notifications | bool)
+
+- name: Proxmox-VE-Filter installieren
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/filter.d/proxmox.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Definition]
+      failregex = pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*
+      ignoreregex =
+  when: inventory_hostname in fail2ban_proxmox_ve_hosts
+  notify: Fail2ban neu starten
+
+- name: Proxmox-Backup-Filter installieren
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/filter.d/proxmox-backup.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Definition]
+      failregex = proxmox-backup-api\[.*authentication failure; rhost=<HOST> user=.* msg=.*
+      ignoreregex =
+  when: inventory_hostname in fail2ban_proxmox_backup_hosts
+  notify: Fail2ban neu starten
+
+- name: Fail2ban-Konfiguration verteilen
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  notify: Fail2ban neu starten
+
+- name: Fail2ban aktivieren
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: started
+    enabled: true

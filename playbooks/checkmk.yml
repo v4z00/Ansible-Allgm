@@ -1,0 +1,87 @@
+---
+- name: CheckMK-Ordnerstruktur sicherstellen
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: CheckMK-API-Konfiguration fuer Ordner pruefen
+      ansible.builtin.assert:
+        that:
+          - checkmk_server_url | length > 0
+          - checkmk_site | length > 0
+          - checkmk_api_user | length > 0
+          - checkmk_api_password | length > 0
+        fail_msg: "CheckMK-API-Konfiguration ist unvollstaendig."
+      no_log: true
+      tags: [monitoring, checkmk, folders]
+
+    - name: CheckMK-Ordner und Elternordner anlegen
+      checkmk.general.folder:
+        validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_folders', tls_validate_certs_default | default(true)) | bool }}"
+        server_url: "{{ checkmk_server_url }}"
+        site: "{{ checkmk_site }}"
+        automation_user: "{{ checkmk_api_user }}"
+        automation_secret: "{{ checkmk_api_password }}"
+        path: "{{ item.path }}"
+        name: "{{ item.name }}"
+        state: present
+      loop: "{{ checkmk_folders }}"
+      loop_control:
+        label: "{{ item.path }}"
+      no_log: true
+      tags: [monitoring, checkmk, folders]
+
+- name: CheckMK-Agent und Hostverwaltung
+  hosts: checkmk_managed_hosts
+  become: true
+  gather_facts: true
+  roles:
+    - role: checkmk_agent
+      when: features.checkmk | bool
+      tags: [monitoring, checkmk]
+
+- name: Nicht-Linux-Hosts nur in CheckMK anlegen
+  hosts: checkmk_inventory_hosts:!checkmk_managed_hosts
+  connection: local
+  gather_facts: false
+
+  pre_tasks:
+    - name: API-Konfiguration und Zielordner fuer manuelle Hosts pruefen
+      ansible.builtin.assert:
+        that:
+          - checkmk_server_url | length > 0
+          - checkmk_site | length > 0
+          - checkmk_api_user | length > 0
+          - checkmk_api_password | length > 0
+          - checkmk_target_folder | default(checkmk_default_folder) | length > 0
+        fail_msg: "CheckMK-API-Konfiguration ist unvollstaendig."
+      no_log: true
+      tags: [monitoring, checkmk, manual_hosts]
+
+  tasks:
+    - name: Nicht-Linux-Host ohne Attribute anlegen oder im Zielordner sicherstellen
+      delegate_to: localhost
+      checkmk.general.host:
+        validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_manual_host', tls_validate_certs_default | default(true)) | bool }}"
+        server_url: "{{ checkmk_server_url }}"
+        site: "{{ checkmk_site }}"
+        automation_user: "{{ checkmk_api_user }}"
+        automation_secret: "{{ checkmk_api_password }}"
+        name: "{{ checkmk_hostname | default(inventory_hostname) }}"
+        folder: "{{ checkmk_target_folder | default(checkmk_default_folder) }}"
+        state: present
+      no_log: true
+      tags: [monitoring, checkmk, manual_hosts]
+
+    - name: Manuell zu konfigurierenden CheckMK-Host ausgeben
+      ansible.builtin.debug:
+        msg:
+          - "Manuelle CheckMK-Konfiguration erforderlich"
+          - "Inventory-Host: {{ inventory_hostname }}"
+          - "CheckMK-Host: {{ checkmk_hostname | default(inventory_hostname) }}"
+          - "Zielordner: {{ checkmk_target_folder | default(checkmk_default_folder) }}"
+          - "Adresse: {{ ansible_host | default('nicht vorgegeben') }}"
+          - "Attribute, Datenquellen, Spezialagenten und Plugins werden nicht durch Ansible geaendert."
+          - "Nach der manuellen Konfiguration die offenen CheckMK-Aenderungen bewusst aktivieren."
+      tags: [monitoring, checkmk, manual_hosts]

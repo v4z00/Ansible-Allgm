@@ -1,0 +1,31 @@
+{% set ssh_auth_mode = ansible_auth_mode | default('key_only') %}
+# Managed by Ansible
+MaxAuthTries {{ ssh_max_auth_tries }}
+MaxSessions {{ ssh_max_sessions }}
+LogLevel VERBOSE
+TCPKeepAlive no
+AllowTcpForwarding {{ 'yes' if inventory_hostname in ssh_tcp_forwarding_hosts or ssh_allow_tcp_forwarding | bool else 'no' }}
+X11Forwarding no
+ClientAliveInterval {{ ssh_client_alive_interval }}
+ClientAliveCountMax {{ ssh_client_alive_count_max }}
+PermitRootLogin {{ 'yes' if ssh_auth_mode == 'password_all' else ('prohibit-password' if ssh_auth_mode == 'password_users_only' else ssh_permit_root_login) }}
+PasswordAuthentication {{ 'no' if ssh_auth_mode == 'key_only' else 'yes' }}
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+{% for address in ([ansible_host | default(inventory_hostname)] + (ssh_listen_addresses | default([]))) | unique %}
+ListenAddress {{ address }}
+{% endfor %}
+
+{% if ssh_breakglass_enabled | bool and inventory_hostname not in ssh_breakglass_excluded_hosts %}
+Match User {{ ssh_breakglass_user }}
+    PasswordAuthentication yes
+    KbdInteractiveAuthentication no
+    PubkeyAuthentication no
+    AuthenticationMethods password
+    AllowTcpForwarding no
+    X11Forwarding no
+    PermitTunnel no
+    GatewayPorts no
+
+Match all
+{% endif %}

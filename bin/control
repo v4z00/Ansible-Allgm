@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# control-modules-v1: entry point only; command definitions live in bin/control.d.
+set -euo pipefail
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${ROOT_DIR}/lib/controller_environment.sh"
+exec python3 "${ROOT_DIR}/scripts/control_runtime.py" "$@"

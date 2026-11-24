@@ -1,0 +1,37 @@
+---
+- name: Rsyslog-Ziel pruefen
+  ansible.builtin.assert:
+    that: rsyslog_target_host | length > 0
+    fail_msg: "rsyslog_target_host in settings.yml setzen."
+
+- name: Rsyslog installieren
+  ansible.builtin.apt:
+    name: rsyslog
+    state: present
+
+- name: Kernel-Logging in LXC deaktivieren
+  ansible.builtin.lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: '^(#\s*)?(module\(load="imklog"\)|\$ModLoad\s+imklog)'
+    line: '#module(load="imklog") # Managed by Ansible for LXC'
+    state: present
+    backrefs: true
+  when: inventory_hostname in groups.get('lxc_hosts', [])
+  notify: Rsyslog neu starten
+
+- name: Remote-Weiterleitung konfigurieren
+  ansible.builtin.copy:
+    dest: /etc/rsyslog.d/90-remote-forwarding.conf
+    content: |
+      # Managed by Ansible
+      *.* action(type="omfwd" target="{{ rsyslog_target_host }}" port="{{ rsyslog_target_port }}" protocol="{{ rsyslog_protocol }}")
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Rsyslog neu starten
+
+- name: Rsyslog aktivieren
+  ansible.builtin.systemd:
+    name: rsyslog
+    state: started
+    enabled: true

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "ca-distribute",
+      "description": "Ansible-Root-CA verteilen",
+      "handler": "bin/control.d/ca-distribute.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/pki/distribute_root_ca.yml"
+      ],
+      "aliases": [
+        {
+          "name": "ca-distribute",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

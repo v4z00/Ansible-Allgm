@@ -1,0 +1,2 @@
+# Im Controller-Crontab nach erfolgreichem manuellen Lauf eintragen.
+17 3 * * * /root/ansible/bin/control update-check --auto >> /root/ansible/.local/update-check.log 2>&1

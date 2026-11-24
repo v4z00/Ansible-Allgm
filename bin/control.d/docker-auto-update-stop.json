@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "docker-auto-update-stop",
+      "description": "Automatische Container-Updates stoppen",
+      "handler": "bin/control.d/docker-auto-update-stop.sh",
+      "feature": "docker",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/docker/stop_auto_upgrade_docker.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "docker-auto-update-stop",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

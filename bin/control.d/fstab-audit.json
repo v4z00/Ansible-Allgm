@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "fstab-audit",
+      "description": "fstab-Dateien einsammeln",
+      "handler": "bin/control.d/fstab-audit.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/audit_fstab.yml"
+      ],
+      "aliases": [
+        {
+          "name": "audit-fstab",
+          "args": []
+        },
+        {
+          "name": "fstab-audit",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

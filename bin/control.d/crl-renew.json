@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "crl-renew",
+      "description": "Root-CRL erneuern und ausrollen",
+      "handler": "bin/control.d/crl-renew.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/pki/renew_crl.yml"
+      ],
+      "aliases": [
+        {
+          "name": "crl-renew-script",
+          "args": []
+        },
+        {
+          "name": "crl-renew",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

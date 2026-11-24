@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "checkmk-download",
+      "description": "CheckMK-Agent/Plugins herunterladen",
+      "handler": "bin/control.d/checkmk-download.sh",
+      "feature": "checkmk",
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/download_checkmk_artifacts.sh"
+      ],
+      "aliases": [
+        {
+          "name": "checkmk-download",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

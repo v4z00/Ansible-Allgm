@@ -1,0 +1,29 @@
+---
+- name: Lynis installieren
+  ansible.builtin.apt:
+    name: lynis
+    state: present
+
+- name: Lynis-Audit ausfuehren
+  ansible.builtin.command: lynis audit system --quick --auditor Ansible
+  register: lynis_result
+  changed_when: true
+  failed_when: lynis_result.rc not in [0, 1]
+
+- name: Lokalen Reportordner sicherstellen
+  ansible.builtin.file:
+    path: "{{ controller_report_dir }}/lynis/{{ inventory_hostname }}"
+    state: directory
+    mode: '0700'
+  delegate_to: localhost
+  become: false
+
+- name: Lynis-Ergebnisse abholen
+  ansible.builtin.fetch:
+    src: "{{ item.src }}"
+    dest: "{{ controller_report_dir }}/lynis/{{ inventory_hostname }}/{{ item.dest }}"
+    flat: true
+  loop:
+    - {src: /var/log/lynis-report.dat, dest: report.dat}
+    - {src: /var/log/lynis.log, dest: lynis.log}
+

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>SSS · Notfall-Wiederherstellung</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #183432; background: #f4f5ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { width: min(880px, calc(100% - 36px)); margin: 48px auto; }
+    header { padding: 0 0 24px; border-bottom: 1px solid #cbd4cb; margin-bottom: 28px; }
+    .eyebrow { font-size: 12px; letter-spacing: .12em; font-weight: 750; text-transform: uppercase; }
+    h1 { font-size: clamp(30px, 6vw, 48px); letter-spacing: -.045em; line-height: 1.1; margin: 18px 0; }
+    p { line-height: 1.6; } .sub { color: #516560; max-width: 660px; }
+    .badge { display: inline-block; border: 1px solid #9bb8a7; padding: 6px 12px; border-radius: 30px; font-size: 12px; }
+    section { background: #fff; border: 1px solid #d9dfd5; border-radius: 16px; padding: 26px; margin: 18px 0; }
+    h2 { font-size: 20px; margin: 0 0 16px; }
+    label { display: block; font-weight: 650; margin: 20px 0 8px; }
+    textarea { width: 100%; min-height: 108px; resize: vertical; border: 1px solid #a9bab0; border-radius: 8px; padding: 12px; font: 13px/1.5 monospace; overflow-wrap: anywhere; }
+    select { width: 100%; padding: 14px; border: 1px solid #a9bab0; border-radius: 8px; background: white; color: #183432; font: inherit; font-weight: 650; }
+    textarea:focus, select:focus, button:focus-visible { outline: 3px solid #a0cbb9; outline-offset: 3px; }
+    button { border: 0; border-radius: 8px; padding: 13px 18px; font: inherit; font-weight: 650; cursor: pointer; background: #185446; color: white; }
+    button.secondary { background: #eaf0e9; color: #284a3e; }
+    button:disabled { opacity: .45; cursor: wait; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    small { color: #516560; line-height: 1.6; display: block; margin-top: 10px; }
+    #status { min-height: 24px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .error { color: #a42c1c; } #metadata { background: #edf3ea; padding: 12px; border-radius: 8px; overflow-wrap: anywhere; }
+    #password, #second-factor { display: block; white-space: pre-wrap; overflow-wrap: anywhere; padding: 18px; background: #f4f5ef; font: 18px/1.6 monospace; }
+    [hidden] { display: none !important; } footer { color: #63736a; font-size: 13px; line-height: 1.7; }
+    @media (max-width: 550px) { main { margin-top: 24px; } section { padding: 20px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="eyebrow">SSS / Digitaler Nachlass & IT-Notfall</span>
+    <h1>Gemeinsam den<br>Zugang wiederherstellen.</h1>
+    <p class="sub">Stellt gemeinsam das Vaultwarden-Master-Passwort oder das Infrastruktur-Passwort wieder her. Die KDBX-Datei ist die zusätzliche Offline-Variante für Notfälle. Haltet die Notfallanleitung bereit.</p>
+    <span class="badge">Offline · Verarbeitung auf diesem Rechner</span>
+  </header>
+  <section id="startup" hidden>
+    <h2>Offline-Werkzeug starten</h2>
+    <p>Diese HTML-Datei benötigt den mitgelieferten lokalen Dienst. Entpackt das gesamte Werkzeugpaket. Windows: <code>start-html.bat</code> öffnen. macOS: <code>start-html.command</code> öffnen. Linux: im gleichen Ordner ein Terminal öffnen und starten:</p>
+    <pre>bash start-html.sh</pre>
+    <p>Das Startskript öffnet nach Möglichkeit den lokalen Browser. Alternativ ohne Startskript: <code>python3 recover.py --web</code>.</p>
+    <p>Die Starter bereiten fehlende Voraussetzungen nach Möglichkeit vor: Windows über WSL/Ubuntu, macOS über Homebrew, Debian/Ubuntu über apt. Beachtet die Admin-Abfragen und gegebenenfalls den Windows-Neustart. Die Erstinstallation benötigt erreichbare Paketquellen. Danach funktioniert die Wiederherstellung offline. Einzelheiten: START-HIER.md.</p>
+  </section>
+  <section>
+    <h2>1. Schlüsselteile zusammenführen</h2>
+    <label for="mode">Welche Art von Zugang benötigt ihr?</label>
+    <select id="mode" aria-describedby="mode-help">
+      <option value="infra">Infrastruktur – 2 Personen</option>
+      <option value="master">Vaultwarden-Master-Passwort – 3 Personen</option>
+    </select>
+    <p id="mode-help" class="sub"></p>
+    <p class="sub">Kopiert pro Person einen vollständigen Teil von <code>SSS1</code> oder <code>SSS2</code> bis zum Ende in ein eigenes Feld. Bei SSS2 alle mit <code>~</code> verbundenen Blöcke übernehmen. Zeilenumbrüche vom Papier sind erlaubt. Beim Wechsel werden bisherige Eingaben und Ergebnisse geleert.</p>
+    <div id="metadata" hidden></div>
+    <div id="fields"></div>
+    <small>Nur Originalteile desselben Satzes und Bereichs verwenden. Die Prüfsumme erkennt Tippfehler; sie bestätigt nicht die Echtheit eines Dokuments.</small>
+    <div class="actions"><button id="restore" type="button">Passwort wiederherstellen</button><button id="clear" type="button" class="secondary">Alles leeren</button></div>
+    <p id="status" role="status" aria-live="polite"></p>
+  </section>
+  <section id="result" hidden>
+    <h2>2. Zugangsdaten übernehmen</h2>
+    <p id="result-help"></p>
+    <p>Die KDBX ist die Offline-Notfallvariante. Welches Passwort sie öffnet und ob Zusatzfaktoren erforderlich sind, steht in der Dokumentation. Das Vaultwarden-Master-Passwort gilt dafür nur bei entsprechender Einrichtung.</p>
+    <button type="button" id="reveal">Zugangsdaten anzeigen</button>
+    <h3 id="password-label" hidden>Passwort</h3>
+    <pre id="password" hidden></pre>
+    <div id="second-factor-group" hidden>
+      <h3 id="second-factor-label"></h3>
+      <pre id="second-factor"></pre>
+      <p id="second-factor-help"></p>
+    </div>
+    <small>Leerzeichen gehören zum Passwort. Nach 60 Sekunden werden beide Angaben geleert. Erst der erfolgreiche tatsächliche Zugang bestätigt die Wiederherstellung.</small>
+  </section>
+  <footer>Keine Schlüssel oder Passwörter in Chats, Suchmaschinen oder Online-Entschlüsselungsseiten eingeben. Nach der Nutzung alle Felder leeren, diesen Tab schließen und den lokalen Dienst mit Strg+C beenden.</footer>
+</main>
+<script>
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const modes = {
+    infra: { count: 2, label: 'Infrastruktur', help: 'IT-Notfall: Ihr benötigt die Infrastruktur-Schlüsselteile von 2 verschiedenen Personen.' },
+    master: { count: 3, label: 'Vaultwarden-Master', help: 'Vaultwarden: Ihr benötigt die Master-Schlüsselteile von 3 verschiedenen Personen. SSS2 enthält Passwort und zweiten Zugangsschlüssel; ältere SSS1-Teile enthalten nur das Passwort. Anlass gemäß persönlichem Brief beachten.' }
+  };
+  let recovered = null, expiry, generation = 0;
+  function addField() {
+    const n = $('fields').children.length + 1;
+    const box = document.createElement('div');
+    const label = document.createElement('label');
+    label.htmlFor = 'share' + n; label.textContent = 'Schlüsselteil ' + n;
+    const input = document.createElement('textarea');
+    input.id = label.htmlFor; input.placeholder = 'SSS1|… oder SSS2|…'; input.spellcheck = false;
+    input.autocomplete = 'off'; input.autocapitalize = 'off'; input.maxLength = 5000;
+    input.addEventListener('input', () => { forget(); $('status').textContent = ''; updateMetadata(); });
+    box.append(label, input); $('fields').append(box);
+  }
+  function forget() {
+    generation++; recovered = null; clearTimeout(expiry); $('password').textContent = '';
+    $('password').hidden = true; $('result').hidden = true; $('reveal').hidden = false;
+    $('password-label').hidden = true; $('second-factor-group').hidden = true;
+    $('second-factor').textContent = ''; $('second-factor-label').textContent = ''; $('second-factor-help').textContent = '';
+  }
+  function updateMetadata() {
+    const parts = $('share1').value.replace(/\s/g, '').split('|');
+    const n = Number(parts[3]);
+    if (['SSS1', 'SSS2'].includes(parts[0]) && /^[0-9a-f]{32}$/.test(parts[1]) && ['master', 'infra'].includes(parts[2]) && Number.isInteger(n) && n >= 2 && n <= 20) {
+      $('metadata').textContent = `${parts[2] === 'master' ? 'Master' : 'Infrastruktur'} · ${n} Teile erforderlich · Satz ${parts[1]}`;
+      $('metadata').hidden = false;
+      if (parts[2] !== $('mode').value || n !== modes[$('mode').value].count) {
+        $('metadata').textContent += ' – Passt nicht zur gewählten Zugangsart. Bitte Auswahl und Schlüsselteil prüfen.';
+        $('metadata').className = 'error';
+      } else { $('metadata').className = ''; }
+    } else { $('metadata').hidden = true; }
+  }
+  function resetFields() {
+    forget(); $('fields').replaceChildren();
+    const mode = modes[$('mode').value];
+    for (let i = 0; i < mode.count; i++) addField();
+    $('mode-help').textContent = mode.help;
+    $('restore').textContent = mode.label + '-Passwort wiederherstellen';
+    $('metadata').hidden = true; $('status').textContent = '';
+  }
+  $('mode').addEventListener('change', resetFields);
+  $('clear').onclick = () => { resetFields(); $('share1').focus(); };
+  $('restore').onclick = async () => {
+    forget(); const version = generation; $('status').className = ''; $('status').textContent = 'Teile werden lokal geprüft …';
+    $('restore').disabled = true;
+    try {
+      const shares = [...document.querySelectorAll('textarea')].map(el => el.value);
+      const kind = $('mode').value;
+      for (const value of shares) {
+        const parts = value.replace(/\s/g, '').split('|');
+        if (!['SSS1', 'SSS2'].includes(parts[0])) throw new Error('Bitte jedes Feld mit einem vollständigen SSS1- oder SSS2-Schlüsselteil ausfüllen.');
+        if (parts[2] !== kind || Number(parts[3]) !== modes[kind].count) {
+          throw new Error(`Für ${modes[kind].label} sind ${modes[kind].count} passende ${modes[kind].label}-Teile erforderlich. Bitte Auswahl und Teile prüfen.`);
+        }
+      }
+      const response = await fetch('combine', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({shares, kind}), cache: 'no-store', credentials: 'omit' });
+      const data = await response.json();
+      if (generation !== version) return;
+      if (!response.ok) throw new Error(data.error || 'Wiederherstellung fehlgeschlagen.');
+      recovered = data; $('result').hidden = false; $('status').textContent = 'Berechnung abgeschlossen. Prüft den dokumentierten Zugang.';
+      $('result-help').textContent = kind === 'master'
+        ? 'Zeigt das Passwort an, wenn niemand mitliest. Verwendet es als Vaultwarden-Master-Passwort mit dem dokumentierten Konto und der Serveradresse. Gegebenenfalls ist zusätzlich 2FA erforderlich.'
+        : 'Zeigt das Passwort an, wenn niemand mitliest, und verwendet es für den dokumentierten Infrastruktur-Zugang.';
+      document.querySelectorAll('textarea').forEach(el => el.value = '');
+      expiry = setTimeout(() => { forget(); $('status').textContent = 'Ergebnis nach 60 Sekunden geleert.'; }, 60000);
+    } catch (error) {
+      if (generation === version) { $('status').className = 'error'; $('status').textContent = error instanceof TypeError ? 'Lokaler Dienst nicht erreichbar. Bitte recover.py --web starten.' : error.message; }
+    } finally { $('restore').disabled = false; }
+  };
+  $('reveal').onclick = () => {
+    if (!recovered) return;
+    $('password').textContent = recovered.secret; $('password').hidden = false;
+    $('password-label').hidden = false; $('reveal').hidden = true;
+    if (recovered.second_factor) {
+      const totp = recovered.second_factor_type === 'totp';
+      $('second-factor-label').textContent = totp ? 'TOTP-Einrichtungsschlüssel' : '2FA-Wiederherstellungscode';
+      $('second-factor').textContent = recovered.second_factor;
+      $('second-factor-help').textContent = totp
+        ? 'Dieser Schlüssel ist kein aktueller Login-Code. Übernehmt ihn lokal in einen vertrauenswürdigen Authenticator für dieses Vaultwarden-Konto. Gebt anschließend dessen aktuellen Code bei der Anmeldung ein.'
+        : 'Diesen Code nur im dokumentierten Verfahren zur Wiederherstellung des zweiten Faktors verwenden. Er ist kein gewöhnlicher Authenticator-Code. Nach Verwendung den 2FA-Zugang und die Notfallunterlagen aktualisieren.';
+      $('second-factor-group').hidden = false;
+    }
+  };
+  window.addEventListener('pagehide', () => { forget(); document.querySelectorAll('textarea').forEach(el => el.value = ''); });
+  resetFields();
+  if (location.protocol !== 'http:' || location.hostname !== '127.0.0.1') {
+    $('startup').hidden = false; $('restore').disabled = true;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+---
+# Gemeinsamer Resolver. Credential-Dateien und Kennwortwerte sind optional.
+managed_access_effective_user: "{{ (managed_host_access | default({})).get(inventory_hostname, {}).get('user', managed_access_default_user | default('root')) }}"
+ansible_user: "{{ managed_access_effective_user }}"
+ansible_port: "{{ (managed_host_access | default({})).get(inventory_hostname, {}).get('port', managed_access_default_port | default(22)) | int }}"
+ansible_become: "{{ (managed_host_access | default({})).get(inventory_hostname, {}).get('become', managed_access_default_become | default(false)) | bool }}"
+ansible_become_method: "{{ (managed_host_access | default({})).get(inventory_hostname, {}).get('become_method', managed_access_default_become_method | default('sudo')) }}"
+ansible_become_user: "{{ (managed_host_access | default({})).get(inventory_hostname, {}).get('become_user', managed_access_default_become_user | default('root')) }}"
+ansible_password: >-
+  {{ '' if
+     (ansible_auth_mode | default('key_only')) == 'key_only'
+     or ((ansible_auth_mode | default('key_only')) == 'password_users_only' and managed_access_effective_user == 'root')
+     else (managed_host_credentials | default({})).get(inventory_hostname, {}).get('password', managed_access_default_password | default('')) }}
+ansible_become_password: "{{ (managed_host_credentials | default({})).get(inventory_hostname, {}).get('become_password', managed_access_default_become_password | default('')) }}"

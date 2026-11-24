@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "last-log",
+      "description": "[MUSTER] Letztes Ausfuehrungslog anzeigen",
+      "handler": "bin/control.d/last-log.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh"
+      ],
+      "aliases": [
+        {
+          "name": "docker-last-log",
+          "args": [
+            "docker"
+          ]
+        },
+        {
+          "name": "last-log",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "docker-ips",
+      "description": "Docker-Netze und statische IPs auswerten",
+      "handler": "bin/control.d/docker-ips.sh",
+      "feature": "docker",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/docker/get_docker_ips.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "docker-ips",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

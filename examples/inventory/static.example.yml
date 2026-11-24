@@ -1,0 +1,16 @@
+all:
+  hosts:
+    linux01:
+      ansible_host: 192.0.2.10
+      checkmk_hostname: EXAMPLE_VM_linux01
+      checkmk_target_folder: /managed
+  children:
+    all_linux_systems:
+      hosts:
+        linux01: {}
+    checkmk_managed_hosts:
+      hosts:
+        linux01: {}
+    checkmk_inventory_hosts:
+      hosts:
+        linux01: {}

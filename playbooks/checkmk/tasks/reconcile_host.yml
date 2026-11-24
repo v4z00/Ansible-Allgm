@@ -1,0 +1,102 @@
+---
+# Checkmk erlaubt bestimmte Hostaenderungen nicht gemeinsam und erwartet vor
+# dem Folgeschritt jeweils eine Aktivierung. Daher bewusst keine Parallelitaet.
+- name: "Ist-Zustand von {{ checkmk_reconcile_hostname }} pruefen"
+  ansible.builtin.uri:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_read', tls_validate_certs_default | default(true)) | bool }}"
+    url: >-
+      {{ checkmk_server_url }}/{{ checkmk_site }}/check_mk/api/v1/objects/host_config/{{ checkmk_reconcile_hostname | urlencode }}
+    method: GET
+    headers:
+      Authorization: "Bearer {{ checkmk_api_user }} {{ checkmk_api_password }}"
+      Accept: application/json
+    status_code: [200, 404]
+    return_content: true
+  register: checkmk_reconcile_current
+  no_log: true
+
+- name: "Fehlenden Host {{ checkmk_reconcile_hostname }} vollstaendig anlegen"
+  checkmk.general.host:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_create', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    name: "{{ checkmk_reconcile_hostname }}"
+    folder: "{{ checkmk_reconcile_folder }}"
+    attributes:
+      ipaddress: "{{ checkmk_reconcile_ipaddress }}"
+      alias: "{{ checkmk_reconcile_alias }}"
+    state: present
+  register: checkmk_reconcile_create
+  no_log: true
+  when: checkmk_reconcile_current.status == 404
+
+- name: "Neuanlage von {{ checkmk_reconcile_hostname }} aktivieren"
+  checkmk.general.activation:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_create_activation', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    sites: ["{{ checkmk_site }}"]
+    redirect: true
+    force_foreign_changes: false
+  no_log: true
+  when: checkmk_reconcile_create is changed
+
+- name: "Host {{ checkmk_reconcile_hostname }} allein in den Zielordner verschieben"
+  checkmk.general.host:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_move', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    name: "{{ checkmk_reconcile_hostname }}"
+    folder: "{{ checkmk_reconcile_folder }}"
+    state: present
+  register: checkmk_reconcile_move
+  no_log: true
+  when: checkmk_reconcile_current.status == 200
+
+- name: "Ordnerwechsel von {{ checkmk_reconcile_hostname }} aktivieren"
+  checkmk.general.activation:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_move_activation', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    sites: ["{{ checkmk_site }}"]
+    redirect: true
+    force_foreign_changes: false
+  no_log: true
+  when: checkmk_reconcile_move is changed
+
+- name: "Attribute von {{ checkmk_reconcile_hostname }} allein abgleichen"
+  checkmk.general.host:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_attributes', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    name: "{{ checkmk_reconcile_hostname }}"
+    update_attributes:
+      ipaddress: "{{ checkmk_reconcile_ipaddress }}"
+      alias: "{{ checkmk_reconcile_alias }}"
+    state: present
+  register: checkmk_reconcile_attributes
+  no_log: true
+  when: checkmk_reconcile_current.status == 200
+
+- name: "Attributaenderungen von {{ checkmk_reconcile_hostname }} aktivieren"
+  checkmk.general.activation:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_attributes_activation', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    sites: ["{{ checkmk_site }}"]
+    redirect: true
+    force_foreign_changes: false
+  no_log: true
+  when: checkmk_reconcile_attributes is changed

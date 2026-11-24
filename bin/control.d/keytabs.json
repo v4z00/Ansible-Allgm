@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "keytabs",
+      "description": "SMB-Credentials in Kerberos-Keytabs ueberfuehren",
+      "handler": "bin/control.d/keytabs.sh",
+      "feature": "kerberos",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/identity/generate_keytabs.yml"
+      ],
+      "aliases": [
+        {
+          "name": "gen-keytabs",
+          "args": []
+        },
+        {
+          "name": "keytabs",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

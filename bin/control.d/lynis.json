@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "lynis",
+      "description": "Lynis ausfuehren und Reports holen",
+      "handler": "bin/control.d/lynis.sh",
+      "feature": "lynis",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/lynis.yml",
+        "playbooks/reporting/lynis_summary.yml"
+      ],
+      "aliases": [
+        {
+          "name": "sec-audit",
+          "args": []
+        },
+        {
+          "name": "lynis",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

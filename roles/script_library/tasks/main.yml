@@ -1,0 +1,38 @@
+---
+- name: Explizite Hostauswahl verlangen
+  ansible.builtin.assert:
+    that: ansible_limit | default('') | trim | length > 0
+    fail_msg: "Bitte den Zielhost oder die Zielgruppe mit --limit angeben."
+
+- name: Zielpfad für die öffentliche Bibliothek prüfen
+  ansible.builtin.stat:
+    path: /root/script-config/lib
+    follow: false
+  register: script_library_target
+
+- name: Vorhandene Verknüpfung oder Datei schützen
+  ansible.builtin.assert:
+    that: not script_library_target.stat.exists or script_library_target.stat.isdir | default(false)
+    fail_msg: "/root/script-config/lib ist kein reguläres Verzeichnis. Bestehende Zuordnung zuerst prüfen."
+
+- name: Verzeichnis für lokale Skriptkonfiguration bereitstellen
+  ansible.builtin.file:
+    path: /root/script-config
+    state: directory
+
+- name: Bibliotheksverzeichnis anlegen
+  ansible.builtin.file:
+    path: /root/script-config/lib
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Öffentliche Funktionen, Loader und Übersetzungstabelle installieren
+  ansible.builtin.copy:
+    src: "{{ role_path }}/../../artifacts/script-library/lib/"
+    dest: /root/script-config/lib/
+    owner: root
+    group: root
+    mode: '0600'
+    directory_mode: '0700'

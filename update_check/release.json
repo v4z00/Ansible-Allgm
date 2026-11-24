@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "profile": "allgm",
+  "controller_release": "0.1.0",
+  "manifest_basis": "Geprüfter Workspace-Quellstand",
+  "manifests": [
+    "manifests/controller_basis.json",
+    "manifests/tls_tasks.json",
+    "manifests/host_updates.json",
+    "manifests/bootstrap.json",
+    "manifests/version_pruefer.json"
+  ],
+  "checker_release": "1.1.0",
+  "delivery_scope": "workspace",
+  "feature_defaults": {
+    "checkmk": false,
+    "chrony": false,
+    "docker": false,
+    "proxmox": false,
+    "kerberos": false,
+    "lynis": false,
+    "postfix": false,
+    "rsyslog": false,
+    "telegraf": false
+  }
+}

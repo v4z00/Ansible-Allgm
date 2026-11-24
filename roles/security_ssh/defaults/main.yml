@@ -1,0 +1,7 @@
+---
+ssh_breakglass_enabled: false
+ssh_breakglass_user: ansible-rescue
+ssh_breakglass_uid: 3030
+ssh_breakglass_home: /home/ansible-rescue
+ssh_breakglass_password: ""
+ssh_breakglass_password_salt: "{{ ((site_id ~ '-' ~ inventory_hostname ~ '-' ~ ssh_breakglass_user) | hash('sha256'))[:16] }}"

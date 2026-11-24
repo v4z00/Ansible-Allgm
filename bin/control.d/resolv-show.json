@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "resolv-show",
+      "description": "Resolver-Konfiguration anzeigen",
+      "handler": "bin/control.d/resolv-show.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/get_resolv.yml"
+      ],
+      "aliases": [
+        {
+          "name": "resolv-show",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

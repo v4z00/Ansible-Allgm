@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "source": "Neutrale Vorlage + reale Playbook-/Befehlsverweise",
+  "features": {
+    "baseline": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml"
+      ]
+    },
+    "chrony": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml",
+        "playbooks/maintenance/uninstall_chrony.yml",
+        "bin/control.d/chrony-uninstall.json"
+      ]
+    },
+    "fail2ban": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml"
+      ]
+    },
+    "motd": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml"
+      ]
+    },
+    "ssh_hardening": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml"
+      ]
+    },
+    "security_base": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml"
+      ]
+    },
+    "accounting": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml"
+      ]
+    },
+    "security_tools": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml"
+      ]
+    },
+    "lynis": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/lynis.yml",
+        "bin/control.d/lynis.json"
+      ]
+    },
+    "rsyslog": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/base.yml",
+        "playbooks/maintenance/disable_syslog_forwarding.yml",
+        "bin/control.d/rsyslog-disable.json"
+      ]
+    },
+    "postfix": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/optional.yml",
+        "playbooks/maintenance/test_mail.yaml",
+        "playbooks/maintenance/clear_postfix_que.yaml",
+        "bin/control.d/postfix-queue-clear.json",
+        "bin/control.d/mail-test.json"
+      ]
+    },
+    "checkmk": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/checkmk.yml",
+        "bin/control.d/checkmk-migration-apply.json",
+        "bin/control.d/checkmk-download.json",
+        "bin/control.d/checkmk.json",
+        "bin/control.d/checkmk-migration-plan.json",
+        "bin/control.d/checkmk-uninstall.json"
+      ]
+    },
+    "docker": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "bin/control.d/docker-deploy-all.json",
+        "bin/control.d/docker-users-export.json",
+        "bin/control.d/docker-stop.json",
+        "bin/control.d/docker-deploy.json",
+        "bin/control.d/docker-auto-update-stop.json",
+        "bin/control.d/docker-ips.json",
+        "bin/control.d/docker-macvlan-prepare.json",
+        "bin/control.d/docker-check.json",
+        "bin/control.d/docker-update.json"
+      ]
+    },
+    "proxmox": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "bin/control.d/inventory-check.json",
+        "bin/control.d/inventory.json",
+        "bin/control.d/proxmox-hardening.json"
+      ]
+    },
+    "hyperv": {
+      "sources": [
+        "group_vars/all/settings.yml"
+      ]
+    },
+    "kerberos": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/optional.yml",
+        "playbooks/identity/generate_keytabs.yml",
+        "bin/control.d/keytabs.json"
+      ]
+    },
+    "kerberos_keytabs": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/identity/generate_keytabs.yml"
+      ]
+    },
+    "telegraf": {
+      "sources": [
+        "group_vars/all/settings.yml",
+        "playbooks/monitoring/deploy_telegraf.yml",
+        "playbooks/monitoring/deploy_telegraf.yml",
+        "bin/control.d/telegraf.json"
+      ]
+    },
+    "sss": {
+      "sources": [
+        "group_vars/all/settings.yml"
+      ]
+    }
+  }
+}

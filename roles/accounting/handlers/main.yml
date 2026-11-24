@@ -1,0 +1,6 @@
+---
+- name: Sysstat neu starten
+  ansible.builtin.systemd:
+    name: sysstat
+    state: restarted
+

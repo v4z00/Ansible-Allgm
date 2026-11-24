@@ -1,0 +1,24 @@
+- name: Explizit konfigurierte Arbeitsverzeichnisse anlegen
+  hosts: all_linux_systems
+  gather_facts: false
+  become: false
+  pre_tasks:
+  - name: Ausdrueckliches Ziel pruefen
+    ansible.builtin.assert:
+      that:
+      - ansible_limit | default('') | length > 0
+      fail_msg: Mit --limit HOST oder GRUPPE starten.
+  tasks:
+  - name: Absolute Pfade pruefen
+    ansible.builtin.assert:
+      that:
+      - item is match('^/')
+      - item != '/'
+      - '''/../'' not in item'
+    loop: '{{ managed_working_directories | default([]) }}'
+  - name: Arbeitsverzeichnisse erstellen
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0700'
+    loop: '{{ managed_working_directories | default([]) }}'

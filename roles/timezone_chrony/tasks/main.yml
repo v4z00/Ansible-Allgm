@@ -1,0 +1,55 @@
+---
+- name: Zeitzone konfigurieren
+  community.general.timezone:
+    name: "{{ system_timezone }}"
+
+- name: LXC-/Containerstatus bestimmen
+  ansible.builtin.set_fact:
+    baseline_is_container: >-
+      {{
+        proxmox_type | default('') == 'lxc'
+        or inventory_hostname in groups.get('lxc_hosts', [])
+        or ansible_virtualization_type | default('') in ['docker', 'lxc', 'openvz', 'podman', 'containerd']
+      }}
+
+- name: Chrony nur auf VM oder Hardware konfigurieren
+  when: not baseline_is_container | bool
+  block:
+    - name: Chrony installieren
+      ansible.builtin.apt:
+        name: chrony
+        state: present
+
+    - name: Konkurrierende Zeitdienste deaktivieren
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+        masked: true
+      loop:
+        - systemd-timesyncd
+        - ntp
+        - ntpd
+      failed_when: false
+
+    - name: Chrony-Konfiguration verteilen
+      ansible.builtin.template:
+        src: chrony.conf.j2
+        dest: /etc/chrony/chrony.conf
+        owner: root
+        group: root
+        mode: '0644'
+        backup: true
+      notify: Chrony neu starten
+
+    - name: Chrony aktivieren
+      ansible.builtin.systemd:
+        name: chrony
+        state: started
+        enabled: true
+
+- name: LXC-Zeitbehandlung dokumentieren
+  ansible.builtin.debug:
+    msg: "LXC/Container: Zeitzone gesetzt; die Uhr wird vom Host bereitgestellt."
+  when: baseline_is_container | bool
+

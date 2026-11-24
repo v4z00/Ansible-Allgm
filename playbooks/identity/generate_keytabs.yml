@@ -1,0 +1,242 @@
+---
+- name: "Kerberos: Keytabs, Cron-Einträge & Sofort-Check (Ohne Hetzner)"
+  hosts: all_linux_systems
+  become: true
+
+  pre_tasks:
+    - name: Kerberos-Keytab-Funktion muss aktiviert sein
+      ansible.builtin.assert:
+        that:
+          - features.kerberos | bool
+          - features.kerberos_keytabs | bool
+        fail_msg: "Kerberos oder die Keytab-Erzeugung ist in settings.yml deaktiviert."
+
+  tasks:
+    - name: "Suchpfad festlegen"
+      ansible.builtin.set_fact:
+        current_search_path: >-
+          {{ kerberos_credential_search_paths.get(
+               inventory_hostname,
+               kerberos_credential_search_paths.default
+             ) }}
+
+    - name: "Nach Credential-Dateien suchen (Hetzner wird ignoriert)"
+      ansible.builtin.find:
+        paths: "{{ current_search_path | trim }}"
+        patterns:
+          - "{{ kerberos_credential_pattern }}"
+        excludes: "{{ kerberos_credential_excludes }}"
+        file_type: file
+        recurse: false
+      register: found_creds
+
+    - name: "Prüfen, ob ktutil installiert ist"
+      ansible.builtin.shell: |
+        command -v ktutil
+      args:
+        executable: /bin/sh
+      register: ktutil_check
+      changed_when: false
+      failed_when: false
+      when: found_creds.matched > 0
+
+    - name: "Abbrechen, wenn ktutil nicht installiert ist"
+      ansible.builtin.fail:
+        msg: >-
+          Auf {{ inventory_hostname }} ist ktutil nicht installiert.
+          Unter Debian/Ubuntu wird es normalerweise durch das Paket
+          krb5-user bereitgestellt.
+      when:
+        - found_creds.matched > 0
+        - ktutil_check.rc != 0
+
+    - name: "Prüfen, welche Keytabs bereits existieren"
+      ansible.builtin.stat:
+        path: "{{ item.path }}.keytab"
+      loop: "{{ found_creds.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}.keytab"
+      register: keytabs_before
+
+    - name: "Fehlende Keytabs aus Credential-Dateien erzeugen"
+      ansible.builtin.shell: |
+        set -euo pipefail
+        umask 077
+
+        CREDENTIAL_FILE="{{ item.item.path }}"
+        KEYTAB_FILE="${CREDENTIAL_FILE}.keytab"
+
+        # Verzeichnis erzeugen, aber die Keytab-Datei selbst noch nicht.
+        # ktutil kann dadurch eine neue gültige Keytab anlegen.
+        TEMP_DIR="$(mktemp -d "${KEYTAB_FILE}.ansible.XXXXXX")"
+        TEMP_KEYTAB="${TEMP_DIR}/generated.keytab"
+
+        cleanup() {
+          rm -f "$TEMP_KEYTAB"
+          rmdir "$TEMP_DIR" 2>/dev/null || true
+        }
+
+        trap cleanup EXIT
+
+        USERNAME="$(
+          sed -n \
+            's/^[[:space:]]*[Uu][Ss][Ee][Rr][Nn][Aa][Mm][Ee][[:space:]]*=[[:space:]]*//p' \
+            "$CREDENTIAL_FILE" |
+          head -n 1
+        )"
+
+        PASSWORD="$(
+          sed -n \
+            's/^[[:space:]]*[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd][[:space:]]*=[[:space:]]*//p' \
+            "$CREDENTIAL_FILE" |
+          head -n 1
+        )"
+
+        if [ -z "$USERNAME" ]; then
+          echo "Kein username-Eintrag in $CREDENTIAL_FILE gefunden" >&2
+          exit 1
+        fi
+
+        if [ -z "$PASSWORD" ]; then
+          echo "Kein password-Eintrag in $CREDENTIAL_FILE gefunden" >&2
+          exit 1
+        fi
+
+        USERNAME="${USERNAME%%@*}"
+        PRINCIPAL="${USERNAME}@{{ kerberos_realm | upper }}"
+
+        {
+          printf '%s\n' \
+            "addent -password -p ${PRINCIPAL} -k 1 -e aes256-cts-hmac-sha1-96"
+          printf '%s\n' "$PASSWORD"
+
+          printf '%s\n' \
+            "addent -password -p ${PRINCIPAL} -k 1 -e aes128-cts-hmac-sha1-96"
+          printf '%s\n' "$PASSWORD"
+
+          printf '%s\n' "wkt ${TEMP_KEYTAB}"
+          printf '%s\n' "quit"
+        } | ktutil
+
+        if [ ! -s "$TEMP_KEYTAB" ]; then
+          echo "ktutil hat keine Keytab erzeugt" >&2
+          exit 1
+        fi
+
+        chown root:root "$TEMP_KEYTAB"
+        chmod 0600 "$TEMP_KEYTAB"
+        mv "$TEMP_KEYTAB" "$KEYTAB_FILE"
+      args:
+        executable: /bin/bash
+      loop: "{{ keytabs_before.results }}"
+      loop_control:
+        label: "{{ item.item.path | basename }}.keytab"
+      when: not item.stat.exists
+      no_log: true
+      changed_when: true
+
+    - name: "Keytabs nach der Erzeugung erneut prüfen"
+      ansible.builtin.stat:
+        path: "{{ item.path }}.keytab"
+      loop: "{{ found_creds.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}.keytab"
+      register: keytab_stats
+
+    - name: "Fehler melden, falls eine Keytab weiterhin fehlt"
+      ansible.builtin.fail:
+        msg: >-
+          Die Keytab {{ item.item.path }}.keytab konnte nicht erzeugt werden.
+      loop: "{{ keytab_stats.results }}"
+      loop_control:
+        label: "{{ item.item.path | basename }}.keytab"
+      when: not item.stat.exists
+
+    - name: "Live-Check | Kerberos-Ticket sofort beziehen"
+      ansible.builtin.shell: |
+        set -o pipefail
+
+        USERNAME="$(
+          sed -n \
+            's/^[[:space:]]*[Uu][Ss][Ee][Rr][Nn][Aa][Mm][Ee][[:space:]]*=[[:space:]]*//p' \
+            "{{ item.path }}" |
+          head -n 1
+        )"
+
+        USERNAME="${USERNAME%%@*}"
+        PRINCIPAL="${USERNAME}@{{ kerberos_realm | upper }}"
+
+        test -n "$USERNAME"
+
+        kinit \
+          -c "{{ kerberos_cache }}" \
+          -k \
+          -t "{{ item.path }}.keytab" \
+          "$PRINCIPAL"
+
+        klist -c "{{ kerberos_cache }}"
+      args:
+        executable: /bin/bash
+      loop: "{{ found_creds.files }}"
+      loop_control:
+        label: "Test für {{ item.path | basename }}"
+      register: kinit_live
+      changed_when: false
+      failed_when: false
+      no_log: false
+
+    - name: "Ergebnis der Ticket-Prüfung anzeigen"
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Credential-Datei: {{ item.item.path }}"
+          - "Keytab: {{ item.item.path }}.keytab"
+          - "Status: {{ 'ERFOLGREICH' if item.rc == 0 else 'FEHLGESCHLAGEN' }}"
+          - "Ausgabe: {{ item.stdout_lines | default([]) }}"
+          - "Fehler: {{ item.stderr_lines | default([]) }}"
+      loop: "{{ kinit_live.results | default([]) }}"
+      loop_control:
+        label: "{{ item.item.path | basename }}"
+
+    - name: "Cron-Einträge erstellen (alle vier Stunden)"
+      ansible.builtin.cron:
+        name: "Kinit für {{ item.item.path | basename }} (Intervall)"
+        user: root
+        minute: "0"
+        hour: "*/4"
+        job: >-
+          USERNAME=$(/usr/bin/awk -F= 'tolower($1) ~ /^[[:space:]]*username[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); sub(/@.*/, "", $2); print $2; exit}' '{{ item.item.path }}') &&
+          test -n "$USERNAME" &&
+          /usr/bin/kinit
+          -c '{{ kerberos_cache }}'
+          -k
+          -t '{{ item.item.path }}.keytab'
+          "${USERNAME}@{{ kerberos_realm | upper }}"
+      loop: "{{ kinit_live.results | default([]) }}"
+      loop_control:
+        label: "Cron (4h) für {{ item.item.path | basename }}"
+      when:
+        - not (item.skipped | default(false))
+        - (item.rc | default(1)) == 0
+
+    - name: "Cron-Einträge erstellen (@reboot)"
+      ansible.builtin.cron:
+        name: "Kinit für {{ item.item.path | basename }} (Reboot)"
+        user: root
+        special_time: reboot
+        job: >-
+          sleep 60 &&
+          USERNAME=$(/usr/bin/awk -F= 'tolower($1) ~ /^[[:space:]]*username[[:space:]]*$/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); sub(/@.*/, "", $2); print $2; exit}' '{{ item.item.path }}') &&
+          test -n "$USERNAME" &&
+          /usr/bin/kinit
+          -c '{{ kerberos_cache }}'
+          -k
+          -t '{{ item.item.path }}.keytab'
+          "${USERNAME}@{{ kerberos_realm | upper }}" &&
+          /usr/bin/mount -a
+      loop: "{{ kinit_live.results | default([]) }}"
+      loop_control:
+        label: "Cron (@reboot) für {{ item.item.path | basename }}"
+      when:
+        - not (item.skipped | default(false))
+        - (item.rc | default(1)) == 0

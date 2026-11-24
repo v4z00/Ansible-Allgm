@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "rsyslog-disable",
+      "description": "Zentrale Syslog-Weiterleitung deaktivieren",
+      "handler": "bin/control.d/rsyslog-disable.sh",
+      "feature": "rsyslog",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/disable_syslog_forwarding.yml"
+      ],
+      "aliases": [
+        {
+          "name": "rsyslog-disable",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

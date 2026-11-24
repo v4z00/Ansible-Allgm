@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "doctor",
+      "description": "Controller, Variablenpfade, Inventory und Syntax pruefen",
+      "handler": "bin/control.d/doctor.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/doctor.sh"
+      ],
+      "aliases": [
+        {
+          "name": "doctor",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+sss:
+  konfiguration_bestaetigt: false
+  master: {threshold: 2, shares: 3}
+  infra: {threshold: 2, shares: 3}
+  kontakt: "Vor Ort festlegen"
+  datenorte: "Vor Ort dokumentieren"
+  master_anlass: "Nach eigener Notfallrichtlinie"
+  infra_anlass: "Nach eigener Notfallrichtlinie"

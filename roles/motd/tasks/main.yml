@@ -1,0 +1,93 @@
+---
+- name: MOTD-Hilfspakete installieren
+  ansible.builtin.apt:
+    name: [lsb-release, procps, coreutils]
+    state: present
+
+- name: MOTD-Verzeichnis sicherstellen
+  ansible.builtin.file:
+    path: /etc/update-motd.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Vorhandene dynamische MOTD-Skripte ermitteln
+  ansible.builtin.find:
+    paths: /etc/update-motd.d
+    file_type: file
+  register: motd_dynamic_scripts
+
+- name: Dynamische MOTD-Skripte deaktivieren
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: a-x
+  loop: "{{ motd_dynamic_scripts.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Verwaltete dynamische MOTD-Skripte verteilen
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/update-motd.d/{{ item }}"
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - 00-header
+    - 10-system-info
+    - 90-updates-available
+
+- name: Einheitliche statische MOTD setzen
+  ansible.builtin.copy:
+    content: |
+      {{ site_name | upper }} | {{ ansible_hostname }} | Verwaltet durch {{ site_managed_by }}{{ ' | HAP: ' ~ motd_hap if motd_show_hap | default(false) | bool else '' }}
+      Dynamische Systeminformationen anzeigen: motd
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: '0644'
+  when: not (motd_show_hap | default(false) | bool) or motd_hap | default('') | trim | length > 0
+
+- name: Fehlenden HAP bei aktivierter Anzeige melden
+  ansible.builtin.assert:
+    that: motd_hap | default('') | trim | length > 0
+    fail_msg: "motd_show_hap ist aktiv, aber motd_hap ist leer."
+  when: motd_show_hap | default(false) | bool
+
+- name: MOTD-Anzeigebefehl installieren
+  ansible.builtin.copy:
+    dest: /usr/local/bin/showmotd
+    owner: root
+    group: root
+    mode: '0755'
+    content: |
+      #!/bin/sh
+      if [ -d /etc/update-motd.d ]; then
+        /usr/bin/env MOTD_SHOWN=is_already_shown run-parts --lsbsysinit /etc/update-motd.d
+      else
+        cat /etc/motd
+      fi
+
+- name: MOTD-Shellalias bereitstellen
+  ansible.builtin.lineinfile:
+    path: /etc/bash.bashrc
+    regexp: '^alias motd='
+    line: 'alias motd="/usr/local/bin/showmotd"'
+    state: present
+    create: true
+
+- name: Doppelte statische SSH-MOTD deaktivieren
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PrintMotd'
+    line: 'PrintMotd no'
+    state: present
+  notify: SSH fuer MOTD neu starten
+
+- name: Redundante PAM-MOTD-Zeile deaktivieren
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/sshd
+    regexp: '^(session\s+optional\s+pam_motd\.so\s+noupdate)'
+    line: '#\1'
+    backrefs: true

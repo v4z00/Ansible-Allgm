@@ -1,0 +1,30 @@
+- name: Interne Root-CA verteilen
+  hosts: all_linux_systems
+  gather_facts: false
+  become: false
+  pre_tasks:
+  - name: Ausdrueckliches Ziel pruefen
+    ansible.builtin.assert:
+      that:
+      - ansible_limit | default('') | length > 0
+      fail_msg: Mit --limit HOST oder GRUPPE starten.
+  tasks:
+  - name: Lokale CA-Quelle konfigurieren
+    ansible.builtin.assert:
+      that:
+      - pki_root_ca_source | default('') | length > 0
+      - pki_root_ca_name | default('managed-root') is match('^[A-Za-z0-9_-]+$')
+  - name: CA-Zertifikat kopieren
+    ansible.builtin.copy:
+      src: '{{ pki_root_ca_source }}'
+      dest: /usr/local/share/ca-certificates/{{ pki_root_ca_name | default('managed-root') }}.crt
+      owner: root
+      group: root
+      mode: '0644'
+    register: ca_change
+  - name: Trust Store aktualisieren
+    ansible.builtin.command:
+      argv:
+      - update-ca-certificates
+    when: ca_change.changed and not ansible_check_mode
+    changed_when: true

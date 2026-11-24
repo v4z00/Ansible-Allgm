@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "update-check",
+      "description": "Controller-Versionen, SHA und Settings pruefen; optional interaktiv einrichten",
+      "handler": "bin/control.d/update-check.sh",
+      "feature": null,
+      "requires": [
+        "update_check/check.sh",
+        "update_check/check.py",
+        "update_check/configure.py",
+        "update_check/probes.py",
+        "update_check/release.json",
+        "update_check/integrity.json",
+        "update_check/settings_contract.json",
+        "update_check/settings_catalog.json",
+        "update_check/cleanup.py",
+        "update_check/cleanup_plan.json",
+        "update_check/profile.json"
+      ],
+      "aliases": [
+        {
+          "name": "update-check",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+---
+- name: Optionale zentrale Dienste
+  # Appliances wie OPNsense duerfen auch bei einem veralteten oder falsch
+  # klassifizierten dynamischen Inventory niemals Linux-Rollen erhalten.
+  hosts: all_linux_systems:!opnsense_firewall
+  become: true
+  gather_facts: true
+  roles:
+    - role: postfix
+      when: features.postfix | bool
+      tags: [optional, postfix]
+    - role: kerberos
+      when: features.kerberos | bool
+      tags: [optional, kerberos, identity]

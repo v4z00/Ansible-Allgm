@@ -1,0 +1,97 @@
+---
+- name: "Docker Container Updates (Ansible Watchtower)"
+  hosts: docker_deployment_hosts
+  become: yes
+  gather_facts: yes
+
+  vars:
+    # Pfad zu den Configs auf den Remote-Servern
+    docker_host_config_dir: "{{ docker_remote_base_dir }}/{{ inventory_hostname }}"
+    # Temporäre Datei für den Bericht auf dem Remote-Server
+    summary_file: "/tmp/docker_update_summary.txt"
+
+  tasks:
+    - name: "Clean Summary File"
+      copy:
+        content: ""
+        dest: "{{ summary_file }}"
+        force: yes
+
+    - name: "Find Docker Compose Files"
+      find:
+        paths: "{{ docker_host_config_dir }}"
+        patterns: "docker-compose.y*ml"
+        recurse: yes
+      register: compose_files
+
+    # ==============================================================================
+    # 1. UPDATE LOGIK (Robust via 'Recreated' Check)
+    # ==============================================================================
+    - name: "Check and Update"
+      shell: |
+        # In das Verzeichnis des Stacks wechseln
+        cd "{{ item.path | dirname }}"
+        stack_name=$(basename "$(pwd)")
+        
+        # 1. Blind Pull: Wir laden einfach alles runter was neu ist.
+        # Output wird ignoriert, wir vertrauen nur dem 'up' Befehl.
+        docker compose pull > /dev/null 2>&1
+        
+        # 2. Apply: Wir führen 'up -d' aus und schauen, was Docker WIRKLICH tut.
+        up_output=$(docker compose up -d 2>&1)
+        
+        # 3. Analyse der Wahrheit:
+        # Docker schreibt "Recreated" (oder "Recreating"), wenn sich das Image geändert hat.
+        if echo "$up_output" | grep -qE "Recreated|Recreating"; then
+             echo "UPDATE: $stack_name" >> {{ summary_file }}
+             
+        elif echo "$up_output" | grep -q "error"; then
+             echo "ERROR: $stack_name" >> {{ summary_file }}
+        fi
+      loop: "{{ compose_files.files }}"
+      # Fehler ignorieren, damit ein kaputter Stack nicht den ganzen Server-Check stoppt
+      ignore_errors: true
+      register: update_run
+      args:
+        executable: /bin/bash
+
+    # ==============================================================================
+    # 2. PRUNE LOGIK (Aggressiv & Robust)
+    # ==============================================================================
+    - name: "Prune Images and Log"
+      shell: |
+        # Wir nutzen '-a', damit auch ungenutzte getaggte Images (wie alpine) gelöscht werden
+        prune_output=$(docker image prune -a -f)
+        
+        # Wir prüfen positiv, ob Docker "Deleted Images:" meldet. Das ist sicherer als auf "0B" zu prüfen.
+        if echo "$prune_output" | grep -q "Deleted Images:"; then
+             
+             # Größe extrahieren (alles nach 'Total reclaimed space: ')
+             # Falls die Sprache anders ist, steht hier evtl. nichts, aber das Skript stürzt nicht ab.
+             cleaned_size=$(echo "$prune_output" | grep "Total reclaimed space" | sed 's/Total reclaimed space: //')
+             
+             # Fallback für Anzeige, falls sed leer war
+             if [ -z "$cleaned_size" ]; then cleaned_size="Speicherplatz"; fi
+
+             # Ins Logfile schreiben
+             echo "CLEANED: $cleaned_size" >> {{ summary_file }}
+             
+             # WICHTIG: Signalwort für Ansible ausgeben
+             echo "ANSIBLE_CHANGED"
+        fi
+      args:
+        executable: /bin/bash
+      register: prune_result
+      # Der Task wird GELB (changed), wenn das Shell-Skript "ANSIBLE_CHANGED" ausgegeben hat
+      changed_when: "'ANSIBLE_CHANGED' in prune_result.stdout"
+
+    # ==============================================================================
+    # 3. FETCH: Bericht zum Management-Server holen
+    # ==============================================================================
+    - name: "Fetch Report to Management Server"
+      fetch:
+        src: "{{ summary_file }}"
+        # Speichert die Datei lokal auf dem Controller unter: /tmp/docker_reports/HOSTNAME.txt
+        dest: "/tmp/docker_reports/{{ inventory_hostname }}.txt"
+        flat: yes
+        fail_on_missing: no

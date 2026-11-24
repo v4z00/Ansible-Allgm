@@ -1,0 +1,175 @@
+# Neutrale Nachschlagewerte; keine aktive Konfiguration.
+# Werte mit example.invalid sind Platzhalter und werden nicht automatisch uebernommen.
+site_id: template
+site_name: Musterumgebung
+site_managed_by: IT-Administration
+motd_show_hap: false
+motd_hap: ''
+ansible_auth_mode: key_only
+auth_method_description: SSH-Schlüssel
+managed_access_default_user: root
+managed_access_default_port: 22
+managed_access_default_become: false
+managed_access_default_become_method: sudo
+managed_access_default_become_user: root
+managed_host_access: {}
+bootstrap_targets: []
+bootstrap_public_key_file: '{{ lookup(''ansible.builtin.env'', ''HOME'') }}/.ssh/id_ed25519.pub'
+bootstrap_disable_password_auth_after_key: false
+features:
+  baseline: true
+  chrony: true
+  fail2ban: true
+  motd: true
+  ssh_hardening: true
+  security_base: true
+  accounting: true
+  security_tools: true
+  lynis: true
+  rsyslog: false
+  postfix: false
+  checkmk: false
+  docker: false
+  proxmox: false
+  hyperv: false
+  kerberos: false
+  kerberos_keytabs: false
+  telegraf: false
+  sss: false
+system_timezone: Europe/Berlin
+chrony_ntp_servers:
+- pool.ntp.org
+base_packages:
+- htop
+- sudo
+- tree
+- vim
+- curl
+- wget
+- unzip
+- ncdu
+- iotop
+- cifs-utils
+- whois
+- net-tools
+- jq
+- yq
+- lsof
+- socat
+- bridge-utils
+- iproute2
+- mtr-tiny
+- dnsutils
+- tcpdump
+- nmap
+- nfs-common
+- btop
+- sysstat
+- git
+- tmux
+- rsync
+- bash-completion
+- rclone
+fail2ban_ignoreip:
+- 127.0.0.1/8
+- ::1
+fail2ban_bantime: 1h
+fail2ban_findtime: 10m
+fail2ban_maxretry: 5
+fail2ban_ssh_port: '{{ ansible_port }}'
+fail2ban_admin_email: root@localhost
+fail2ban_ticket_email: root@localhost
+fail2ban_proxmox_ve_hosts: []
+fail2ban_proxmox_backup_hosts: []
+ssh_max_auth_tries: 3
+ssh_max_sessions: 10
+ssh_allow_tcp_forwarding: false
+ssh_permit_root_login: 'yes'
+ssh_client_alive_interval: 300
+ssh_client_alive_count_max: 2
+ssh_breakglass_enabled: false
+ssh_breakglass_user: ansible-rescue
+ssh_breakglass_uid: 3030
+ssh_breakglass_home: /home/ansible-rescue
+ssh_breakglass_excluded_hosts: []
+ssh_tcp_forwarding_hosts: []
+hardening_pass_max_days: 9999
+hardening_pass_min_days: 0
+hardening_pass_warn_age: 7
+hardening_umask: '027'
+hardening_autoremove: false
+rsyslog_target_host: ''
+rsyslog_target_port: 514
+postfix_relay_host: ''
+postfix_relay_port: 587
+postfix_mail_domain: example.invalid
+postfix_sender_aliases: {}
+victoriametrics_url: ''
+victoriametrics_database: ''
+victoriametrics_insecure_skip_verify: false
+influx_repository_url: https://repos.influxdata.com/debian
+influx_repository_suite: stable
+influx_repository_component: main
+influx_key_url: https://repos.influxdata.com/influxdata-archive.key
+influx_key_fpr: 24C975CBA61A024EE1B631787C3D57159FC2F927
+docker_local_base_dir: /root/docker-configs
+docker_remote_base_dir: /srv/docker-configs
+docker_compose_file_patterns:
+- docker-compose.yml
+- compose.yml
+- docker-compose.yaml
+- compose.yaml
+docker_compose_timeout: 120
+docker_wait_retry_delay: 10
+docker_wait_retries: 6
+docker_critical_stacks: []
+docker_macvlan_config_networks: []
+local_base_dir: '{{ docker_local_base_dir }}'
+remote_base_dir: '{{ docker_remote_base_dir }}'
+compose_file_patterns: '{{ docker_compose_file_patterns }}'
+compose_timeout: '{{ docker_compose_timeout }}'
+wait_retry_delay: '{{ docker_wait_retry_delay }}'
+wait_retries: '{{ docker_wait_retries }}'
+checkmk_server: checkmk.example.invalid:8000
+checkmk_server_url: https://checkmk.example.invalid
+checkmk_site: example
+checkmk_registration_user: automation
+checkmk_api_user: automation
+checkmk_agent_download_url: ''
+checkmk_agent_package_src: '{{ inventory_dir }}/../artifacts/checkmk/check-mk-agent.deb'
+checkmk_plugins_src_dir: '{{ inventory_dir }}/../artifacts/checkmk/plugins'
+checkmk_default_folder: /managed/unassigned
+checkmk_enable_base_plugins: true
+checkmk_migration_plan: '{{ inventory_dir }}/../x/reports/checkmk_migration_plan.yml'
+checkmk_backup_target_host: ''
+checkmk_container_name: checkmk
+checkmk_backup_dir: /backup
+checkmk_folders:
+- path: /managed
+  name: Managed
+- path: /managed/unassigned
+  name: Unassigned
+kerberos_realm: ''
+kerberos_kdcs: []
+kerberos_admin_server: ''
+kerberos_dns_lookup_realm: false
+kerberos_dns_lookup_kdc: false
+kerberos_force_tcp: true
+kerberos_fix_cifs_upcall: true
+controller_report_dir: '{{ inventory_dir }}/../reports'
+ca_dir: /root/ca
+crl_docker_target_dir: /srv/crl/
+crl_container_name: crl-web
+checkmk_agent_version: 2.5.0p20
+checkmk_download_base_url: https://checkmk.example.invalid/example/check_mk/agents
+checkmk_linux_plugins:
+- mk_apt
+- mk_logwatch.py
+- mk_inventory.linux
+- netstat.linux
+- mk_docker.py
+- nginx_status.py
+- apache_status.py
+- mk_mysql
+- mk_postgres.py
+- mk_redis

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "chrony-uninstall",
+      "description": "Chrony gezielt entfernen",
+      "handler": "bin/control.d/chrony-uninstall.sh",
+      "feature": "chrony",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/uninstall_chrony.yml"
+      ],
+      "aliases": [
+        {
+          "name": "chrony-uninstall",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

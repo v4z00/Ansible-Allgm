@@ -1,0 +1,21 @@
+---
+- name: Lock Docker versions to prevent unattended-upgrades chaos
+  hosts: docker_deployment_hosts
+  become: true
+
+  tasks:
+    - name: Freeze Docker packages (set to hold)
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-compose-plugin
+        - docker-ce-rootless-extras
+
+    # Optional, aber hochgradig empfohlen als präventiver Fix für den aktuellen Zustand:
+    - name: Ensure systemd is completely sane
+      ansible.builtin.systemd:
+        daemon_reexec: yes

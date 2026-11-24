@@ -1,0 +1,78 @@
+---
+- name: "Step 1: Renew and Convert Root CRL (on the controller)"
+  hosts: localhost
+  connection: local
+  become: true
+
+  tasks:
+    - name: CA-Kennwort muss lokal hinterlegt sein
+      ansible.builtin.assert:
+        that: ca_password | default('') | length > 0
+        fail_msg: "ca_password fehlt in group_vars/all/secrets.yml."
+      no_log: true
+
+    - name: Generate new CRL (PEM format)
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - ca
+          - -config
+          - openssl.cnf
+          - -gencrl
+          - -out
+          - crl/root.crl.pem
+          - -passin
+          - env:CA_PASSWORD
+      args:
+        chdir: "{{ ca_dir }}"
+      environment:
+        CA_PASSWORD: "{{ ca_password }}"
+      register: gencrl_result
+      no_log: true
+
+    - name: Convert CRL to DER format (Required for Windows!)
+      shell: |
+        openssl crl -in crl/root.crl.pem \
+        -outform DER \
+        -out crl/root.crl
+      args:
+        chdir: "{{ ca_dir }}"
+
+    - name: Display generation status
+      debug:
+        msg: "CRL renewed. Output: {{ gencrl_result.stdout_lines }}"
+
+
+- name: "Step 2: Deploy CRL to Docker Server"
+  hosts: crl_distribution_hosts
+  become: true
+  vars:
+    local_crl_source: "{{ ca_dir }}/crl/root.crl"
+    remote_crl_dir: "{{ crl_docker_target_dir }}"
+    container_name: "{{ crl_container_name }}"
+
+  tasks:
+    - name: Ensure destination directory exists
+      file:
+        path: "{{ remote_crl_dir }}"
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Copy new Root CRL (DER) with permissions 0774
+      copy:
+        src: "{{ local_crl_source }}"
+        dest: "{{ remote_crl_dir }}root.crl"
+        owner: root
+        group: root
+        mode: '0774'
+        force: yes
+      register: crl_copy
+
+    - name: Restart Webserver Container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: started
+        restart: yes
+      when: crl_copy.changed

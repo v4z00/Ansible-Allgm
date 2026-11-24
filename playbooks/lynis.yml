@@ -1,0 +1,10 @@
+---
+- name: Lynis Security Audit
+  hosts: all_linux_systems
+  become: true
+  gather_facts: true
+  roles:
+    - role: lynis
+      when: features.lynis | bool
+      tags: [audit, lynis]
+

@@ -1,0 +1,39 @@
+---
+- name: Docker-Netzwerke aus host_vars verwalten
+  hosts: docker_deployment_hosts
+  become: true
+  gather_facts: false
+
+  vars:
+    host_docker_networks: "{{ docker_networks | default([]) }}"
+
+  pre_tasks:
+    - name: Netzwerkdefinitionen vor jeder Aenderung pruefen
+      ansible.builtin.import_tasks: tasks/validate_networks.yml
+      tags: [docker, docker_networks]
+
+  tasks:
+    - name: Docker-Netzwerke anlegen oder aktualisieren
+      community.docker.docker_network:
+        name: "{{ item.name }}"
+        driver: "{{ item.driver | default('bridge') }}"
+        ipam_config: "{{ item | docker_network_ipam }}"
+        internal: "{{ item.internal | default(false) | bool }}"
+        enable_ipv6: "{{ item.enable_ipv6 | default(false) | bool }}"
+        appends: true
+        state: present
+      loop: "{{ host_docker_networks }}"
+      when: item.state | default('present') == 'present'
+      loop_control:
+        label: "{{ item.name }}"
+      tags: [docker, docker_networks]
+
+    - name: Explizit entfernte Docker-Netzwerke loeschen
+      community.docker.docker_network:
+        name: "{{ item.name }}"
+        state: absent
+      loop: "{{ host_docker_networks }}"
+      when: item.state | default('present') == 'absent'
+      loop_control:
+        label: "{{ item.name }}"
+      tags: [docker, docker_networks]

@@ -1,0 +1,7 @@
+---
+- name: Allgemeine Bash-Bibliothek auf ausgewählten Hosts bereitstellen
+  hosts: all
+  become: true
+  gather_facts: false
+  roles:
+    - script_library

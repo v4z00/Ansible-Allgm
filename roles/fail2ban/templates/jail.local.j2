@@ -1,0 +1,56 @@
+{% set admin_mail_enabled = fail2ban_enable_notifications | default(false) | bool %}
+{% set ticket_mail_enabled = fail2ban_enable_ticket_notifications | default(false) | bool %}
+[DEFAULT]
+ignoreip = {{ fail2ban_ignoreip | join(' ') }}
+bantime = {{ fail2ban_bantime }}
+findtime = {{ fail2ban_findtime }}
+maxretry = {{ fail2ban_maxretry }}
+{% if admin_mail_enabled %}
+destemail = {{ fail2ban_admin_email }}
+mta = sendmail
+{% endif %}
+{% if admin_mail_enabled or ticket_mail_enabled %}
+{% if admin_mail_enabled %}
+action = %(action_mwl)s[dest="{{ fail2ban_admin_email }}", sender="%(sender)s"]
+{% else %}
+action = %(action_)s
+{% endif %}
+{% if ticket_mail_enabled %}
+         ticketsystem_silent_mail[dest="{{ fail2ban_ticket_email }}", sender="%(sender)s"]
+{% endif %}
+{% else %}
+action = %(action_)s
+{% endif %}
+
+[sshd]
+enabled = true
+port = {{ fail2ban_ssh_port | default(ansible_port | default(22)) }}
+backend = systemd
+maxretry = {{ fail2ban_maxretry }}
+
+[postfix]
+enabled = {{ 'true' if fail2ban_enable_postfix_jail | bool else 'false' }}
+port = smtp,smtps,submission
+filter = postfix
+logpath = /var/log/mail.log
+maxretry = {{ fail2ban_maxretry }}
+
+{% if inventory_hostname in fail2ban_proxmox_ve_hosts %}
+[proxmox]
+enabled = true
+port = https,http,8006
+filter = proxmox
+logpath = /var/log/syslog
+maxretry = {{ fail2ban_maxretry }}
+bantime = 3600
+{% endif %}
+
+{% if inventory_hostname in fail2ban_proxmox_backup_hosts %}
+[proxmox-backup]
+enabled = true
+port = https,http,8007
+filter = proxmox-backup
+logpath = /var/log/proxmox-backup/api/auth.log
+maxretry = {{ fail2ban_maxretry }}
+bantime = 3600
+{% endif %}

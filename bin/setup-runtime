@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+umask 077
+controller_python="${CONTROLLER_PYTHON:-}"
+if [[ -z "$controller_python" ]]; then
+  for candidate in python3.12 python3.13 python3.11 python3; do
+    if command -v "$candidate" >/dev/null && "$candidate" -c 'import sys; sys.exit(not ((3,11) <= sys.version_info[:2] <= (3,13)))'; then
+      controller_python="$candidate"
+      break
+    fi
+  done
+fi
+if [[ -z "$controller_python" ]] || ! "$controller_python" -c 'import sys; sys.exit(not ((3,11) <= sys.version_info[:2] <= (3,13)))'; then
+  echo 'Python 3.11, 3.12 oder 3.13 erforderlich. Debian 12/13: apt-get install python3 python3-venv.' >&2
+  exit 2
+fi
+if [[ ! -x .venv/bin/python3 ]] || ! .venv/bin/python3 -m pip --version >/dev/null 2>&1; then
+  if ! "$controller_python" -m venv .venv; then
+    echo 'Python-Umgebung fehlt. Unter Debian python3-venv installieren und bin/setup-runtime erneut starten.' >&2
+    exit 2
+  fi
+fi
+.venv/bin/python3 -m pip --disable-pip-version-check install -r requirements-controller.txt
+export ANSIBLE_CONFIG="$ROOT_DIR/ansible.cfg"
+.venv/bin/ansible-galaxy collection install --no-deps -r requirements-extra.yml -p "$ROOT_DIR/collections"
+.venv/bin/ansible-playbook --version

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "checkmk",
+      "description": "CheckMK ausrollen",
+      "handler": "bin/control.d/checkmk.sh",
+      "feature": "checkmk",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/checkmk.yml"
+      ],
+      "aliases": [
+        {
+          "name": "checkmk",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

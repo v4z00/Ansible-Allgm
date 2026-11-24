@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "docker-users-export",
+      "description": "Service-User aus Docker-Konfigurationen nach host_vars exportieren",
+      "handler": "bin/control.d/docker-users-export.sh",
+      "feature": "docker",
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/export_docker_users.py"
+      ],
+      "aliases": [
+        {
+          "name": "docker-users-export",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

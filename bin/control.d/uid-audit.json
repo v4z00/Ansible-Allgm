@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "uid-audit",
+      "description": "UID-1000-Belegung pruefen",
+      "handler": "bin/control.d/uid-audit.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/audit_uid_1000.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "uid-audit",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

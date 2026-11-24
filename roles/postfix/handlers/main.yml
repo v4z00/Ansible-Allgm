@@ -1,0 +1,13 @@
+---
+- name: Postfix-Maps aktualisieren
+  ansible.builtin.command: postmap /etc/postfix/sasl_passwd
+  notify: Postfix neu laden
+
+- name: Postfix neu laden
+  ansible.builtin.systemd:
+    name: postfix
+    state: reloaded
+
+- name: Postfix-Canonical-Map aktualisieren
+  ansible.builtin.command: postmap /etc/postfix/sender_canonical
+  notify: Postfix neu laden

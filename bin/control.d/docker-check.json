@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "docker-check",
+      "description": "Docker-Konfiguration und Quellen pruefen",
+      "handler": "bin/control.d/docker-check.sh",
+      "feature": "docker",
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/check_docker.sh",
+        "scripts/check_docker_sources.py",
+        "playbooks/docker/check_docker.yml"
+      ],
+      "aliases": [
+        {
+          "name": "docker-check",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

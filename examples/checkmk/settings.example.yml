@@ -1,0 +1,13 @@
+checkmk_server: "checkmk.example.invalid:8000"
+checkmk_server_url: "https://checkmk.example.invalid"
+checkmk_site: "example"
+checkmk_agent_version: "2.5.0p20"
+checkmk_download_base_url: "https://checkmk.example.invalid/example/check_mk/agents"
+checkmk_registration_user: automation
+checkmk_api_user: automation
+checkmk_agent_package_src: "{{ playbook_dir }}/../artifacts/checkmk/check-mk-agent.deb"
+checkmk_plugins_src_dir: "{{ playbook_dir }}/../artifacts/checkmk/plugins"
+checkmk_default_folder: /managed/unassigned
+checkmk_folders:
+  - {path: /managed, name: Managed}
+  - {path: /managed/unassigned, name: Unassigned}

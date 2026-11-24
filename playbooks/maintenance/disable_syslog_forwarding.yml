@@ -1,0 +1,32 @@
+- name: Verwaltete Rsyslog-Weiterleitung entfernen
+  hosts: all_linux_systems
+  gather_facts: false
+  become: false
+  pre_tasks:
+  - name: Ausdrueckliches Ziel pruefen
+    ansible.builtin.assert:
+      that:
+      - ansible_limit | default('') | length > 0
+      fail_msg: Mit --limit HOST oder GRUPPE starten.
+  - name: Feature pruefen
+    ansible.builtin.assert:
+      that:
+      - features.rsyslog | default(false) | bool
+  tasks:
+  - name: Nur verwaltetes Drop-in entfernen
+    ansible.builtin.file:
+      path: /etc/rsyslog.d/90-remote-forwarding.conf
+      state: absent
+    register: syslog_change
+  - name: Rsyslog-Konfiguration pruefen
+    ansible.builtin.command:
+      argv:
+      - rsyslogd
+      - -N1
+    changed_when: false
+    when: syslog_change.changed and not ansible_check_mode
+  - name: Rsyslog neu starten
+    ansible.builtin.service:
+      name: rsyslog
+      state: restarted
+    when: syslog_change.changed and not ansible_check_mode

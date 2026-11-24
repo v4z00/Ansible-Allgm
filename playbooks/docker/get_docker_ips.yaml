@@ -1,0 +1,52 @@
+---
+- name: Audit Docker Networks and IPs with Service Mapping
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    config_dir: "{{ docker_local_base_dir }}"
+
+  tasks:
+    - name: "Suche nach Netzwerken mit Dateizuordnung"
+      ansible.builtin.shell: >
+        grep -Ero '(backend-|snet-|standalone-|[a-zA-Z0-9]+-npm)[a-zA-Z0-9_-]+' {{ config_dir }}
+        | sed 's|{{ config_dir }}/||'
+        | awk -F':' '{print "- [" $1 "] -> " $2}'
+        | sort -u
+      register: found_networks
+      changed_when: false
+
+    - name: "Suche nach statischen IPs mit Dateizuordnung"
+      ansible.builtin.shell: >
+        grep -Ero 'ipv4_address:\s*[0-9]{1,3}(\.[0-9]{1,3}){3}' {{ config_dir }}
+        | sed 's|{{ config_dir }}/||'
+        | awk -F':' '{gsub(/^[ \t]+/, "", $3); print "- [" $1 "] -> " $3}'
+        | sort -u
+      register: found_container_ips
+      changed_when: false
+
+    - name: "Suche nach Host-Bindungen (Ports) mit Dateizuordnung"
+      ansible.builtin.shell: >
+        grep -Ero '"?[0-9]{1,3}(\.[0-9]{1,3}){3}:[0-9]+:[0-9]+' {{ config_dir }}
+        | sed 's|{{ config_dir }}/||'
+        | sed 's/"//g'
+        | awk -F':' '{print "- [" $1 "] -> " $2 ":" $3 ":" $4}'
+        | sort -u
+      register: found_host_ips
+      changed_when: false
+
+    - name: "Ausgabe der Ergebnisse"
+      ansible.builtin.debug:
+        msg:
+          - "========================================="
+          - " GEFUNDENE NETZWERKE (Datei -> Netzwerk)"
+          - "========================================="
+          - "{{ found_networks.stdout_lines | default(['Keine gefunden']) }}"
+          - "========================================="
+          - " STATISCHE CONTAINER-IPS (Datei -> IP)"
+          - "========================================="
+          - "{{ found_container_ips.stdout_lines | default(['Keine gefunden']) }}"
+          - "========================================="
+          - " HOST-BINDUNGS-IPS (Datei -> IP:Port:Port)"
+          - "========================================="
+          - "{{ found_host_ips.stdout_lines | default(['Keine gefunden']) }}"

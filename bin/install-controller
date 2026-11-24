@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+# Prepare the OS only for a full installation into a new or empty directory.
+# Maintenance, overlays on existing controllers and code-only runs skip APT.
+prepare_fresh_debian() {
+  [[ -r /etc/os-release ]] || return 0
+  local ID= VERSION_ID= target= package status
+  local -a missing=() contents=()
+  . /etc/os-release
+  [[ "$ID" == debian && "$VERSION_ID" =~ ^(12|13)$ ]] || return 0
+
+  while (($#)); do
+    case "$1" in
+      --target) [[ $# -ge 2 ]] || return 0; target=$2; shift 2 ;;
+      --target=*) target=${1#*=}; shift ;;
+      --token-file) [[ $# -ge 2 && "${ANSIBLE_STAGING_OVERLAY:-}" == NXTS3 ]] || return 0; shift 2 ;;
+      --token-file=*) [[ "${ANSIBLE_STAGING_OVERLAY:-}" == NXTS3 ]] || return 0; shift ;;
+      *) return 0 ;;
+    esac
+  done
+  [[ -n "$target" && ! -L "$target" ]] || return 0
+  if [[ -e "$target" ]]; then
+    [[ -d "$target" && -r "$target" && -x "$target" ]] || return 0
+    shopt -s nullglob dotglob
+    contents=("$target"/*)
+    (( ${#contents[@]} == 0 )) || return 0
+  fi
+
+  for package in ca-certificates git python3 python3-venv openssh-client rsync jq; do
+    status=$(dpkg-query -W -f='${db:Status-Status}' "$package" 2>/dev/null) || status=
+    [[ "$status" == installed ]] || missing+=("$package")
+  done
+  (( ${#missing[@]} )) || return 0
+  if (( EUID != 0 )); then
+    echo "Für die Erstinstallation fehlen Debian-Pakete: ${missing[*]}" >&2
+    echo 'Installer als root ausführen oder die genannten Pakete vorab installieren.' >&2
+    return 1
+  fi
+  echo "Installiere fehlende Debian-Pakete: ${missing[*]}"
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+}
+
+(prepare_fresh_debian "$@")
+for python in "${CONTROLLER_PYTHON:-python3.12}" python3.13 python3.11 python3; do
+  if command -v "$python" >/dev/null && "$python" -c 'import sys; sys.exit(sys.version_info < (3,10))'; then
+    exec "$python" "$ROOT_DIR/tools/install_controller.py" "$@"
+  fi
+done
+echo 'Python ab 3.10 zum Kopieren erforderlich. Für Ansible Python 3.11–3.13 nutzen.' >&2
+exit 2

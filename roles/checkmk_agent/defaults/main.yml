@@ -1,0 +1,23 @@
+---
+checkmk_agent_package_tmp: /tmp/check-mk-agent.deb
+checkmk_plugin_base_dir: /usr/lib/check_mk_agent/plugins
+checkmk_local_base_dir: /usr/lib/check_mk_agent/local
+checkmk_linux_base_plugins:
+  - {name: mk_apt, interval: 3600}
+  - {name: mk_logwatch.py, interval: null}
+  - {name: mk_inventory.linux, interval: 3600}
+  - {name: netstat.linux, interval: 300}
+checkmk_docker_plugins:
+  - {name: mk_docker.py, interval: null}
+checkmk_smart_plugins:
+  - {name: smart, interval: 300}
+checkmk_cups_plugins:
+  - {name: mk_cups_queues, interval: null}
+checkmk_webserver_plugins:
+  - {name: nginx_status.py, interval: null}
+  - {name: apache_status.py, interval: null}
+checkmk_database_plugins:
+  - {name: mk_mysql, interval: null}
+  - {name: mk_postgres.py, interval: null}
+  - {name: mk_redis, interval: null}
+

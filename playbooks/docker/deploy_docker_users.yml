@@ -1,0 +1,61 @@
+---
+- name: Docker-Service-User aus host_vars verwalten
+  hosts: docker_deployment_hosts
+  become: true
+  gather_facts: false
+
+  vars:
+    managed_docker_service_users: >-
+      {{ docker_service_users | default([]) | selectattr('managed', 'defined') | selectattr('managed') | list }}
+
+  pre_tasks:
+    - name: Freigegebene Service-User validieren
+      ansible.builtin.assert:
+        that:
+          - item.name is defined
+          - item.name is match('^[a-z_][a-z0-9_-]*[$]?$')
+          - not item.name.startswith('CHANGE_ME_')
+          - item.uid | int >= 1000
+          - item.gid | int >= 1000
+          - item.shell | default('/usr/sbin/nologin') is match('^/')
+        fail_msg: "Docker-Service-User auf {{ inventory_hostname }} zuerst in host_vars pruefen: {{ item }}"
+      loop: "{{ managed_docker_service_users }}"
+      loop_control:
+        label: "{{ item.name | default('unbenannt') }}"
+      tags: [docker, docker_users]
+
+    - name: Doppelte freigegebene UIDs verhindern
+      ansible.builtin.assert:
+        that:
+          - managed_docker_service_users | map(attribute='uid') | list | unique | length == managed_docker_service_users | length
+        fail_msg: "Mehrere verwaltete Docker-User verwenden auf {{ inventory_hostname }} dieselbe UID."
+      tags: [docker, docker_users]
+
+  tasks:
+    - name: Primaergruppen der Docker-Service-User anlegen
+      ansible.builtin.group:
+        name: "{{ item.name }}"
+        gid: "{{ item.gid }}"
+        system: "{{ item.system | default(false) }}"
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ managed_docker_service_users }}"
+      loop_control:
+        label: "{{ item.name }} (GID {{ item.gid }})"
+      tags: [docker, docker_users]
+
+    - name: Docker-Service-User anlegen
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        uid: "{{ item.uid }}"
+        group: "{{ item.name }}"
+        comment: "{{ item.comment | default('Docker service account') }}"
+        home: "{{ item.home | default(omit) }}"
+        create_home: "{{ item.create_home | default(false) }}"
+        shell: "{{ item.shell | default('/usr/sbin/nologin') }}"
+        system: "{{ item.system | default(false) }}"
+        password_lock: true
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ managed_docker_service_users }}"
+      loop_control:
+        label: "{{ item.name }} (UID {{ item.uid }})"
+      tags: [docker, docker_users]

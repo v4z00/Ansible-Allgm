@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "docker-stop",
+      "description": "Alle verwalteten Docker-Stacks stoppen",
+      "handler": "bin/control.d/docker-stop.sh",
+      "feature": "docker",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/docker/stop_all_docker.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "docker-stop",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

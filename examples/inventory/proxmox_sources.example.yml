@@ -1,0 +1,69 @@
+# Vollstaendige neutrale Generatorvorlage. In inventory_config.yml nur bewusst anpassen.
+# Token bleiben in secrets.yml unter proxmox_token_secrets.
+inventory_mode: proxmox
+proxmox_sources:
+- name: cluster_a
+  url: https://source-a.example.invalid:8006
+  user: automation@pve
+  token_id: inventory
+  credential: cluster_a
+  validate_certs: true
+- name: cluster_b
+  url: https://source-b.example.invalid:8006
+  user: automation@pve
+  token_id: inventory
+  credential: cluster_b
+  validate_certs: true
+running_only: true
+exclude_tags:
+- delete
+- ansible_exclude
+checkmk_exclude_tags:
+- checkmk_exclude
+company_tags:
+- example
+infrastructure_tags:
+- proxmox
+- docker
+- monitoring
+location_tags:
+- dmz
+- admin
+checkmk_location_root: example
+root_folder_tags: []
+checkmk_root_folder: /example
+preferred_cidrs:
+- 192.0.2.0/24
+allowed_cidrs:
+- 192.0.2.0/24
+ignore_interfaces_regex: ^(lo$|docker|veth|br-|virbr|tap|fwbr)
+allow_empty_generated: false
+checkmk_folder_roots:
+  example: example
+  unassigned: example/unassigned
+checkmk_tenant_prefixes:
+  example: EXAMPLE
+checkmk_folder_scopes: {}
+checkmk_default_prefix: EXAMPLE
+checkmk_unassigned_folder: /example/unassigned
+checkmk_folder_rules:
+- folder: /example/infrastruktur/proxmox
+  tags_any:
+  - proxmox
+- folder: /example/server/docker
+  tags_any:
+  - docker
+  append_location: true
+- folder: /example/server/linux
+  os_families:
+  - linux
+  append_location: true
+host_overrides:
+  beispiel-lxc:
+    ansible_host: 192.0.2.25
+    checkmk_target_folder: /example/server/linux/admin
+  beispiel-switch:
+    ansible_host: 192.0.2.2
+    inventory_os_family: network
+    checkmk_device_type: SWITCH
+    checkmk_target_folder: /example/netz/switches

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "base",
+      "description": "Baseline; erfordert --limit ZIEL oder ausdruecklich --all",
+      "handler": "bin/control.d/base.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/base.yml"
+      ],
+      "aliases": [
+        {
+          "name": "base",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

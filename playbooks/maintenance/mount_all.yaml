@@ -1,0 +1,14 @@
+---
+- name: Refresh Mount Points
+  hosts: all_linux_systems
+  become: true
+  tasks:
+    - name: Execute mount -a to remount filesystems defined in fstab
+      ansible.builtin.command: mount -a
+      register: mount_output
+      changed_when: false
+
+    - name: Debug output (optional)
+      ansible.builtin.debug:
+        var: mount_output.stderr
+      when: mount_output.stderr != ""

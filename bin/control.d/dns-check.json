@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "dns-check",
+      "description": "DNS-Aufloesung pruefen",
+      "handler": "bin/control.d/dns-check.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/check-dns.yml"
+      ],
+      "aliases": [
+        {
+          "name": "check-dns",
+          "args": []
+        },
+        {
+          "name": "dns-check",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "updates",
+      "description": "Betriebssystempakete aktualisieren",
+      "handler": "bin/control.d/updates.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/update_hosts.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "update-system",
+          "args": []
+        },
+        {
+          "name": "updates",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

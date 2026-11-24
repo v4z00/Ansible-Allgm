@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "docker-macvlan-prepare",
+      "description": "Macvlan-Parent-Interfaces vorbereiten",
+      "handler": "bin/control.d/docker-macvlan-prepare.sh",
+      "feature": "docker",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/docker/prepare_macvlan_parents.yml"
+      ],
+      "aliases": [
+        {
+          "name": "docker-macvlan-prepare",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

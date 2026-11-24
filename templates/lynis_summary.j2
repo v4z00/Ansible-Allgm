@@ -1,0 +1,25 @@
+======================================================================
+🛡️  LYNIS SECURITY AUDIT REPORT - {{ lookup('pipe', 'date +%Y-%m-%d') }}
+======================================================================
+
+{% for host in target_hosts %}
+{% set score = hardening_scores.results[loop.index0].stdout | default('0') | int %}
+{% set raw_warnings = critical_warnings.results[loop.index0].stdout_lines %}
+
+HOST: {{ host | upper }}
+STATUS: {% if score >= 80 %}✅ SECURE{% elif score >= 70 %}⚠️  HARDENING OK{% else %}🚨 ACTION REQUIRED{% endif %}
+INDEX:  {{ score }} / 100
+
+{% if raw_warnings | length > 0 %}
+⚠️  Warnungen gefunden:
+{% for warning in raw_warnings %}
+  - {{ warning | regex_replace('\|.*', '') }}: {{ warning.split('|')[-1] | regex_replace('text:', '') }}
+{% endfor %}
+{% else %}
+✅ Keine kritischen Warnungen.
+{% endif %}
+----------------------------------------------------------------------
+{% endfor %}
+
+Audit-Files liegen unter: {{ local_base_dir }}
+CSV-Export wurde aktualisiert.

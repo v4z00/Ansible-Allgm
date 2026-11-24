@@ -1,0 +1,62 @@
+---
+- name: Konfigurierten Controller-Key lokal lesen
+  ansible.builtin.set_fact:
+    bootstrap_public_key: >-
+      {{ lookup('ansible.builtin.file', bootstrap_public_key_file) }}
+  no_log: true
+
+- name: Controller-Key fuer den Ansible-Benutzer hinterlegen
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user }}"
+    key: "{{ bootstrap_public_key }}"
+    state: present
+  no_log: true
+
+- name: Bestehende Standort-Admin-Keys fuer root hinterlegen
+  ansible.posix.authorized_key:
+    user: root
+    key: "{{ item }}"
+    state: present
+  loop: "{{ root_allowed_keys }}"
+  no_log: true
+
+- name: Lokale Benutzer ab UID 1000 ermitteln
+  ansible.builtin.shell: "awk -F: '$3 >= 1000 {print $1}' /etc/passwd"
+  register: bootstrap_non_root_users
+  changed_when: false
+  failed_when: false
+
+- name: Standort-Admin-Keys aus Nicht-root-Konten entfernen
+  ansible.posix.authorized_key:
+    user: "{{ item.0 }}"
+    key: "{{ item.1 }}"
+    state: absent
+  with_nested:
+    - "{{ bootstrap_non_root_users.stdout_lines | default([]) }}"
+    - "{{ root_allowed_keys }}"
+  no_log: true
+
+- name: Key-Anmeldung vor einer Passwortabschaltung pruefen
+  ansible.builtin.assert:
+    that:
+      - bootstrap_public_key | length > 40
+    fail_msg: "Der konfigurierte Public Key ist leer oder ungueltig."
+  when: bootstrap_disable_password_auth_after_key | bool
+
+- name: Passwortanmeldung nach expliziter Freigabe abschalten
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/01-key-only.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Verwaltet durch Ansible
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+  notify: SSH neu laden
+  when: bootstrap_disable_password_auth_after_key | bool
+
+- name: SSH-Konfiguration vor dem Reload pruefen
+  ansible.builtin.command: sshd -t
+  changed_when: false
+  when: bootstrap_disable_password_auth_after_key | bool

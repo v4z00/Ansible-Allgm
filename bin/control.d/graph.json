@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "graph",
+      "description": "Inventory anzeigen",
+      "handler": "bin/control.d/graph.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh"
+      ],
+      "aliases": [
+        {
+          "name": "inv-graph",
+          "args": []
+        },
+        {
+          "name": "graph",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "site",
+      "description": "Vollstaendigen Standortlauf ausfuehren",
+      "handler": "bin/control.d/site.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/site.yml"
+      ],
+      "aliases": [
+        {
+          "name": "site",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

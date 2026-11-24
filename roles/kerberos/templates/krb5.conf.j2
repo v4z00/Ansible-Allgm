@@ -1,0 +1,19 @@
+[libdefaults]
+    default_realm = {{ kerberos_realm | upper }}
+    dns_lookup_realm = {{ kerberos_dns_lookup_realm | bool | lower }}
+    dns_lookup_kdc = {{ kerberos_dns_lookup_kdc | bool | lower }}
+{% if kerberos_force_tcp | bool %}
+    udp_preference_limit = 1
+{% endif %}
+
+[realms]
+    {{ kerberos_realm | upper }} = {
+{% for kdc in kerberos_kdcs %}
+        kdc = {{ kdc }}
+{% endfor %}
+        admin_server = {{ kerberos_admin_server }}
+    }
+
+[domain_realm]
+    .{{ kerberos_realm | lower }} = {{ kerberos_realm | upper }}
+    {{ kerberos_realm | lower }} = {{ kerberos_realm | upper }}

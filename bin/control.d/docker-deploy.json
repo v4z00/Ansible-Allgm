@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "docker-deploy",
+      "description": "Docker vorbereiten, Benutzer/Netze/Stacks ausrollen",
+      "handler": "bin/control.d/docker-deploy.sh",
+      "feature": "docker",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/docker/deploy_docker_networks.yaml",
+        "playbooks/docker/deploy_docker_stacks.yml",
+        "playbooks/docker/deploy_docker_users.yml",
+        "playbooks/docker/prepare_deployment.yml"
+      ],
+      "aliases": [
+        {
+          "name": "docker-push",
+          "args": []
+        },
+        {
+          "name": "docker-deploy",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

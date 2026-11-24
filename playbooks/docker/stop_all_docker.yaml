@@ -1,0 +1,40 @@
+- name: "PLAY 1: Alle Docker Compose Stacks stoppen"
+  hosts: docker_deployment_hosts
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: "TASK 1.1: Alle laufenden Compose-Projekte abrufen"
+      # Verwendet 'docker compose ls --format json', um Name und ConfigFiles zu bekommen
+      ansible.builtin.command: "docker compose ls --format json"
+      register: running_projects_raw
+      changed_when: false
+      failed_when: false
+
+    - name: "TASK 1.2: Stacks stoppen (Finale, robuste Korrektur)"
+      ansible.builtin.shell: >
+        set -e;
+        echo "Stoppe Stack: {{ item.Name }}...";
+        # Wir verwenden einfache Anführungszeichen um den Pfad, um ihn vor der Shell zu schützen.
+        # .ConfigFiles ist eine Liste, daher benötigen wir '| first'.
+        docker compose -f '{{ item.ConfigFiles | first }}' stop
+      args:
+        # cd in das Verzeichnis, in dem die Compose-Datei liegt, für korrekte Ausführung
+        chdir: "{{ item.ConfigFiles | first | dirname }}"
+      loop: >-
+        {{
+          # Prüft, ob Output existiert und deserialisiert das JSON
+          (running_projects_raw.stdout | default('[]') | from_json)
+          if (running_projects_raw.stdout | default('') | trim | length > 0)
+          else []
+        }}
+      when: running_projects_raw.stdout | default('') | trim | length > 0
+      register: stop_result
+      # Ignoriere Fehler, da einige Stacks möglicherweise schon stoppen
+      ignore_errors: true 
+      # Setze changed=true, wenn 'Stopping' im stdout auftaucht
+      changed_when: stop_result.stdout is search("Stopping")
+
+    - name: "TASK 1.3: Zusammenfassung der Stopp-Aktion"
+      ansible.builtin.debug:
+        msg: "Die Stopp-Aktion wurde versucht. Prüfen Sie die Host-Logs für Details."

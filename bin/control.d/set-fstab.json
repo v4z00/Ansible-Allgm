@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "set-fstab",
+      "description": "Verwaltete Mounts in fstab setzen",
+      "handler": "bin/control.d/set-fstab.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/maintenance/set_fstab.yaml"
+      ],
+      "aliases": [
+        {
+          "name": "set-fstab",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

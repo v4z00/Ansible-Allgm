@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "syntax",
+      "description": "Alle Playbooks syntaktisch pruefen",
+      "handler": "bin/control.d/syntax.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh"
+      ],
+      "aliases": [
+        {
+          "name": "syntax",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

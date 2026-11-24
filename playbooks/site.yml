@@ -1,0 +1,5 @@
+---
+- ansible.builtin.import_playbook: base.yml
+- ansible.builtin.import_playbook: checkmk.yml
+- ansible.builtin.import_playbook: optional.yml
+- ansible.builtin.import_playbook: lynis.yml

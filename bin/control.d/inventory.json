@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "inventory",
+      "description": "Proxmox-Inventory aktualisieren",
+      "handler": "bin/control.d/inventory.sh",
+      "feature": "proxmox",
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/update_inventory.sh"
+      ],
+      "aliases": [
+        {
+          "name": "inv-update",
+          "args": []
+        },
+        {
+          "name": "inventory",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

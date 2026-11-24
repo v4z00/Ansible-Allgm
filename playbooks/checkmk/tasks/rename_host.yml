@@ -1,0 +1,119 @@
+---
+- name: "Quelle {{ migration.source }} mit ETag laden"
+  ansible.builtin.uri:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_rename_source_read', tls_validate_certs_default | default(true)) | bool }}"
+    url: >-
+      {{ checkmk_server_url }}/{{ checkmk_site }}/check_mk/api/v1/objects/host_config/{{ migration.source | urlencode }}
+    method: GET
+    headers:
+      Authorization: "Bearer {{ checkmk_api_user }} {{ checkmk_api_password }}"
+      Accept: application/json
+    status_code: [200, 404]
+    return_content: true
+  register: checkmk_rename_source
+  no_log: true
+
+- name: "Zielnamen {{ migration.target_checkmk_hostname }} pruefen"
+  ansible.builtin.uri:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_rename_target_read', tls_validate_certs_default | default(true)) | bool }}"
+    url: >-
+      {{ checkmk_server_url }}/{{ checkmk_site }}/check_mk/api/v1/objects/host_config/{{ migration.target_checkmk_hostname | urlencode }}
+    method: GET
+    headers:
+      Authorization: "Bearer {{ checkmk_api_user }} {{ checkmk_api_password }}"
+      Accept: application/json
+    status_code: [200, 404]
+    return_content: true
+  register: checkmk_rename_target
+  no_log: true
+
+- name: Vorhandenen Quell- oder Zielhost verlangen
+  ansible.builtin.assert:
+    that:
+      - checkmk_rename_source.status == 200 or checkmk_rename_target.status == 200
+      - not (checkmk_rename_source.status == 200 and checkmk_rename_target.status == 200)
+    fail_msg: >-
+      Migration {{ migration.source }} -> {{ migration.target_checkmk_hostname }}
+      ist ungueltig: Quelle und Ziel fehlen oder existieren gleichzeitig.
+
+- name: Checkmk-Host per REST-API umbenennen
+  ansible.builtin.uri:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_rename_submit', tls_validate_certs_default | default(true)) | bool }}"
+    url: >-
+      {{ checkmk_server_url }}/{{ checkmk_site }}/check_mk/api/v1/objects/host_config/{{ migration.source | urlencode }}/actions/rename/invoke
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ checkmk_api_user }} {{ checkmk_api_password }}"
+      Accept: application/json
+      Content-Type: application/json
+      If-Match: "{{ checkmk_rename_source.etag | default('') }}"
+    body_format: json
+    body:
+      new_name: "{{ migration.target_checkmk_hostname }}"
+    # Checkmk kann den asynchronen Rename mit 302/303 beantworten. Diese
+    # Redirects duerfen hier nicht automatisch verfolgt werden, da der
+    # Warteendpunkt bis zum Abschluss wiederholt auf sich selbst verweist.
+    follow_redirects: none
+    timeout: 60
+    status_code: [200, 202, 204, 302, 303]
+    return_content: true
+  register: checkmk_rename_request
+  no_log: true
+  when: checkmk_rename_source.status == 200
+
+- name: "Auf neuen Hostnamen {{ migration.target_checkmk_hostname }} warten"
+  ansible.builtin.uri:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_rename_target_wait', tls_validate_certs_default | default(true)) | bool }}"
+    url: >-
+      {{ checkmk_server_url }}/{{ checkmk_site }}/check_mk/api/v1/objects/host_config/{{ migration.target_checkmk_hostname | urlencode }}
+    method: GET
+    headers:
+      Authorization: "Bearer {{ checkmk_api_user }} {{ checkmk_api_password }}"
+      Accept: application/json
+    status_code: [200, 404]
+    return_content: false
+  register: checkmk_rename_target_wait
+  until: checkmk_rename_target_wait.status == 200
+  retries: 150
+  delay: 2
+  no_log: true
+  when: checkmk_rename_source.status == 200
+
+- name: "Auf Entfernung des alten Hostnamens {{ migration.source }} warten"
+  ansible.builtin.uri:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_rename_source_wait', tls_validate_certs_default | default(true)) | bool }}"
+    url: >-
+      {{ checkmk_server_url }}/{{ checkmk_site }}/check_mk/api/v1/objects/host_config/{{ migration.source | urlencode }}
+    method: GET
+    headers:
+      Authorization: "Bearer {{ checkmk_api_user }} {{ checkmk_api_password }}"
+      Accept: application/json
+    status_code: [200, 404]
+    return_content: false
+  register: checkmk_rename_source_wait
+  until: checkmk_rename_source_wait.status == 404
+  retries: 150
+  delay: 2
+  no_log: true
+  when: checkmk_rename_source.status == 200
+
+- name: "Umbenennung von {{ migration.target_checkmk_hostname }} aktivieren"
+  checkmk.general.activation:
+    validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_rename_activation', tls_validate_certs_default | default(true)) | bool }}"
+    server_url: "{{ checkmk_server_url }}"
+    site: "{{ checkmk_site }}"
+    automation_user: "{{ checkmk_api_user }}"
+    automation_secret: "{{ checkmk_api_password }}"
+    sites: ["{{ checkmk_site }}"]
+    redirect: true
+    force_foreign_changes: false
+  no_log: true
+  when: checkmk_rename_source.status == 200
+
+- name: "Zielzustand fuer {{ migration.target_checkmk_hostname }} seriell abgleichen"
+  ansible.builtin.include_tasks: reconcile_host.yml
+  vars:
+    checkmk_reconcile_hostname: "{{ migration.target_checkmk_hostname }}"
+    checkmk_reconcile_folder: "{{ migration.target_folder }}"
+    checkmk_reconcile_ipaddress: "{{ migration.target_ipaddress }}"
+    checkmk_reconcile_alias: "{{ migration.target_alias }}"

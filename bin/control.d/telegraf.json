@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "telegraf",
+      "description": "Telegraf ausrollen",
+      "handler": "bin/control.d/telegraf.sh",
+      "feature": "telegraf",
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/monitoring/deploy_telegraf.yml"
+      ],
+      "aliases": [
+        {
+          "name": "telegraf",
+          "args": []
+        }
+      ]
+    }
+  ]
+}

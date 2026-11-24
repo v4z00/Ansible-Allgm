@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "apache-certificate",
+      "description": "Apache-Zertifikate kontrolliert austauschen",
+      "handler": "bin/control.d/apache-certificate.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "scripts/deploy_apache_certificate.sh",
+        "playbooks/pki/deploy_apache_certificate.yml"
+      ],
+      "aliases": [
+        {
+          "name": "apache-certificate",
+          "args": []
+        }
+      ]
+    }
+  ]
+}
