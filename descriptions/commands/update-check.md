@@ -15,7 +15,7 @@ und Modus `0600` haben.
 
 Die Auswahl gilt für diesen Aufruf und alle installierten Controller-Module. Der Cronlauf mit `--auto` verwendet immer `main`. Ein laufender Testcontroller kann dadurch beim nächsten automatischen Update auf die Freigabe zurückkehren. Beide Branches müssen den Schalter unterstützen, damit du beliebig hin- und herwechseln kannst.
 
-Mit `ansible-Version` siehst du die installierte Version jedes Moduls. Ist Ansible TUI für das aktuelle Konto installiert, wird auch ihre Version angezeigt. In einer neuen Controller-Shell steht der Alias bereit. Direkt geht es mit `bin/control ansible-Version`. In der lokalen `versions.txt` steht zum Beispiel `s1.2.3` für Staging und `1.2.3` für Main. Beide leiten sich aus derselben numerischen Basis in `VERSION.txt` ab. Die Vorschau zeigt die Zielversionen. Erst das Übernehmen ändert die installierten Versionen.
+Die Ansible-CLI meldet ihre Version mit `ansible --version`. Mit `module-versions` siehst du die installierte Version jedes Moduls. Ist Ansible TUI für das aktuelle Konto installiert, wird auch ihre Version angezeigt. In einer neuen Controller-Shell steht der Alias bereit. Direkt geht es mit `bin/control module-versions`. In der lokalen `versions.txt` steht zum Beispiel `s1.2.3` für Staging und `1.2.3` für Main. Beide leiten sich aus derselben numerischen Basis in `VERSION.txt` ab. Die Vorschau zeigt die Zielversionen. Erst das Übernehmen ändert die installierten Versionen.
 
 Beim Wechsel werden verwaltete Dateien, die nur zum bisherigen Stand gehören, mitgesichert und entfernt. Eigene Änderungen an solchen Dateien blockieren den Wechsel. Über `--rollback SICHERUNGSKENNUNG` lässt sich der gesicherte Stand wiederherstellen.
 
@@ -306,7 +306,7 @@ Der Checker meldet den Zusatznamen und prüft die Dateien auch beim Cronlauf. Fe
     "tools/install_controller.py"
   ],
   "source_hashes": {
-    "bin/control.d/update-check.json": "168ea20754ab69374245ba47cc97f1938fc4a53c3269a94d7108bec1101dfd7b",
+    "bin/control.d/update-check.json": "adb0a79c424f87249ca66e73d2256bc2f477017e3ce4ebc906364678a95b3177",
     "bin/control.d/update-check.sh": "7cc1fc9287cff92e352ad038519366d7dfd04d4efe99d1c70d980de0c62ac807",
     "update_check/check.py": "639c47fa2eec26fa81a6e81e0b9f531c4794d894fc3480237b75bed553c941e1",
     "update_check/configure.py": "c6c675198f99121dbd1d6f550481b2a9190bdb25a4c19d5ec45e7da4fb1340d3",

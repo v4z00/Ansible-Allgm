@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 – Versionsanzeige für Controller-Module
+
+`module-versions` zeigt die installierten Controller-Module an. In Skripten funktioniert auch `bin/control update-check --versions`. Nach dem Update eine neue Shell öffnen oder `reload` aufrufen.
+
 ## 0.3.0 – Mein Start mit GitHub
 
 24. November 2026

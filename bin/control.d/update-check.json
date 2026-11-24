@@ -25,13 +25,7 @@
           "args": []
         },
         {
-          "name": "ansible-Version",
-          "args": [
-            "--versions"
-          ]
-        },
-        {
-          "name": "ansible-version",
+          "name": "module-versions",
           "args": [
             "--versions"
           ]

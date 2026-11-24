@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "d915cc95d6ca8f47ae297713ed46d4e5c5d99ddd29fc3c61e263bdf305f2b5b0",
+      "sha256": "79e3f22ca37c7fdf4c29ae3648d6b008c3cb6547260a453409275470919dc674",
       "mode": "0644"
     },
     "artifacts/script-library/bin/script-jobs": {
@@ -507,7 +507,7 @@
       "mode": "0755"
     },
     "bin/control.d/update-check.json": {
-      "sha256": "168ea20754ab69374245ba47cc97f1938fc4a53c3269a94d7108bec1101dfd7b",
+      "sha256": "adb0a79c424f87249ca66e73d2256bc2f477017e3ce4ebc906364678a95b3177",
       "mode": "0644"
     },
     "bin/control.d/update-check.sh": {
@@ -755,7 +755,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "5fa0cb4c72d7155d02def8e9b64acaf6dec80b72955dab6e75d34c29d4522ba1",
+      "sha256": "9d5f7b0a58d839c257d07702ea1504abfec23429f4598679271a023aeecd1b9e",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -987,7 +987,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "a9d53b1c0c303f0219aae60ac0fc1ae363feceb3aaf6be23c0c0eb9ad7283c03",
+      "sha256": "8c1cfe79035a6cea64e093234d908c9b4ba12ed02c51e197923f9ba73c1a4167",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1711,7 +1711,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "9657e71642007ef508cc9b243598a77f75b68dee7ef9861f591000d39be2d5c5",
+      "sha256": "8930aa5a7f52bac67e3a39290566e11c2fdb33f8e3c4187b9d8aa542385c22fb",
       "mode": "0644"
     },
     "update_check/local_extensions.py": {
@@ -1739,7 +1739,7 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "3906a0971a2ab97f82abe55c63345ca52918018f3c8faf4dbfa287dbee93560a",
+      "sha256": "b768bf3dce24ee07eec58217ce842fe0500f3e39570341d6467dc68cac681a05",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1751,7 +1751,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "4e1cd1143c76a85c93a6d7fd47c14048437b3e50ea3789782e8d026f982f4b83",
+      "sha256": "0805c04a5cee894f81eabc29fcd75bdcdf6ed1082089a879e2ee8cbabe25fd8b",
       "mode": "0644"
     },
     "update_check/rollout.py": {
@@ -1771,7 +1771,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_branches.py": {
-      "sha256": "012490a50a347f1ddcba0de1ce06c0fcbe643d40a85a361344413d63c48aaa92",
+      "sha256": "7a2f45d54df701d3f15e33cef5d2857ed2949dae99a9c4c3e6873fb03bfd9b4d",
       "mode": "0644"
     },
     "update_check/tests/test_check.py": {
