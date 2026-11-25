@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/rsyslog-disable.json": "472e8608e051263b01c2b4705284a237b0efd5fcab7f36adc0608d772e6d3ce5",
     "bin/control.d/rsyslog-disable.sh": "26fa6c31a2f21311d751f5e3d6b69e36e113d9be156804531b2a3454c3ed058d",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

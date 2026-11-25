@@ -8,11 +8,11 @@
     "probes.py": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
     "VERSION.txt": "6cf4e084b47f33c9b02ef79279d157833868f8f70514169a768be353ee328fea",
     "tests/test_check.py": "0acd1d021c3fde1f64e782f565b9897a74bc6d34702bdbb650d52d28b05dea03",
-    "release.json": "0805c04a5cee894f81eabc29fcd75bdcdf6ed1082089a879e2ee8cbabe25fd8b",
+    "release.json": "c400c955d52a56059947502322e4c1977c96b3968c226f9d4ea552e31620669b",
     "settings_contract.json": "a4ea612796751f32e1caaafd9e96b62220141373cb7a189e8d495a16f555566a",
     "settings_catalog.json": "8858d8b7cc888ae174f65f8346baaa2ed6621ed33b65d2953f9c0bb080698efb",
-    "manifests/controller_basis.json": "8afc04cd5ac38a3de2b452bffc45b10bfce83698e5e67885b2d81de1b855c084",
-    "manifests/host_updates.json": "bcba8ababa9e9b7fc66473d87b78b4be808a42732a56caeeb4aacc67812ebca3",
+    "manifests/controller_basis.json": "31af710489d21f026c98c1bd6d2069d592c0743eab0f141dd88b25646ebd9f76",
+    "manifests/host_updates.json": "9aba1d687ebe776a365f22ab260d9bd3f29dfe493af64963f5b11a9c94453b48",
     "manifests/tls_tasks.json": "6aadc2a806fad83648de795b261749e856481447e4db783b70b0f9ed25faff22",
     "manifests/bootstrap.json": "9508caa12d375180587dd4022fc92c1d968dc3e86129bc02975ca0ab0d30dfdd",
     "manifests/version_pruefer.json": "b768bf3dce24ee07eec58217ce842fe0500f3e39570341d6467dc68cac681a05",
@@ -25,7 +25,7 @@
     "local_extensions.py": "72d966ea3ee878d778dc397b28d2f3ff2273fb28b34e47ca8e6230824b6751d3",
     "tests/test_local_extensions.py": "75489d27ee679bfe0084000862d225b99d22868c3b977e987a8d53b3dfb83a10",
     "tests/test_docker_update.py": "62d9d451034e60dee0d1cdc7faeff8ab2a852234497cacb60093005048892f7c",
-    "manifests/script_jobs.json": "94b534a187e8a8933b91378806071bacd1435c7741b2359b67df000b9eb84faf",
+    "manifests/script_jobs.json": "64bf6340aaf6317d1242053c4019facde7b267ecc91b5b2a2e5c858e5e593ded",
     "tests/test_branches.py": "7a2f45d54df701d3f15e33cef5d2857ed2949dae99a9c4c3e6873fb03bfd9b4d"
   },
   "trust": "Lokale Sollwerte, keine Signatur. Nicht aus veraenderten Live-Dateien automatisch neu erzeugen."

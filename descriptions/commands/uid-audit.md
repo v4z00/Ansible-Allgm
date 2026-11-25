@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/uid-audit.json": "5ff00f1fd19e01f784deee8f2006364451673587da50d6c54d2eb299ad82cda5",
     "bin/control.d/uid-audit.sh": "8966861e8691ccfcdb9f9ca244aba6cd673a6249fbb8858195ade169fe5891cd",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

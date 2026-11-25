@@ -34,8 +34,9 @@
     label: "{{ item | basename }}"
 - name: Jobhelfer installieren
   ansible.builtin.copy:
-    src: "{{ role_path }}/../../artifacts/script-library/bin/script-jobs"
-    dest: "{{ script_library_root }}/bin/script-jobs"
+    src: "{{ role_path }}/../../artifacts/script-library/bin/{{ item }}"
+    dest: "{{ script_library_root }}/bin/{{ item }}"
     owner: "{{ script_library_owner }}"
     group: "{{ script_library_group }}"
     mode: '0700'
+  loop: [script-jobs, job-status]

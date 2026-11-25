@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/postfix-queue-clear.json": "dd1ebe567e835e10ef368d4d361d23ce10ff942cc99ff10bd8cd7ca3c00db57c",
     "bin/control.d/postfix-queue-clear.sh": "06d8ce52c119bc08af7d7166b95b2f8278006fdc4f677e4d2d12192a29c0ae4b",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

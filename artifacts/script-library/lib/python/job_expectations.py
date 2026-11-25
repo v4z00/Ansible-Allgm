@@ -8,7 +8,9 @@ def normalize(jobs,previous=None):
     for entry in jobs:
         if not re.fullmatch(r'[A-Za-z0-9_.:-]{1,160}',entry['job']):raise ValueError('Invalid expectation job')
         cron=entry.get('cron',{});custom=entry.get('expected',{})
-        value={'job':entry['job'],'timezone':entry.get('timezone',''),'start':custom.get('start'),
+        category=entry.get('category','vzdump' if entry['job'].startswith('vzdump') else 'general')
+        if category not in ('general','vzdump'):raise ValueError('Invalid expectation category')
+        value={'job':entry['job'],'category':category,'timezone':entry.get('timezone',''),'start':custom.get('start'),
                'weekdays':custom.get('weekdays'),'deadline_minutes':custom.get('deadline_minutes'),
                'max_runtime_minutes':custom.get('max_runtime_minutes')}
         if value['start'] is None and str(cron.get('hour','')).isdigit() and str(cron.get('minute','')).isdigit():

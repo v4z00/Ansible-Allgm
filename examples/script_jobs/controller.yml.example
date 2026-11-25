@@ -5,3 +5,10 @@ script_jobs_summary_cron: {minute: '30', hour: '8', weekday: '*'}
 script_jobs_mail_to: admin@example.invalid
 telegram_bot_token: ''
 telegram_chat_id: ''
+
+# Optional display names. Existing notification variables above remain authoritative.
+script_jobs_report_labels:
+  hosts: {example-host: ServerA}
+  jobs: {backup: Backup}
+# Optional isolated test paths per inventory hostname: {root: /absolute/path, database: /absolute/file}
+script_jobs_source_overrides: {}

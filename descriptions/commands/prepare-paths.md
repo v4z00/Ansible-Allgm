@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/prepare-paths.json": "bcca5ae97bba1bf37502a01a9f36218c5ce7f70d9325b836d5e172beb2563a3a",
     "bin/control.d/prepare-paths.sh": "eba203ca33f8266f0377064f0461c76debef5833018eb461923c63c6dc847261",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

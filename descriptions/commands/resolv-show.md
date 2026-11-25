@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/resolv-show.json": "570a54f0bf24aedbcc2ea65855faae78d4a2c83324d65cb5312c3c1206681f69",
     "bin/control.d/resolv-show.sh": "44924f2d8b95635184add5a3434f585525e91b21fdde610e14ccd79c3e1ca4cf",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

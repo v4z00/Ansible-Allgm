@@ -33,7 +33,7 @@ Operationen. Das Laden der Shell-Funktionen führt keinen Job aus.
   "schema_version": 1,
   "kind": "role",
   "ref": "roles/script_library",
-  "title": "Vollst\u00e4ndige neutrale Skriptbibliothek",
+  "title": "Vollständige neutrale Skriptbibliothek",
   "documented": false,
   "fields": [],
   "constraints": [],
@@ -43,7 +43,7 @@ Operationen. Das Laden der Shell-Funktionen führt keinen Job aus.
   ],
   "source_hashes": {
     "roles/script_library/defaults/main.yml": "528e1bc8cdc3355cdc681063581a63f9ac4d2c6643bf7773792dbe416e71b709",
-    "roles/script_library/tasks/main.yml": "7130acfaabe9871417b3ddd69a0595c09546d1910b89cbb7eddebde03a238728"
+    "roles/script_library/tasks/main.yml": "c32ac6d967b9fd076aa802a95a13e52016cfa7674df6a41335fda8871f9a68a8"
   }
 }
 ```

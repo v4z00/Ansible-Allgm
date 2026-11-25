@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/set-fstab.json": "ab0a259566df8956373e5572c29d6b1297db0cedf1fbdc7c9a0dca1f731f71d0",
     "bin/control.d/set-fstab.sh": "9bbb1799eeb2464ce8c0684afea26a9e3d58b6af5351ea6a3dba1c0426248350",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

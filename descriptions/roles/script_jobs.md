@@ -74,13 +74,25 @@ konkreten lokalen Konfiguration erforderlich.
     "roles/script_jobs/defaults/main.yml",
     "roles/script_jobs/tasks/main.yml",
     "roles/script_jobs/templates/expectations.json.j2",
-    "scripts/job_cron_guard.py"
+    "scripts/job_cron_guard.py",
+    "roles/script_jobs/filter_plugins/local_config.py"
   ],
   "source_hashes": {
     "roles/script_jobs/defaults/main.yml": "617986cf4e0b7202baeda6c21654b606cade532987440a04c5a17ee66a04fc4f",
-    "roles/script_jobs/tasks/main.yml": "916c8e4088e781652c46e10e1956f86a1200f414cd3b553bd5f4795d2998c203",
-    "roles/script_jobs/templates/expectations.json.j2": "0522a1dbedb63a27c527f9fd18f6925bad5ef98a98b0bdc771fc7dd79209907f",
-    "scripts/job_cron_guard.py": "c34ea1082b716021447fcff3869c73d9dfac808775118d3d38cde965543457d2"
+    "roles/script_jobs/tasks/main.yml": "9877c12026e2a4f4920e8c176b3717163678e50c8d8296aa34da36b59826dbdd",
+    "roles/script_jobs/templates/expectations.json.j2": "8784701f26e6f5e251f580e6b5dc6415775f0470526a7b17c67bd8919ab5d5bd",
+    "scripts/job_cron_guard.py": "c34ea1082b716021447fcff3869c73d9dfac808775118d3d38cde965543457d2",
+    "roles/script_jobs/filter_plugins/local_config.py": "7932352e3605e2826910081c8f2cbf513d9b8dcedbad205b08fcb9e27e115adc"
   }
 }
 ```
+
+Nach dem Zusammenführen der Konfiguration entfernt die Rolle die Mail-/Telegramwerte
+und setzt alte Versandflags auf `false`. Leere Kompatibilitätsfelder halten ältere
+Shellprogramme lauffähig. Fachliche Zugangsdaten, etwa zum Backupziel, bleiben
+bestehen. Alle Jobs einschließlich Vzdump erfassen ausschließlich lokale Ergebnisse.
+Die zu verwaltenden Cron-Skripte müssen im geprüften Quellmanifest enthalten sein.
+
+Die Library verteilt `bin/job-status` auf jeden Host. Es liest den letzten lokalen
+Zustand je Job, ohne Controller, Netzwerk oder Jobstart. Der Controller verwendet
+denselben Helfer über `bin/control jobs-last --limit ZIEL`.

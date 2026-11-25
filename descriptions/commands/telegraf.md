@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/telegraf.json": "b0aebab888b98d6a7e39064b391c54aef27249a03a04c67a67a04def84e1570d",
     "bin/control.d/telegraf.sh": "e561b9767b3dba2a71f9f667f1a6c42789d9518a76f1b240477c283693c7f74b",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

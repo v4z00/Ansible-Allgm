@@ -5,6 +5,17 @@ ROOT_DIR="${CONTROL_PROJECT_ROOT:?}"
 cd "${ROOT_DIR}"
 LOG_DIR="${ROOT_DIR}/logs"
 
+record_control_failure() {
+  [[ -f config/script_jobs_controller.json ]] || return 0
+  local job_db run_id
+  job_db=$(python3 -c 'import json; print(json.load(open("config/script_jobs_controller.json"))["database"])') || return
+  run_id=$(python3 artifacts/script-library/bin/script-jobs --db "$job_db" begin \
+    --job "$1" --category ansible | python3 -c 'import json,sys; print(json.load(sys.stdin)["run_id"])') || return
+  python3 artifacts/script-library/bin/script-jobs --db "$job_db" item --run "$run_id" \
+    --item "$2" --status failed --message "$3" >/dev/null || return
+  python3 artifacts/script-library/bin/script-jobs --db "$job_db" finish --run "$run_id" \
+    --status failed --exit-code 1 --message 'Ansible-Voraussetzung fehlt' >/dev/null
+}
 
 run_playbook_with_jobs() {
   if [[ -f config/script_jobs_controller.json && "${SCRIPT_JOBS_CALLBACK:-1}" != 0 ]]; then

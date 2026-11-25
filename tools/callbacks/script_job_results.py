@@ -17,6 +17,7 @@ class CallbackModule(CallbackBase):
         super().__init__();self.store=None;self.run=None
     def v2_playbook_on_start(self,playbook):
         if os.environ.get('SCRIPT_JOBS_CALLBACK')!='1':return
+        if Path(playbook._file_name).resolve() in {ROOT/'playbooks/scripts/summary_jobs.yml',ROOT/'playbooks/scripts/show_status.yml'}:return
         from job_store import Store
         self.store=Store(os.environ.get('SCRIPT_JOBS_CONTROLLER_DB','/var/lib/script-jobs/controller.sqlite3'))
         self.started=time.monotonic()

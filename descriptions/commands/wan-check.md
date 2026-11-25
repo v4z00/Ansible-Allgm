@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/wan-check.json": "1b4010d9d0b305495f87a31fc0125f94738927b850db646825acc7e07f94b443",
     "bin/control.d/wan-check.sh": "76a2718860aae610b66ad961e52aaafff5639db9dc3ef603c0d1faada28fbe18",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

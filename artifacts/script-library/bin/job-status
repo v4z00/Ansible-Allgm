@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Local SQLite query only: no controller, transport or job execution required.
+set -euo pipefail
+job_status_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+exec "$job_status_dir/script-jobs" latest \
+  --config "$job_status_dir/../config/common.json" "$@"

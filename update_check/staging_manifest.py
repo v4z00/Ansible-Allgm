@@ -44,7 +44,7 @@ def load(path):
 
 def public_library(name):
     return re.fullmatch(
-        r"artifacts/script-library/(?:lib/(?:load\.sh|common/[a-z][a-z0-9_]*\.sh|data/mail-translations\.json|python/(?:job_store|job_notify|job_expectations)\.py)|bin/script-jobs)",
+        r"artifacts/script-library/(?:lib/(?:load\.sh|common/[a-z][a-z0-9_]*\.sh|data/mail-translations\.json|python/(?:job_store|job_notify|job_expectations|job_report)\.py)|bin/(?:script-jobs|job-status))",
         name,
     ) is not None
 

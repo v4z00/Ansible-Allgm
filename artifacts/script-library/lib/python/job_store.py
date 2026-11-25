@@ -76,6 +76,9 @@ CREATE TABLE IF NOT EXISTS report_runs(report_id TEXT NOT NULL,source TEXT NOT N
 CREATE TABLE IF NOT EXISTS deliveries(report_id TEXT NOT NULL,channel TEXT NOT NULL,status TEXT NOT NULL,
  attempts INTEGER NOT NULL DEFAULT 0,lease_until REAL NOT NULL DEFAULT 0,updated REAL NOT NULL,
  PRIMARY KEY(report_id,channel),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS report_health(report_id TEXT NOT NULL,source TEXT NOT NULL,status TEXT NOT NULL,message TEXT NOT NULL,
+ PRIMARY KEY(report_id,source),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
+CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
 ''')
         with self.transaction():
             if 'duration_seconds' not in {r[1] for r in self.db.execute('PRAGMA table_info(runs)')}:self.db.execute('ALTER TABLE runs ADD COLUMN duration_seconds REAL')
@@ -142,6 +145,13 @@ CREATE TABLE IF NOT EXISTS deliveries(report_id TEXT NOT NULL,channel TEXT NOT N
         rows=[dict(r) for r in self.db.execute('SELECT * FROM runs WHERE run_id=?',(run,))]
         for row in rows:row['items']=[dict(i) for i in self.db.execute('SELECT item_id,status,message,updated FROM items WHERE source=? AND epoch=? AND run_id=?',(row['source'],row['epoch'],run))]
         return rows
+    def latest(self,job=None,category=None,source=None):
+        """Latest state per source/job, including a newer running job."""
+        where=['NOT EXISTS (SELECT 1 FROM runs n WHERE n.source=r.source AND n.job=r.job AND (n.started>r.started OR (n.started=r.started AND n.rowid>r.rowid)))']
+        params=[]
+        for key,value in [('job',job),('category',category),('source',source)]:
+            if value is not None:where.append('r.'+key+'=?');params.append(value)
+        return [dict(row) for row in self.db.execute('SELECT r.* FROM runs r WHERE '+' AND '.join(where)+' ORDER BY r.source,r.job',params)]
     def export(self,after=0,epoch=None,limit=200):
         after=int(after);floor=int(self.meta('floor'))
         sequence=self.db.execute("SELECT seq FROM sqlite_sequence WHERE name='events'").fetchone()
@@ -154,8 +164,11 @@ CREATE TABLE IF NOT EXISTS deliveries(report_id TEXT NOT NULL,channel TEXT NOT N
     def cursor(self,source):
         row=self.db.execute('SELECT epoch,last_id FROM cursors WHERE source=?',(source,)).fetchone()
         return dict(row) if row else {'epoch':None,'last_id':0}
-    def health(self,source,status,message=''):
-        with self.transaction():self.db.execute('INSERT OR REPLACE INTO collection_health VALUES(?,?,?,?)',(source,status,utc(),safe_text(message)))
+    def health(self,source,status,message='',category='general'):
+        if category not in ('general','vzdump'):raise ValueError('Invalid health category')
+        with self.transaction():
+            self.db.execute('INSERT OR REPLACE INTO collection_health VALUES(?,?,?,?)',(source,status,utc(),safe_text(message)))
+            self.db.execute('INSERT OR REPLACE INTO meta VALUES(?,?)',('health_category:'+source,category))
     def ingest(self,source,batch,accept_gap=False):
         if batch.get('schema')!=SCHEMA:raise ValueError('Unsupported event schema')
         previous=self.cursor(source);epoch=batch['epoch']
@@ -215,40 +228,50 @@ CREATE TABLE IF NOT EXISTS deliveries(report_id TEXT NOT NULL,channel TEXT NOT N
                     import sys
                     print('One expired private job log could not be removed.',file=sys.stderr)
         return removed
-    def report(self,category='general',run_id=None,reserve=True):
+    def report(self,category='general',run_id=None,reserve=True,labels=None):
+        from job_report import format_report,legacy_health,clean_legacy_body
         cats=('general','ansible') if category=='general' else (category,)
         with self.transaction():
             pending=self.db.execute("SELECT p.id,p.body FROM reports p WHERE p.category=? AND (NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.report_id=p.id) OR EXISTS(SELECT 1 FROM deliveries d WHERE d.report_id=p.id AND d.status!='sent')) ORDER BY p.created LIMIT 1",(category,)).fetchone()
-            if pending:return dict(pending)
+            if pending:
+                report=dict(pending)
+                rows=[dict(r) for r in self.db.execute('SELECT r.* FROM runs r JOIN report_runs p ON p.source=r.source AND p.epoch=r.epoch AND p.run_id=r.run_id WHERE p.report_id=? ORDER BY r.started',(report['id'],))]
+                health=[dict(r) for r in self.db.execute('SELECT source,status,message FROM report_health WHERE report_id=?',(report['id'],))]
+                if report['body'].startswith('📋') or report['body'].startswith('📦'):
+                    health=health or legacy_health(report['body'])
+                if rows or health:
+                    items={}
+                    for row in rows:
+                        key=(row['source'],row['epoch'],row['run_id'])
+                        items[key]=[dict(r) for r in self.db.execute('SELECT item_id,status,message FROM items WHERE source=? AND epoch=? AND run_id=?',key)]
+                    report['body']=format_report(rows,items,health,category,labels)
+                else:report['body']=clean_legacy_body(report['body'])
+                if reserve:self.db.execute('UPDATE reports SET body=? WHERE id=?',(report['body'],report['id']))
+                return report
             params=list(cats);where='r.category IN ('+','.join('?'*len(cats))+') AND r.status!=?';params.append('running')
             if run_id:where+=' AND r.run_id=?';params.append(run_id)
-            rows=[dict(r) for r in self.db.execute('SELECT r.* FROM runs r WHERE '+where+' AND NOT EXISTS(SELECT 1 FROM report_runs p WHERE p.source=r.source AND p.epoch=r.epoch AND p.run_id=r.run_id) ORDER BY r.started LIMIT 200',params)]
-            health=[dict(r) for r in self.db.execute("SELECT source,status FROM collection_health WHERE status!='ok' ORDER BY source")]
+            rows=[dict(r) for r in self.db.execute('SELECT r.* FROM runs r WHERE '+where+' AND NOT EXISTS(SELECT 1 FROM report_runs p WHERE p.source=r.source AND p.epoch=r.epoch AND p.run_id=r.run_id) ORDER BY r.started LIMIT 2001',params)]
+            health=[dict(r) for r in self.db.execute("SELECT h.source,h.status FROM collection_health h LEFT JOIN meta m ON m.key='health_category:'||h.source WHERE h.status!='ok' AND COALESCE(m.value,'general')=? ORDER BY h.source",(category,))]
+            if len(rows)>2000:
+                rows=rows[:2000]
+                health.append({'source':'controller:reports','status':'backlog-remains'})
             fingerprint=json.dumps(health,sort_keys=True)
-            prior=self.db.execute('SELECT value FROM meta WHERE key=?',('health_report',)).fetchone()
-            if not rows and (category!='general' or not health or (prior and prior[0]==fingerprint)):return None
-            if category=='general' and reserve:self.db.execute('INSERT OR REPLACE INTO meta VALUES(?,?)',('health_report',fingerprint))
-            identifier=str(uuid.uuid4());symbols={'success':'✅','failed':'❌','warning':'⚠️','skipped':'⏭️'}
-            title='📦 Vzdump → Remote' if category=='vzdump' else '📋 Job-Zusammenfassung'
-            totals={k:sum(r['status']==k for r in rows) for k in ('success','failed','warning','skipped')}
-            if category=='vzdump':
-                object_states=[]
-                for row in rows:
-                    object_states.extend(x[0] for x in self.db.execute("SELECT status FROM items WHERE source=? AND epoch=? AND run_id=? AND item_id GLOB '[0-9]*'",(row['source'],row['epoch'],row['run_id'])))
-                if object_states:totals={k:object_states.count(k) for k in totals}
-            lines=[title,'Bericht: '+identifier,'✅ %d | ❌ %d | ⚠️ %d | ⏭️ %d'%(totals['success'],totals['failed'],totals['warning'],totals['skipped'])]
+            health_key='health_report:'+category
+            prior=self.db.execute('SELECT value FROM meta WHERE key=?',(health_key,)).fetchone()
+            if not rows and not health:
+                if reserve:self.db.execute('INSERT OR REPLACE INTO meta VALUES(?,?)',(health_key,fingerprint))
+                return None
+            if not rows and prior and prior[0]==fingerprint:return None
+            if reserve:self.db.execute('INSERT OR REPLACE INTO meta VALUES(?,?)',(health_key,fingerprint))
+            identifier=str(uuid.uuid4());items={}
             for row in rows:
-                lines.append('%s %s / %s: %s'%(symbols[row['status']],row['source'],row['job'],row['status']))
-                for item in self.db.execute('SELECT item_id,status,message FROM items WHERE source=? AND epoch=? AND run_id=?',(row['source'],row['epoch'],row['run_id'])):
-                    if category=='vzdump' or item['status'] in ('failed','warning'):
-                        lines.append('  %s %s%s: %s'%('🚫' if item['message']=='Unreachable' else symbols.get(item['status'],'⚠️'),'ID ' if item['item_id'].isdigit() else '',item['item_id'],item['message'] or item['status']))
-            for health in self.db.execute("SELECT * FROM collection_health WHERE status!='ok'"):
-                lines.append(('🚫 ' if health['status'] in ('unreachable','query-failed','not-attached-or-query-failed') else '⚠️ ')+health['source']+': '+health['status'])
-            if len(lines)>200:lines=lines[:200]+['Weitere Einzelergebnisse in der Job-Abfrage.']
-            body='\n'.join(lines)
+                key=(row['source'],row['epoch'],row['run_id'])
+                items[key]=[dict(r) for r in self.db.execute('SELECT item_id,status,message FROM items WHERE source=? AND epoch=? AND run_id=?',key)]
+            body=format_report(rows,items,health,category,labels)
             if not reserve:return {'id':identifier,'body':body}
             self.db.execute('INSERT INTO reports VALUES(?,?,?,?)',(identifier,category,utc(),body))
             for row in rows:self.db.execute('INSERT INTO report_runs VALUES(?,?,?,?)',(identifier,row['source'],row['epoch'],row['run_id']))
+            for state in health:self.db.execute('INSERT INTO report_health VALUES(?,?,?,?)',(identifier,state['source'],state['status'],state.get('message','')))
             # Configured channels are added by the notifier before claiming delivery.
             return {'id':identifier,'body':body}
     def claim(self,report,channel):

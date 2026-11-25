@@ -21,7 +21,7 @@ def deliver(channel,report,cfg,root):
         binary=shutil.which('mail') or shutil.which('mailx')
         recipient=cfg.get('EMAIL') or cfg.get('MAIL_TO')
         if not binary or not recipient or recipient.startswith('-') or '\n' in recipient or '\r' in recipient:raise ValueError('Mail configuration unavailable')
-        subject=ascii_mail('Jobbericht '+report['id'],root)
+        subject=ascii_mail(report['body'].splitlines()[0] if report['body'] else 'Job-Zusammenfassung',root)
         body=ascii_mail(report['body'],root)
         subprocess.run([binary,'-s',subject,recipient],input=body.encode('ascii'),check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=60)
     elif channel=='telegram':

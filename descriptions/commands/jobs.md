@@ -6,6 +6,7 @@ Abfragen verwenden das vorhandene Inventory und dessen SSH-/Become-Einstellungen
 ```sh
 bin/control jobs --limit example-host collect
 bin/control jobs --source example-host runs
+bin/control jobs --source example-host latest
 bin/control jobs --source example-host --job backup errors
 bin/control jobs --run LAUF-ID details
 bin/control jobs --limit example-host live --seconds 60
@@ -49,7 +50,7 @@ weiterhin selbst per Cron aus. Ergebnisse liegen lokal in SQLite, werden 90 Tage
 aufbewahrt und über die vorhandenen Ansible-/SSH-Verbindungen abgefragt. Die
 Liveansicht kann einzelne JSON-Ereignisse ausgeben, ohne die Datenbank über das
 Netzwerk zu öffnen. `bin/control jobs-summary` konsolidiert die allgemeinen
-Ergebnisse. Ein wöchentlicher Vzdump-Job sendet einen eigenen Abschlussbericht.
+Ergebnisse. Der Controller sendet für Vzdump einen getrennten Abschlussbericht.
 
 Die Einrichtung ist unter [Skripte verteilen](../roles/script_jobs.md), [Ergebnis-Controller einrichten](../roles/script_jobs_controller.md) und in den [Beispielen](../../examples/script_jobs/) beschrieben. Ohne eine konkrete lokale Auswahl und
 Zeitpläne wird kein Cronjob erfunden oder gestartet.
@@ -71,7 +72,7 @@ Zeitpläne wird kein Cronjob erfunden oder gestartet.
   "source_hashes": {
     "bin/control.d/jobs.json": "24dcd5c94d8d2bb818f3b3100d74f2b294d8ff07479395dc4273307a61384c68",
     "bin/control.d/jobs.sh": "7247b8df4c0662e5a92338d005fac347d9632ce52f3f2bfc84217b363702293e",
-    "scripts/job_console.py": "0a12ac7bc656cba6ce8939656448a87ca1e981c7b276a2ecab2880a4f1d28765"
+    "scripts/job_console.py": "e4f31a820b92cc918e5c2b0d5bd91a3c4da97bcfbaa58169a48b628bb1becdfe"
   }
 }
 ```
@@ -79,3 +80,11 @@ Zeitpläne wird kein Cronjob erfunden oder gestartet.
 Der Abfragepfad folgt wie das Job-Deployment `script_jobs_target_root`, dann
 `script_path`, sonst `/scripte`. Eine separat gestagte Library legt keinen
 abweichenden Pfad für produktive Jobs fest.
+
+`latest` zeigt den letzten gespeicherten Zustand je Quelle/Job, einschließlich
+laufender Jobs. Diese Ansicht verwendet den letzten Abholstand und unterstützt
+`--source`/`--job`. Für Zeit- und Einzelobjektfilter bleibt `runs` zuständig.
+`--config` wählt eine eigene private Controllerkonfiguration.
+
+[jobs-last](jobs-last.md) fragt die letzten Zustände unmittelbar auf den Hosts ab.
+Beide Ansichten starten keine Jobs und senden keine Nachrichten.

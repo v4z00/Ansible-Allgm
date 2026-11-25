@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/mail-test.json": "e44e79ee73d25fe58f485e89844a0457913d20c87922c2b77dd06595a95fe20d",
     "bin/control.d/mail-test.sh": "f6f45c47e729af1b2e62f3669d9f8556a631b6de9bd3ffa6549e5a29b89441dc",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

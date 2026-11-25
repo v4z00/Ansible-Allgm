@@ -37,21 +37,19 @@ def notify(store,category,paths,run=None,preview=False):
     if mail:channels.append('mail')
     if token and chat:channels.append('telegram')
     if (bool(token)!=bool(chat)) or (not channels and not preview):raise ValueError('Notification configuration incomplete')
-    # Drain already pending reports first, then include this run if necessary.
-    for _ in range(3):
-        report=store.report(category,run,reserve=not preview)
-        if not report:return 0
-        if preview:print(json.dumps(report,ensure_ascii=False));return 0
-        failed=False;progress=False
-        for channel in channels:
-            if not store.claim(report['id'],channel):continue
-            progress=True
-            try:deliver(channel,report,cfg,ROOT)
-            except Exception:store.delivered(report['id'],channel,False);failed=True
-            else:store.delivered(report['id'],channel,True)
-        if failed:return 1
-        if not progress:return 75
-    return 1
+    # One summary per category/cycle, including after a controller outage.
+    # Any remaining backlog stays stored for the next cycle.
+    report=store.report(category,run,reserve=not preview,labels=cfg.get('REPORT_LABELS', {}))
+    if not report:return 0
+    if preview:print(json.dumps(report,ensure_ascii=False));return 0
+    failed=False;progress=False
+    for channel in channels:
+        if not store.claim(report['id'],channel):continue
+        progress=True
+        try:deliver(channel,report,cfg,ROOT)
+        except Exception:store.delivered(report['id'],channel,False);failed=True
+        else:store.delivered(report['id'],channel,True)
+    return 1 if failed else 0 if progress else 75
 
 
 def run_job(args,store):
@@ -130,10 +128,8 @@ def run_job(args,store):
                 os.tcsetpgrp(sys.stdin.fileno(),foreground)
                 signal.signal(signal.SIGTTOU,tty_signal)
             for sig,handler in old.items():signal.signal(sig,handler)
-        if args.category=='vzdump':
-            try:sent=notify(store,'vzdump',args.config,run)
-            except Exception:sent=1
-            if sent and code==0:code=1
+        # Every category runs locally without a controller or notification channel.
+        # The controller collects and sends general and Vzdump reports separately.
         store.prune(90)
         return code
 
@@ -154,6 +150,7 @@ def main():
         if command=='item':s.add_argument('--item',required=True)
         if command=='finish':s.add_argument('--exit-code',type=int,required=True)
     s=sub.add_parser('runs');s.add_argument('--job');s.add_argument('--status');s.add_argument('--category');s.add_argument('--limit',type=int,default=100)
+    s=sub.add_parser('latest');s.add_argument('--job');s.add_argument('--category');s.add_argument('--source');s.add_argument('--json',action='store_true');s.add_argument('--config',action='append',default=[]);s.add_argument('--db',dest='latest_db')
     s=sub.add_parser('details');s.add_argument('--run',required=True)
     for command in ('export','watch'):
         s=sub.add_parser(command);s.add_argument('--after',type=int,default=0);s.add_argument('--epoch');s.add_argument('--limit',type=int,default=200)
@@ -169,11 +166,14 @@ def main():
     if a.command=='run' and a.arguments==['--check-config']:
         # A validation request is never recorded as an actual backup run.
         return subprocess.call(['bash',a.program,'--check-config'])
-    if a.command in ('runs','details','export','watch','cursor') and not Path(a.db).exists():
-        print(json.dumps({'status':'not_attached','schema':1}));return 3
     if a.command=='run':
         try:a.db=config(a.config).get('JOB_DATABASE_PATH',a.db)
         except (ValueError,OSError):pass
+    elif a.command=='latest':
+        if a.latest_db:a.db=a.latest_db
+        elif a.config:a.db=config(a.config).get('JOB_DATABASE_PATH',a.db)
+    if a.command in ('runs','latest','details','export','watch','cursor') and not Path(a.db).exists():
+        print(json.dumps({'status':'not_attached','schema':1}));return 3
     store=Store(a.db)
     try:
         if a.command=='init':
@@ -189,6 +189,15 @@ def main():
         elif a.command in ('event','item','finish'):
             store.update(a.run,a.status,a.message,item=getattr(a,'item',None),exit_code=getattr(a,'exit_code',None));result={'ok':True}
         elif a.command=='runs':result=store.runs(a.job,a.status,a.category,a.limit)
+        elif a.command=='latest':
+            result=store.latest(a.job,a.category,a.source)
+            if not a.json:
+                from job_report import label,SYMBOLS
+                for row in result:
+                    stamp=time.strftime('%d.%m %H:%M',time.localtime(row['started']))
+                    print('%s  %s %s  Exit: %s'%(stamp,label(row['source'],row['job'],row['category'],{}),SYMBOLS.get(row['status'],'⚠️'),row['exit_code'] if row['exit_code'] is not None else '-'))
+                if not result:print('Noch keine Job-Ergebnisse gespeichert.')
+                return 0
         elif a.command=='details':result=store.details(a.run)
         elif a.command=='export':result=store.export(a.after,a.epoch,a.limit)
         elif a.command=='watch':

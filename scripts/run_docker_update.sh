@@ -30,9 +30,15 @@ log_file="${ROOT_DIR}/logs/docker-update-${timestamp}.log"
 notification_file=$(mktemp)
 trap 'rm -f "${notification_file}"' EXIT
 
-selection=$(ANSIBLE_NOCOLOR=1 ansible-playbook "$playbook" --list-hosts "$@") || exit $?
+if selection=$(ANSIBLE_NOCOLOR=1 ansible-playbook "$playbook" --list-hosts "$@"); then :
+else
+  selection_status=$?
+  record_control_failure ansible:docker-update Zielauswahl 'Inventory- oder Playbookpruefung fehlgeschlagen; kein Update gestartet.'
+  exit "$selection_status"
+fi
 if ! grep -Eq 'hosts \([1-9][0-9]*\):' <<< "$selection"; then
   echo "Docker-Update: Keine Docker-Zielhosts für den Pflichtcheck ausgewählt." >&2
+  record_control_failure ansible:docker-update Zielauswahl 'Keine Docker-Zielhosts ausgewaehlt; kein Update gestartet.'
   exit 2
 fi
 

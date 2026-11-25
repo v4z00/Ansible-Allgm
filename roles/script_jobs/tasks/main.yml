@@ -52,6 +52,7 @@
     that:
       - item.name is match('^[A-Za-z0-9][A-Za-z0-9_.-]*$')
       - item.script is match('^[A-Za-z0-9][A-Za-z0-9_.-]*\.sh$')
+      - item.script in (script_jobs_manifest.files | selectattr('kind', 'equalto', 'script') | map(attribute='path') | list)
       - item.user | default(script_jobs_owner) == script_jobs_owner
       - item.cron is mapping
       - item.cron.special_time | default('') in ['', 'reboot', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'annually']
@@ -108,7 +109,7 @@
 
 - name: Gemeinsame Konfiguration mit konsistentem Datenbankpfad rendern
   ansible.builtin.copy:
-    content: "{{ {'JOB_DATABASE_PATH': script_jobs_database_path} | combine((lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/config/common.json') | from_json) | combine(script_jobs_common_config, recursive=True)) | to_nice_json }}"
+    content: "{{ {'JOB_DATABASE_PATH': script_jobs_database_path} | combine((lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/config/common.json') | from_json) | combine(script_jobs_common_config, recursive=True)) | script_jobs_local_config | to_nice_json }}"
     dest: "{{ script_jobs_target_root }}/config/common.json"
     mode: '0600'
     owner: "{{ script_jobs_owner }}"
@@ -117,7 +118,7 @@
 
 - name: Skriptkonfigurationen mit ausdruecklichen Hostvariablen rendern
   ansible.builtin.copy:
-    content: "{{ (lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/' ~ item.path) | from_json) | combine(script_jobs_job_config.get((item.path | basename | regex_replace('\\.json$', '')), {}), recursive=True) | to_nice_json }}"
+    content: "{{ (lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/' ~ item.path) | from_json) | combine(script_jobs_job_config.get((item.path | basename | regex_replace('\\.json$', '')), {}), recursive=True) | script_jobs_local_config | to_nice_json }}"
     dest: "{{ script_jobs_target_root }}/{{ item.path }}"
     mode: '0600'
     owner: "{{ script_jobs_owner }}"

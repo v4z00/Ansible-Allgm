@@ -64,7 +64,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "source_hashes": {
     "bin/control.d/checkmk.json": "03fd89d3ba089ab5a3711c19cac5c1496b15b1dc4ee7411008a7ef4a2b951a9e",
     "bin/control.d/checkmk.sh": "908d715d83021388e726fac0eee9aada5fa2f9c280f2da01cd3eb0a948136538",
-    "lib/control/helpers.sh": "8f1be83385316cb375b5c070c53f47e5d2d9da958621836da96530bbb2a4038c"
+    "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   }
 }
 ```

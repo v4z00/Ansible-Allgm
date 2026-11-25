@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "id": "host_updates",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "files": {
     "playbooks/maintenance/update_hosts.yaml": "e561e6ed2d1122f45a3807ab4e3aa518c1cb703c32370022904e9d0866562b36",
-    "scripts/run_host_updates.sh": "c858545ff96b3bc14bdf6a6da6413ec0ccc381a281191a9051cdc4b73c429c2d"
+    "scripts/run_host_updates.sh": "907ec1084b094638150eba988a79c8c5dc0e6f5b0e1a901a95e4451ad3f21086"
   },
   "scope": "Gepruefte neutrale Vorlagenquelle, kein Produktivexport",
   "version_files": [],

@@ -83,8 +83,10 @@ collections/
 !/artifacts/script-library/bin/
 /artifacts/script-library/bin/*
 !/artifacts/script-library/bin/script-jobs
+!/artifacts/script-library/bin/job-status
 !/artifacts/script-library/lib/python/
 /artifacts/script-library/lib/python/*
 !/artifacts/script-library/lib/python/job_store.py
 !/artifacts/script-library/lib/python/job_notify.py
 !/artifacts/script-library/lib/python/job_expectations.py
+!/artifacts/script-library/lib/python/job_report.py

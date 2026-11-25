@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "commands": [{
+    "name": "jobs-last",
+    "description": "Letzten lokalen Zustand je Job ueber Ansible anzeigen",
+    "handler": "bin/control.d/jobs-last.sh",
+    "requires": ["playbooks/scripts/show_status.yml"],
+    "aliases": [{"name": "jobs-last", "args": []}]
+  }]
+}

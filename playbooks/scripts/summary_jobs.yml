@@ -10,12 +10,12 @@
   tasks:
     - name: Lokale Controllerkonfiguration lesen
       ansible.builtin.include_vars:
-        file: "{{ job_root }}/config/script_jobs_controller.json"
+        file: "{{ script_jobs_controller_config_file | default(job_root ~ '/config/script_jobs_controller.json') }}"
         name: job_controller
       no_log: true
     - name: Ergebnisse ueber vorhandene Inventoryverbindungen abfragen
       ansible.builtin.command:
-        argv: ["{{ ansible_playbook_python }}", "{{ job_root }}/scripts/job_console.py", --project, "{{ job_root }}", --db, "{{ job_controller.database }}", --limit, "{{ script_jobs_targets | default(job_controller.targets) }}", collect]
+        argv: ["{{ ansible_playbook_python }}", "{{ job_root }}/scripts/job_console.py", --project, "{{ job_root }}", --config, "{{ script_jobs_controller_config_file | default(job_root ~ '/config/script_jobs_controller.json') }}", --db, "{{ job_controller.database }}", --limit, "{{ script_jobs_targets | default(job_controller.targets) }}", collect]
       register: job_collect
       changed_when: false
       failed_when: job_collect.rc not in [0, 1]
@@ -29,13 +29,16 @@
       block:
         - name: Vorhandene lokale Kanalwerte verwenden
           ansible.builtin.copy:
-            content: "{{ {'EMAIL': script_jobs_mail_to | default(''), 'BOT_TOKEN': telegram_bot_token | default(''), 'CHAT_ID': telegram_chat_id | default(''), 'TELEGRAM_VALIDATE_CERTS': (tls_validate_certs | default({})).get('telegram_notification', true) | bool} | to_json }}"
+            content: "{{ {'EMAIL': script_jobs_mail_to | default(''), 'BOT_TOKEN': telegram_bot_token | default(''), 'CHAT_ID': telegram_chat_id | default(''), 'TELEGRAM_VALIDATE_CERTS': (tls_validate_certs | default({})).get('telegram_notification', true) | bool, 'REPORT_LABELS': script_jobs_report_labels | default(job_controller.labels | default({}))} | to_json }}"
             dest: "{{ job_notify_file.path }}"
             mode: '0600'
           no_log: true
-        - name: Noch offene allgemeine Berichte senden
+        - name: Allgemeine und getrennte Vzdump-Berichte ausschliesslich zentral senden
           ansible.builtin.command:
-            argv: ["{{ ansible_playbook_python }}", "{{ job_root }}/artifacts/script-library/bin/script-jobs", --db, "{{ job_controller.database }}", report, --category, general, --config, "{{ job_notify_file.path }}"]
+            argv: ["{{ ansible_playbook_python }}", "{{ job_root }}/artifacts/script-library/bin/script-jobs", --db, "{{ job_controller.database }}", report, --category, "{{ item }}", --config, "{{ job_notify_file.path }}"]
+          loop: [general, vzdump]
+          register: job_report_send
+          failed_when: false
           no_log: true
       always:
         - name: Ausschliesslich temporaere Versanddatei entfernen
@@ -46,3 +49,7 @@
       ansible.builtin.assert:
         that: job_collect.rc == 0
         fail_msg: Zusammenfassung wurde verarbeitet, aber nicht alle Hosts konnten abgefragt werden.
+    - name: Nicht bestaetigten Berichtversand sichtbar lassen
+      ansible.builtin.assert:
+        that: job_report_send.results | selectattr('rc', 'ne', 0) | list | length == 0
+        fail_msg: Mindestens ein zentraler Bericht konnte nicht vollstaendig zugestellt werden; er bleibt offen.
