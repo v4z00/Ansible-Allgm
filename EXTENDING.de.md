@@ -11,7 +11,7 @@ Starte **in einem bereits committeten Checkout dieser Version von Ansible-Allgm*
 set -euo pipefail
 umask 077
 SOURCE=$(git rev-parse --show-toplevel)
-LAB=$(mktemp -d)
+LAB=$(mktemp -d "${TMPDIR:-/tmp}/ansible-extending.XXXXXXXX")
 LAB=$(cd "$LAB" && pwd -P)
 export LAB BASE="$LAB/base" TARGET="$LAB/controller" ADDON="$LAB/heartbeat"
 export BUNDLE="$LAB/site" SUPPLEMENT="$LAB/site-once"
