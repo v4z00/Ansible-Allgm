@@ -85,7 +85,8 @@
         "bin/control.d/checkmk-download.json",
         "bin/control.d/checkmk.json",
         "bin/control.d/checkmk-migration-plan.json",
-        "bin/control.d/checkmk-uninstall.json"
+        "bin/control.d/checkmk-uninstall.json",
+        "playbooks/checkmk/migrate_hosts.yml"
       ]
     },
     "docker": {
@@ -99,7 +100,9 @@
         "bin/control.d/docker-ips.json",
         "bin/control.d/docker-macvlan-prepare.json",
         "bin/control.d/docker-check.json",
-        "bin/control.d/docker-update.json"
+        "bin/control.d/docker-update.json",
+        "playbooks/docker/deploy_docker_stacks.yml",
+        "playbooks/docker/vars/paths.yml"
       ]
     },
     "proxmox": {

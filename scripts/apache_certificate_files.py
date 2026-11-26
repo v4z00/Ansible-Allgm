@@ -108,6 +108,7 @@ def install(sources, targets, check):
     require(not set(sources).intersection(targets), "Source and target paths must be distinct.")
     originals = {}
     desired = {}
+    backups = {}
     replaced = []
     pending = {}
     restart_attempted = False
@@ -138,7 +139,7 @@ def install(sources, targets, check):
         for path, (old, info) in originals.items():
             if info:
                 # Keep backups private even if the old key had permissive modes.
-                write_copy(path, old, 0o600, prefix="." + path.name + ".previous-")
+                backups[path] = write_copy(path, old, 0o600, prefix="." + path.name + ".previous-")
         try:
             for path, prepared in pending.items():
                 os.replace(prepared, path)
@@ -152,11 +153,12 @@ def install(sources, targets, check):
                 if info is None:
                     path.unlink()
                 else:
-                    restored = write_copy(path, old, stat.S_IMODE(info.st_mode), (info.st_uid, info.st_gid))
-                    try:
-                        os.replace(restored, path)
-                    finally:
-                        restored.unlink(missing_ok=True)
+                    # The original bytes are already on the same filesystem. Recovery
+                    # must not need space for a third copy after a failed exchange.
+                    os.replace(backups[path], path)
+                    if os.geteuid() == 0:
+                        os.chown(path, info.st_uid, info.st_gid)
+                    path.chmod(stat.S_IMODE(info.st_mode))
             if restart_attempted and all(path.exists() for path in targets):
                 system(["apache2ctl", "configtest"])
                 system(["service", "apache2", "restart"])

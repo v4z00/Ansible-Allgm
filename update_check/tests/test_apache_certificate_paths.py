@@ -41,7 +41,8 @@ class ApacheCertificatePathsTests(unittest.TestCase):
         self.fail.mkdir()
         self.config = self.tmp / "ansible.cfg"
         self.config.write_text("[defaults]\nretry_files_enabled=False\n")
-        self.env = dict(os.environ, TMPDIR=str(self.tmp), PATH=str(binaries) + os.pathsep + os.environ["PATH"],
+        clean_env = {key: value for key, value in os.environ.items() if not key.startswith(("ANSIBLE_", "APACHE_"))}
+        self.env = dict(clean_env, HOME=str(self.tmp), TMPDIR=str(self.tmp), PATH=str(binaries) + os.pathsep + os.environ["PATH"],
                         ANSIBLE_CONFIG=str(self.config), ANSIBLE_LOCAL_TEMP=str(self.tmp / "ansible-temp"),
                         ANSIBLE_REMOTE_TEMP=str(self.tmp / "ansible-remote-tmp"), ANSIBLE_NOCOLOR="1", APACHE_TEST_CALLS=str(self.traces), APACHE_TEST_FAIL=str(self.fail))
 
@@ -52,7 +53,7 @@ class ApacheCertificatePathsTests(unittest.TestCase):
 
     def invoke(self, argv, *, ok=True, env=None, stdin=None):
         result = subprocess.run([str(word) for word in argv], env=env or self.env, cwd=self.tmp,
-                                input=stdin, capture_output=True, text=True, timeout=90)
+                                input=stdin, capture_output=True, text=True, timeout=90, start_new_session=True)
         report = result.stdout + result.stderr
         for line in self.key.read_text().splitlines():
             self.assertNotIn(line, report)
@@ -73,10 +74,11 @@ class ApacheCertificatePathsTests(unittest.TestCase):
         self.run_pair(dst, key_dst, ok=False)
         self.assertEqual((dst.read_bytes(), key_dst.read_bytes()), old)
         self.assertEqual(key_dst.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(self.traces.read_text().splitlines(), ["apache2ctl configtest", "service apache2 restart"] * 3)
+        self.run_pair(dst, key_dst)
         prior_key, = key_dst.parent.glob(".key.pem.previous-*")
         self.assertEqual(prior_key.read_bytes(), old[1])
         self.assertEqual(prior_key.stat().st_mode & 0o777, 0o600)
-        self.assertEqual(self.traces.read_text().splitlines(), ["apache2ctl configtest", "service apache2 restart"] * 3)
 
     def test_first_install_config_failure_removes_pair_and_check_does_not_write(self):
         dst, key_dst = self.target / "leaf.pem", self.target / "key.pem"
@@ -127,6 +129,15 @@ class ApacheCertificatePathsTests(unittest.TestCase):
         self.assertEqual(config["apache_certificate_target"], str(self.tmp / "custom.pem"))
         self.assertEqual(config["apache_private_key_filename"], self.key.name)
         self.assertEqual(forwarded[-2:], ["--limit", "web"])
+        self.assertEqual(self.key.stat().st_mode & 0o777, 0o600)
+
+        test_password = "temporary-fixture-passphrase"
+        subprocess.run(["openssl", "pkcs8", "-topk8", "-passout", "stdin", "-in", str(self.key), "-out", str(encrypted)],
+                       input=test_password + "\n", text=True, check=True, capture_output=True)
+        self.key.unlink()
+        env["APACHE_CERTIFICATE_SOURCE_DIRECTORY"] = str(self.source)
+        env["APACHE_ENCRYPTED_KEY_SOURCE"] = str(encrypted)
+        self.assertNotIn(test_password, self.invoke(entry, env=env, stdin=test_password + "\n"))
         self.assertEqual(self.key.stat().st_mode & 0o777, 0o600)
 
     @unittest.skipUnless(shutil.which("ansible-playbook"), "ansible-playbook required")

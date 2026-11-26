@@ -43,7 +43,7 @@
     "update_check/tests/test_handler_aliases.py": "94ea75c34a5df889f39e92e42a3c52bc2205c408ceba4d3ba090870c1d98b06b",
     "update_check/tests/test_migrate_local_extensions.py": "a05c8611cb5416387456b53797297d5d5e249b1eba547e62868292536870aa01",
     "update_check/tests/test_local_restore_paths.py": "d410a9be4c19d53affc1a9fb5362b191b34ff96cbbe4e1063256627e8c150809",
-    "update_check/tests/test_apache_certificate_paths.py": "aa0e5b3f9f064792e60576006c807489dc9b7b04b553d622bbaeea1ea1ef99ed",
+    "update_check/tests/test_apache_certificate_paths.py": "2228e2d8865bdfd7d18098a1d799b93aea7a9a1af5b66bab37f0ff520e710c59",
     "update_check/tests/test_checkmk_backup_modes.py": "4d962a4f328fd304544ec5cf8ae67a4c78982091647c4d1a158adb2f3c4bacd2",
     "update_check/tests/test_controller_paths.py": "8af9fe08f6fb7bad654b06c7395cbe22f335dc8b2d82e5a003bd19fa8226a015",
     "update_check/tests/test_docker_deploy.py": "342a0d17096e0f524bfdf9289c7d632e7aad7c61d1dccfe365866cd5adb8fb29"

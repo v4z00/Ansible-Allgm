@@ -44,7 +44,7 @@ APACHE_CERTIFICATE_ROOT=/srv/pki bin/control apache-certificate --check --limit 
     "bin/control.d/apache-certificate.sh": "ff5df678a25307b590e22a037358cb6294e1a57a6cff219580d67664f94aa397",
     "playbooks/pki/deploy_apache_certificate.yml": "4f7d78bcfac9d8d1b70c875941645b57943a6b4dd6a3424171086e3df88137a9",
     "scripts/deploy_apache_certificate.sh": "e94115ec8e07b758a6a6b4b72cd9fac5ce5c6c308b9b8f98f9e1bcc360e17b6f",
-    "scripts/apache_certificate_files.py": "7e7c684282c654f0531d17617103cf33b421b4e64326d70ff1ac618ea53eb8b6"
+    "scripts/apache_certificate_files.py": "cab3219c00b8801e0791442e8632a36e723cd6fdbb09d526ecc68087c4966990"
   },
   "i18n": {
     "de": {

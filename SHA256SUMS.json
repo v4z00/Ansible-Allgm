@@ -579,7 +579,7 @@
       "mode": "0644"
     },
     "descriptions/commands/apache-certificate.md": {
-      "sha256": "15f488259717a96bd5db09b75724487816fb2e3a7fdcac6f4ffef6a3b5dc85ee",
+      "sha256": "1f5b209b2db5c964adf0fd37241ff037b6e4e57322a4e4502ce845d0a106ae40",
       "mode": "0644"
     },
     "descriptions/commands/base.md": {
@@ -1571,7 +1571,7 @@
       "mode": "0644"
     },
     "scripts/apache_certificate_files.py": {
-      "sha256": "7e7c684282c654f0531d17617103cf33b421b4e64326d70ff1ac618ea53eb8b6",
+      "sha256": "cab3219c00b8801e0791442e8632a36e723cd6fdbb09d526ecc68087c4966990",
       "mode": "0644"
     },
     "scripts/check_docker.sh": {
@@ -1611,7 +1611,7 @@
       "mode": "0644"
     },
     "scripts/feature_catalog.json": {
-      "sha256": "0cfde94a1832866be453f0b37e904ac8fd18e9c63f8d2d952df1ccdb9dcf9d2e",
+      "sha256": "c0fe8a8f3479e331fa75c9c447f81e8bd57cba24a277e0892e7d0b7bac7efaee",
       "mode": "0644"
     },
     "scripts/generate_inventory.py": {
@@ -1751,7 +1751,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "8ee0f3938618a97575a28acc8daa958fc494c6380d4afdd477901e9cd98105a6",
+      "sha256": "3f22374618618993e92c56402e9a4f382b688b3758ffcc581edac4f18859dbd4",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1767,7 +1767,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "d89ed4690b96c4181f243735e429a2ab55b8a18cba0fd4cfe9d0265c85317fce",
+      "sha256": "3a60d7071c3bc2a78eb906f431d63e26bd665aea5920c6586376d713ef9caa84",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1783,7 +1783,7 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "21f5939b04e5d899cb2ea5651db0184fcca9c8f4a88d6cd66bc6b7eb3128cd13",
+      "sha256": "bcd89e1be9eeea9231913dbfb87a81c83d8dda360dd017b771fc61eaa9b6ccc9",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1819,7 +1819,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_apache_certificate_paths.py": {
-      "sha256": "aa0e5b3f9f064792e60576006c807489dc9b7b04b553d622bbaeea1ea1ef99ed",
+      "sha256": "2228e2d8865bdfd7d18098a1d799b93aea7a9a1af5b66bab37f0ff520e710c59",
       "mode": "0644"
     },
     "update_check/tests/test_branches.py": {
