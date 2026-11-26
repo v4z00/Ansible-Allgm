@@ -27,7 +27,7 @@
     "update_check/rollout.py": "5fee32129a8d78b1dc85e55e734ebc5845d5fbcde4a5cd92024fa83fd78e45f9",
     "update_check/staging_manifest.py": "9f400e659f5c2f252212467d6d1f85dbadabac04ed7af22cea96a8334d98d6e9",
     "update_check/legacy_sss.json": "5bebe1706ecfbccb4317aaebf4863aa018a118375b48ebd6d1fb20016615c50c",
-    "update_check/tests/test_addons.py": "d71472c4a5dbc6f6a99f11e7cf326c6d3c2b7128d5507afa92db72a9b8b183da",
+    "update_check/tests/test_addons.py": "83ff11c1a5909c657f404e446a55ba7a08b7e999eedaeed896b85f7a3b09bf97",
     "scripts/controller_i18n.py": "d7029a1d9fab3263b9982f2ad48298c8724b735a5139c4f492c6e1a6da5c90c9",
     "lib/control/i18n.sh": "920fb9fde9ec3fcde1c86bc1578d6cf5aef3520491d50ea5b02db7a0c5727a53",
     "lib/i18n/de/entrypoints.json": "e24d6570da39b1eb158d67788c24e9c13afd2863d9db1fe0da62d00aace9b300",

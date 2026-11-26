@@ -453,6 +453,24 @@ class AddonTests(unittest.TestCase):
         self.assertEqual(json.loads(self.check("--staging", "--json"))["versions"]["SSS"],
                          "s" + (repo / "VERSION.txt").read_text().strip())
 
+    @unittest.skipUnless(os.environ.get("CONTROLLER_TEST_REPO_DIR"),
+                         "set CONTROLLER_TEST_REPO_DIR for the stable migration chain")
+    def test_documented_verifiers_start_at_last_stable_controller(self):
+        import re
+        source = Path(os.environ["CONTROLLER_TEST_REPO_DIR"]) / "Ansible-Allgm"
+        self.load_full_snapshot("Allgm", "f5be1ec9331357dd60bd8f385ec6a0d874ea60d4")
+        verifier = self.work / "prior-verifier.py"
+        relative = "update_check/staging_manifest.py"
+        verifier.write_bytes((self.repos["Allgm"] / relative).read_bytes())
+        guide = (source / "descriptions/commands/update-check.md").read_text()
+        refs = re.findall(r"^  git checkout --quiet --detach ([0-9a-f]{40})$", guide, re.MULTILINE)
+        self.assertGreaterEqual(len(refs), 1)
+        # Each verifier is taken from the tree authenticated by its predecessor.
+        for ref in [*refs, git(source, "rev-parse", "HEAD").strip()]:
+            subprocess.run([sys.executable, verifier, "verify", "Allgm", ref],
+                           cwd=source, check=True, capture_output=True)
+            verifier.write_bytes(subprocess.check_output(["git", "-C", source, "show", f"{ref}:{relative}"]))
+
     def load_full_snapshot(self, name, ref="staging", destination="main"):
         # Pull only committed trees from explicitly provided local repositories.
         source = Path(os.environ["CONTROLLER_TEST_REPO_DIR"]).resolve() / ("Ansible-" + name)

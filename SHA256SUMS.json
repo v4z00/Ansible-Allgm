@@ -779,7 +779,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "9415ec401f6b9479d5cf98fd5965bef05278e32c4ee44b7ec7b2424c959bf85f",
+      "sha256": "e840b8e5e3f2db38d5963d40b3abfe7ca84f36fe8026dfc145e1198cc9fbfa8b",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -1751,7 +1751,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "ff4182d030f4092f3562f67bf168306b12490a67f4d99bfe65fb0153a254d297",
+      "sha256": "dd0e53d3129eb115f16533baa94f1857285b198dec9b547755f206fefd588152",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1783,7 +1783,7 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "4c5c6ec3de32d4419cc0c873055cd91700eb5c05c16b8433df18fe40790bd2d7",
+      "sha256": "63bb41475d550d1c3fd0505b05c7323d1a1b23a33d69f14913e4866119422252",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1815,7 +1815,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_addons.py": {
-      "sha256": "d71472c4a5dbc6f6a99f11e7cf326c6d3c2b7128d5507afa92db72a9b8b183da",
+      "sha256": "83ff11c1a5909c657f404e446a55ba7a08b7e999eedaeed896b85f7a3b09bf97",
       "mode": "0644"
     },
     "update_check/tests/test_apache_certificate_paths.py": {
