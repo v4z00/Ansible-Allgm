@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "id": "script_jobs",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "files": {
     "artifacts/script-library/bin/job-status": "48e59321a3f8cd7e907205e00fbf48fa4a4c42d4ffa6c0165f3243fdf202bbf0",
-    "artifacts/script-library/bin/script-jobs": "55b0630be42fac925e6133ba43c3b2b3538f61b798a08ab82f717105ba5d605c",
+    "artifacts/script-library/bin/script-jobs": "967bb307f3fadc4a63847353da4dc53a48ce551e263cae1eef04987726478598",
     "artifacts/script-library/lib/common/hm_check_mount.sh": "cba2e85dd764ccc9700ca29d49d2c66257c8d8f25f7a1e20fc1f59520ded752d",
     "artifacts/script-library/lib/common/hm_gpg_encrypt.sh": "f38be7f05ddd5c3aa4eea9271f979f8e2d10795e7ea64f9c0f9abb708e553417",
     "artifacts/script-library/lib/common/hm_job_event.sh": "c4a0201b7336835a221969054d6a17f588b2f6b3941231292dea2a00695a8aa1",
@@ -29,7 +29,7 @@
     "artifacts/script-library/lib/python/job_expectations.py": "659be323230c645a05e865e4545708755be5f4a40142570462a1f86ca5982791",
     "artifacts/script-library/lib/python/job_notify.py": "340b63932a5e0437a2d923b335aab2348f95784c589fb3e931622910c487e65b",
     "artifacts/script-library/lib/python/job_report.py": "8a41ddb11c0750aa06a2e5c6c293f8b31ece0a4d9cfc533599990c781b47e177",
-    "artifacts/script-library/lib/python/job_store.py": "c99bb49bd0792f2a7091c46000dd65592a60f99070c4743a7349b708bbbca811",
+    "artifacts/script-library/lib/python/job_store.py": "c7d36eaebdc8544f9ace203839dd36002d15bd451ece8f26279269f0fac1db3f",
     "bin/control.d/jobs-last.json": "23289315b66e43d636fa55911b55ecd2fdde7c2117d340b9a6ef32aae8111960",
     "bin/control.d/jobs-last.sh": "7e9f939cf794e78873b987de31cb193f6572ba5c8f0ea5bc923ab5c10e09a644",
     "bin/control.d/jobs-summary.json": "cd3547b41629df5f3397605610bdc437c8ccfd521afcd43539f9dc0def260705",
@@ -49,7 +49,7 @@
     "roles/script_jobs_controller/tasks/main.yml": "72f1e99feb83af463a9515a92c6eccba4452395d5dcf9ffc5e0e047e6c5cbe67",
     "roles/script_library/defaults/main.yml": "528e1bc8cdc3355cdc681063581a63f9ac4d2c6643bf7773792dbe416e71b709",
     "roles/script_library/tasks/main.yml": "5c8ea369955cff8e1b6be81a22a7a581ed0b791c029929149c0fb9ad206cc357",
-    "scripts/job_console.py": "3135b2dd5b3e44da8210192464efb0e0d09d360445e49b96628a514c91497bec",
+    "scripts/job_console.py": "86b132d7c2be2c3f044bb6470be4649bf8a078174e0e0f5e571d022cc7822966",
     "scripts/job_cron_guard.py": "c34ea1082b716021447fcff3869c73d9dfac808775118d3d38cde965543457d2",
     "scripts/job_summary.py": "b5a50589306ad0445faa0faea158925da781e121b72dd8cd256525bfea9c601f",
     "tools/callbacks/script_job_results.py": "b258b56055825433d48d2d0ec7bcb16c2e6248fc20d0246eeb505d4cede93f8a",
@@ -57,6 +57,7 @@
     "tools/job_tests/test_central_summary.py": "599f1045d7d0a1626dd904585c7ec08e996b977db03aba0328a21246d4a24fd6",
     "tools/job_tests/test_controller_failures.py": "6f6841e9b6255c87a5d198f77ad7407040cfe930bc431814083c2900605005fd",
     "tools/job_tests/test_jobs.py": "90ee93bc941b1665be032ffda0eb4ddb552020ec17c01aa296a559b6e00e9784",
+    "tools/job_tests/test_recovery.py": "2832dfbfcc61ad4107d18509bfa63a63065abfdf8ec187cb40f196527dbaeade",
     "tools/job_tests/test_summary.py": "6a995ff3c356bb25c22d2c2b51a1d467a8ddeae8e3705b0903e8fd2263a39838"
   },
   "scope": "Neutrale Library und generische Jobverwaltung; keine produktiven Skripte oder Hostwerte",

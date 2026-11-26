@@ -39,7 +39,7 @@ def notify(store,category,paths,run=None,preview=False):
     if (bool(token)!=bool(chat)) or (not channels and not preview):raise ValueError('Notification configuration incomplete')
     # One summary per category/cycle, including after a controller outage.
     # Any remaining backlog stays stored for the next cycle.
-    report=store.report(category,run,reserve=not preview,labels=cfg.get('REPORT_LABELS', {}))
+    report=store.report(category,run,reserve=not preview,labels=cfg.get('REPORT_LABELS', {}),channels=channels)
     if not report:return 0
     if preview:print(json.dumps(report,ensure_ascii=False));return 0
     failed=False;progress=False

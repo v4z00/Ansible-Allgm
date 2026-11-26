@@ -1,5 +1,17 @@
 # Changelog
 
+## s0.8.3 – Jobberichte nach Abbrüchen fortsetzen
+
+Alle konfigurierten Versandkanäle werden zusammen mit dem Bericht vorgemerkt.
+Nach einem Abbruch direkt nach der Mailbestätigung bleibt Telegram offen.
+Ein fehlgeschlagener Ansible-Abfragelauf gilt auch bei einzelnen vorhandenen
+Antworten als unvollständig; seine Teildaten werden nicht als vollständige
+Sammlung übernommen. Der nächste Abruf setzt an den bisherigen Cursorn fort.
+
+Keine Konfigurations- oder Datenbankmigration nötig. Hostjobs und Cron bleiben
+unverändert. Zusätzliche Tests decken Abbrüche, Parallelversand, veraltete Abfragen
+und die Übernahme vorhandener SQLite-Datenbanken ab.
+
 ## s0.8.2 – Controller-Prüfer 1.5.3
 
 Die Prüfungen für Updates, Bereinigung und Feature-Schalter sind leichter zu pflegen. Befehle, Exitcodes und die Struktur der JSON-Berichte bleiben kompatibel. Eine Konfigurationsmigration ist für diesen Patch nicht nötig.

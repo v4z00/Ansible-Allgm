@@ -228,8 +228,16 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
                     import sys
                     print('One expired private job log could not be removed.',file=sys.stderr)
         return removed
-    def report(self,category='general',run_id=None,reserve=True,labels=None):
+    def report(self,category='general',run_id=None,reserve=True,labels=None,channels=None):
         from job_report import format_report,legacy_health,clean_legacy_body
+        if channels is not None and (not isinstance(channels,(list,tuple)) or any(channel not in ('mail','telegram') for channel in channels)):
+            raise ValueError('Invalid report channels')
+        def prepare_channels(identifier):
+            # Persist every intended channel in the same transaction as report
+            # reservation, before any external delivery can be acknowledged.
+            if reserve:
+                self.db.executemany('INSERT OR IGNORE INTO deliveries VALUES(?,?,?,0,0,?)',
+                                    [(identifier,channel,'pending',utc()) for channel in (channels or [])])
         cats=('general','ansible') if category=='general' else (category,)
         with self.transaction():
             pending=self.db.execute("SELECT p.id,p.body FROM reports p WHERE p.category=? AND (NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.report_id=p.id) OR EXISTS(SELECT 1 FROM deliveries d WHERE d.report_id=p.id AND d.status!='sent')) ORDER BY p.created LIMIT 1",(category,)).fetchone()
@@ -247,6 +255,7 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
                     report['body']=format_report(rows,items,health,category,labels)
                 else:report['body']=clean_legacy_body(report['body'])
                 if reserve:self.db.execute('UPDATE reports SET body=? WHERE id=?',(report['body'],report['id']))
+                prepare_channels(report['id'])
                 return report
             params=list(cats);where='r.category IN ('+','.join('?'*len(cats))+') AND r.status!=?';params.append('running')
             if run_id:where+=' AND r.run_id=?';params.append(run_id)
@@ -272,7 +281,7 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
             self.db.execute('INSERT INTO reports VALUES(?,?,?,?)',(identifier,category,utc(),body))
             for row in rows:self.db.execute('INSERT INTO report_runs VALUES(?,?,?,?)',(identifier,row['source'],row['epoch'],row['run_id']))
             for state in health:self.db.execute('INSERT INTO report_health VALUES(?,?,?,?)',(identifier,state['source'],state['status'],state.get('message','')))
-            # Configured channels are added by the notifier before claiming delivery.
+            prepare_channels(identifier)
             return {'id':identifier,'body':body}
     def claim(self,report,channel):
         with self.transaction():

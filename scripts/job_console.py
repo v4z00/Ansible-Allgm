@@ -62,6 +62,7 @@ def transport(project,limit,cursors,inventory=None,source_overrides=None):
         command=[binary,str(stage/'query.yml'),'--limit',limit,'-e','@'+str(stage/'params.json')]
         if inventory:command+=['-i',inventory]
         result=subprocess.run(command,cwd=str(project),env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=120)
+        if result.returncode!=0:raise ValueError('Ansible collection did not complete; partial spool refused')
         records=[]
         for file in spool.glob('*.json'):
             if file.stat().st_size>20*1024*1024:raise ValueError(tr('jobs.response_size'))
