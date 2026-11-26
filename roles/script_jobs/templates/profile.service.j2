@@ -1,0 +1,8 @@
+# Managed by Ansible script_jobs; definition comes from the selected profile.
+{% for section, directives in item.sections.items() %}
+[{{ section }}]
+{% for directive, value in directives %}
+{{ directive }}={{ value }}
+{% endfor %}
+
+{% endfor %}

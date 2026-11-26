@@ -1,5 +1,17 @@
 # Changelog
 
+## s0.8.6 – Private Dienstordner und Units per Profil
+
+Jobmodul 0.5.0 ergänzt explizite Quell-/Zielordner mit erhaltenen relativen Pfaden.
+Geprüfte private Dateien bleiben außerhalb von Git; systemd-Units entstehen aus
+Profilwerten. Das eigenständige Playbook `playbooks/scripts/deploy_systemd.yml`
+benötigt kein altes Hostmanifest. Bestehende Listenprofile bleiben status-only.
+
+Für die Nutzung private Profilmanifeste prüfen und zuerst mit `--check` planen.
+Aktivieren, Starten oder Neustarten erfolgt ausschließlich durch explizite
+Profilfelder. Kein automatischer Altbestandabbau, keine Konfigurationsmigration.
+Die bestehende SQLite-Historie und zentralen Berichte bleiben erhalten.
+
 ## s0.8.5 – Systemd-Statusprofile im Skript-Deployment
 
 Bestehende Dienste lassen sich ueber zentrale Profile und eine ausdrueckliche

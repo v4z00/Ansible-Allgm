@@ -1,0 +1,27 @@
+---
+- name: Deploy explicitly selected private folders and systemd services
+  hosts: all_linux_systems
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Require selected systemd profiles
+      ansible.builtin.assert:
+        that:
+          - ansible_limit | default('') | trim | length > 0
+          - script_jobs_systemd_selected_profiles | default([]) | length > 0
+        fail_msg: Explizite Zielauswahl und Profile pro Host erforderlich.
+    - name: Validate all profile definitions and manifests first
+      ansible.builtin.include_role:
+        name: script_jobs
+        tasks_from: systemd_plan
+    - name: Deploy the complete shared library
+      ansible.builtin.include_role:
+        name: script_library
+      vars:
+        script_library_root: "{{ script_jobs_target_root }}"
+        script_library_owner: "{{ script_jobs_owner }}"
+        script_library_group: "{{ script_jobs_group }}"
+    - name: Deploy the selected folders, units and fixed status configuration
+      ansible.builtin.include_role:
+        name: script_jobs
+        tasks_from: systemd_deploy

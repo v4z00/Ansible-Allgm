@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "controller_basis",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "files": {
     "bin/control": "78cd37987205975e1a3a60df61a6e59db117a564590fc07d1aa8b6af90ee9912",
     "bin/control.d/.versions/standard.json": "50a90c3ae04dfc6d150c2008894738fd15009a5fbe9312ace68bf386aa137f96",

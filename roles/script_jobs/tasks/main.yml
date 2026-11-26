@@ -33,6 +33,9 @@
       - script_jobs_effective | map(attribute='name') | intersect(script_jobs_systemd_effective | map(attribute='name') | list) | length == 0
     fail_msg: Einen Job entweder per Cron verwalten oder als systemd-Dienst beobachten.
 
+- name: Validate selected deployment profiles before changing files
+  ansible.builtin.include_tasks: systemd_plan.yml
+
 - name: Read the private deployment manifest on the controller
   ansible.builtin.set_fact:
     script_jobs_manifest: "{{ lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/deployment.json') | from_json }}"
@@ -166,6 +169,10 @@
   changed_when: false
   become_user: "{{ script_jobs_owner }}"
   when: not ansible_check_mode
+
+- name: Deploy selected private folders and service definitions
+  ansible.builtin.include_tasks: systemd_deploy.yml
+  when: script_jobs_profile_plan.services | length > 0
 
 - name: Migrate explicitly mapped legacy cron entries once
   ansible.builtin.script:

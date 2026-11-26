@@ -335,7 +335,13 @@ class Systemd:
             raise ValueError('Unknown or duplicate selected systemd profile')
         entries = []
         for name in selected:
-            entries.extend(cls.normalize(profiles[name]))
+            profile = profiles[name]
+            if isinstance(profile, dict):
+                services = profile.get('services')
+                if not isinstance(services, list):raise ValueError('Explicit profile services required')
+                profile = [{key: row[key] for key in ('unit', 'mode', 'name') if key in row} for row in services if isinstance(row, dict)]
+                if len(profile) != len(services):raise ValueError('Invalid profile service')
+            entries.extend(cls.normalize(profile))
         return cls.normalize(entries)
 
 

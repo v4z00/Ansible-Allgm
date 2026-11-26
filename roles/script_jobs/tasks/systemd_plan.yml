@@ -1,0 +1,13 @@
+- name: Require explicit profile targets
+  ansible.builtin.assert:
+    that:
+      - ansible_limit | default('') | trim | length > 0
+      - inventory_hostname is match('^[A-Za-z0-9][A-Za-z0-9_.-]*$')
+      - script_jobs_systemd_unit_dir is match('^/[^\n]+$')
+      - script_jobs_systemd_unit_dir != '/'
+      - "'..' not in script_jobs_systemd_unit_dir.split('/')"
+- name: Validate source manifests and resolve relative profile paths
+  ansible.builtin.set_fact:
+    script_jobs_profile_plan: "{{ script_jobs_systemd_profiles | script_jobs_systemd_deployment(script_jobs_systemd_selected_profiles, script_jobs_source_root ~ '/' ~ inventory_hostname, script_jobs_target_root, script_jobs_owner, script_jobs_group, script_jobs_systemd_unit_dir, script_jobs_database_path) }}"
+    script_jobs_systemd_effective: "{{ script_jobs_systemd_profiles | script_jobs_systemd_config(script_jobs_systemd_selected_profiles) }}"
+  no_log: true

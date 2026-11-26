@@ -1,0 +1,121 @@
+- name: Validate the full private profile plan
+  ansible.builtin.include_tasks: systemd_plan.yml
+
+- name: Check destination paths without reading source or unit contents
+  ansible.builtin.script:
+    cmd: "{{ (role_path ~ '/../../scripts/job_profile_guard.py') | quote }} {{ script_profile_checks | to_json | quote }}"
+    executable: "{{ script_jobs_python | default('/usr/bin/python3') }}"
+  vars:
+    script_profile_checks: "{{ script_jobs_profile_plan.checks + [['directory', script_jobs_target_root], ['directory', script_jobs_target_root ~ '/config'], ['file', script_jobs_target_root ~ '/config/common.json'], ['directory', script_jobs_database_path | dirname], ['file', script_jobs_database_path]] }}"
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Inspect private profile directories
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+    follow: false
+  loop: "{{ script_jobs_profile_plan.directories }}"
+  register: script_profile_dirs
+  no_log: true
+- name: Create missing profile directories while preserving existing ownership
+  ansible.builtin.file:
+    path: "{{ item.item.path }}"
+    state: directory
+    mode: '0700'
+    owner: "{{ item.item.owner }}"
+    group: "{{ item.item.group }}"
+  loop: "{{ script_profile_dirs.results }}"
+  when: not item.stat.exists
+  no_log: true
+- name: Deploy reviewed private files using relative paths
+  ansible.builtin.copy:
+    src: "{{ item.source }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    backup: true
+  loop: "{{ script_jobs_profile_plan.files }}"
+  no_log: true
+- name: Verify deployed source digests before changing units
+  ansible.builtin.stat:
+    path: "{{ item.dest }}"
+    checksum_algorithm: sha256
+  loop: "{{ script_jobs_profile_plan.files }}"
+  register: script_profile_hashes
+  when: not ansible_check_mode
+  no_log: true
+- name: Require the reviewed content on the destination
+  ansible.builtin.assert:
+    that: item.stat.checksum == item.item.sha256
+    fail_msg: Zielinhalt weicht vom geprueften Profilmanifest ab.
+  loop: "{{ script_profile_hashes.results | default([]) }}"
+  when: not ansible_check_mode
+  no_log: true
+
+- name: Ensure the explicit unit directory exists
+  ansible.builtin.file:
+    path: "{{ script_jobs_systemd_unit_dir }}"
+    state: directory
+  when: script_jobs_profile_plan.services | length > 0
+- name: Render units from the selected profiles
+  ansible.builtin.template:
+    src: profile.service.j2
+    dest: "{{ item.dest }}"
+    mode: '0644'
+    owner: "{{ script_jobs_systemd_unit_owner }}"
+    group: "{{ script_jobs_systemd_unit_group }}"
+    backup: true
+  loop: "{{ script_jobs_profile_plan.services }}"
+  register: script_profile_units
+  no_log: true
+
+- name: Ensure runtime storage exists without resetting its history
+  ansible.builtin.file:
+    path: "{{ script_jobs_database_path | dirname }}"
+    state: directory
+    mode: '0700'
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+- name: Create the local helper configuration directory
+  ansible.builtin.file:
+    path: "{{ script_jobs_target_root }}/config"
+    state: directory
+    mode: '0700'
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+- name: Provide a database reference only when no local configuration exists
+  ansible.builtin.copy:
+    content: "{{ {'JOB_DATABASE_PATH': script_jobs_database_path} | to_json }}"
+    dest: "{{ script_jobs_target_root }}/config/common.json"
+    force: false
+    mode: '0600'
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+  no_log: true
+- name: Persist the resolved status bindings
+  ansible.builtin.copy:
+    content: "{{ script_jobs_systemd_effective | to_nice_json }}"
+    dest: "{{ script_jobs_database_path | dirname }}/systemd.json"
+    mode: '0600'
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+  no_log: true
+- name: Initialize observation SQLite without running a program
+  ansible.builtin.command:
+    argv: ["{{ script_jobs_python | default('/usr/bin/python3') }}", "{{ script_jobs_target_root }}/bin/script-jobs", --db, "{{ script_jobs_database_path }}", init]
+  become_user: "{{ script_jobs_owner }}"
+  changed_when: false
+  when: not ansible_check_mode
+
+- name: Reload changed definitions and apply only explicit lifecycle settings
+  ansible.builtin.script:
+    cmd: "{{ (role_path ~ '/../../scripts/job_profile_apply.py') | quote }} {{ script_profile_actions | to_json | quote }} {{ '--reload' if script_profile_units.changed else '' }}"
+    executable: "{{ script_jobs_python | default('/usr/bin/python3') }}"
+  vars:
+    script_profile_actions: "{{ script_jobs_profile_plan.services | map(attribute='action') | list }}"
+  register: script_profile_apply
+  changed_when: (script_profile_apply.stdout | from_json).changed
+  when: not ansible_check_mode and script_jobs_profile_plan.services | length > 0
+  no_log: true
