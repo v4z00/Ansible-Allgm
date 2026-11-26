@@ -454,10 +454,10 @@ Für die Erstmigration mit einem älteren Checker steht der private Brücken-Che
   "source_hashes": {
     "bin/control.d/update-check.json": "adb0a79c424f87249ca66e73d2256bc2f477017e3ce4ebc906364678a95b3177",
     "bin/control.d/update-check.sh": "7cc1fc9287cff92e352ad038519366d7dfd04d4efe99d1c70d980de0c62ac807",
-    "update_check/check.py": "fa3f301abc314f1ed83f3019cc27848e81eaf8648c591e80cb255f02965bbfab",
+    "update_check/check.py": "8d8534ddff81408dc8fdc8a0e3a0e4a2562816302d269af371c67375c9026000",
     "update_check/configure.py": "2c7e913b78c703326eb4116bbb2f6a3ea7402903357eb12ba977bb988e2e22b7",
-    "update_check/probes.py": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
-    "update_check/cleanup.py": "6cbeb9968fdf6e7e1d6f2ee4d8780b243b83e0fb1f876209f6535ffe9bc80c0a",
+    "update_check/probes.py": "3ef5592956d6f9e7072310b39b3a9cdf5e38057b194faa4790a30ea38c01fa70",
+    "update_check/cleanup.py": "ef0fd75326697b291b075104c0d4408030aa89fad020193671758a4759121738",
     "update_check/rollout.py": "5fee32129a8d78b1dc85e55e734ebc5845d5fbcde4a5cd92024fa83fd78e45f9",
     "tools/github_https.py": "4939726758123ce18c3558bd22a668052a0bb028b62a1c71534b92ccb89e5bd5",
     "tools/install_controller.py": "1f5024734444c49ddcbfec38386e709fb134d492f5f3cb809c7f526b8fad4b53",
