@@ -19,7 +19,7 @@ except ImportError:
     cli_args(sys.argv[1:], Path(__file__).resolve().parents[1])
     raise SystemExit(tr('audit.dependency'))
 
-CHECKER_VERSION = '1.4.0'
+CHECKER_VERSION = '1.5.0'
 VERSION_RE = re.compile(r'(?<![A-Za-z0-9])\d+\.\d+\.\d+(?:[a-zA-Z][A-Za-z0-9.-]*)?')
 class AuditError(Exception): pass
 class UniqueLoader(yaml.SafeLoader): pass
@@ -551,6 +551,14 @@ def main():
         if args.offline and not args.check:raise AuditError('OFFLINE_BENOETIGT_CHECK')
         if not 1<=args.timeout<=30:raise AuditError('TIMEOUT_MUSS_1_BIS_30_SEIN')
         root=args.root.resolve();here=Path(__file__).resolve().parent
+        if args.cleanup or args.configure or args.sort_settings:
+            local = local_extensions.inspect(root)
+            if not local_extensions.passed(local):
+                if args.json:
+                    print(json.dumps(machine_report({"status": local["status"], "read_only": True, "local_extensions": local})))
+                else:
+                    local_extensions.display(local)
+                return 1
         report=audit(root,here,args.only)
         if args.cleanup:
             import importlib.util
@@ -587,7 +595,7 @@ def main():
             report['network_accessed']=report['extended_checks']['network_requests']>0
             if any(row['status']!='OK' and not row['status'].startswith('SKIP_') for row in report['extended_checks']['configuration_and_api_checks']):report['status']='PRUEFBEDARF'
         print(json.dumps(machine_report(report),ensure_ascii=False,indent=2)) if args.json else display(report,args.details,args.color)
-        if not args.json and not args.no_prompt and not any([args.cleanup,args.check,args.configure,args.sort_settings,args.only,args.find_usage]) and report.get('cleanup',{}).get('candidates',0) and sys.stdin.isatty() and sys.stdout.isatty():
+        if not args.json and not args.no_prompt and not any([args.cleanup,args.check,args.configure,args.sort_settings,args.only,args.find_usage]) and local_extensions.passed(report['local_extensions']) and report.get('cleanup',{}).get('candidates',0) and sys.stdin.isatty() and sys.stdout.isatty():
             if input(tr("audit.cleanup_prompt")).strip().lower() in {'j','ja','y','yes'}:
                 import importlib.util
                 spec=importlib.util.spec_from_file_location('controller_cleanup_prompt',here/'cleanup.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)

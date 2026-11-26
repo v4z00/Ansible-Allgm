@@ -1,5 +1,6 @@
 import copy
-from contextlib import redirect_stdout
+import hashlib
+from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
 import os
@@ -16,6 +17,7 @@ sys.path.insert(0, str(HERE.parent / "tools"))
 import local_extensions as ext
 import local_extension as cli
 import rollout
+import controller_i18n
 
 
 class LocalExtensionsTest(unittest.TestCase):
@@ -26,6 +28,7 @@ class LocalExtensionsTest(unittest.TestCase):
         (self.controller / "bin").mkdir(parents=True)
         (self.controller / "bin/control").touch()
         (self.controller / "ansible.cfg").touch()
+        (self.controller / "controller-base.json").write_text('{"local_extension_schema":2}\n')
         self.bundle = self.controller.parent / "example"
         self.name = "scripts/task.sh"
         self.source = self.bundle / "code" / self.name
@@ -117,9 +120,10 @@ class LocalExtensionsTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.install()
         cli.record(self.bundle/"register.json",data)
-        self.source.write_text(self.source.read_text().replace(ext.ONCE, ext.KEEP))
+        self.source.write_text(self.source.read_text().replace("nach-erfolg-archivieren", "behalten"))
         self.approve()
         self.install()
+        cli.run(self.controller, self.root, self.register()["files"], self.name, None)
         with self.assertRaises(ValueError):
             cli.archive(self.controller,self.root,self.register(),self.name,ext.sha(self.source))
 
@@ -222,3 +226,225 @@ class LocalExtensionsTest(unittest.TestCase):
         self.install()
         self.assertIn(self.name, self.register()["files"])
         self.assertTrue((self.root / "code" / self.name).is_file())
+
+
+class RegisterMigrationTests(unittest.TestCase):
+    """Independent v1 fixtures, including archive receipts in their original format."""
+
+    live = "scripts/keep.sh"
+    archived = "scripts/completed.sh"
+    archive_id = "b" * 32
+    site_id = "a" * 32
+
+    def setUp(self):
+        previous_language = controller_i18n.language()
+        self.addCleanup(controller_i18n.configure, lang=previous_language)
+        language_env = patch.dict(os.environ, {"CONTROLLER_LANG": "de"})
+        language_env.start()
+        self.addCleanup(language_env.stop)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.work = Path(tmp.name).resolve()
+        self.controller = self.work / "controller"
+        self.root = ext.location(self.controller)
+        self.register = self.root / "register.json"
+        self.history = self.root / "archiv" / self.archive_id
+        self.put(self.controller / "bin/control", b"#!/bin/sh\nexit 0\n")
+        self.put(self.controller / "ansible.cfg", b"[defaults]\n")
+        self.put_json(self.controller / "controller-base.json", {"local_extension_schema": 2})
+        self.put(ext.marker(self.controller), (self.site_id + "\n").encode())
+        first = b"#!/bin/sh\n# manuell-integriert: ja\n# bereinigung: behalten\nexit 0\n"
+        retired = first.replace(b"behalten", b"nach-erfolg-archivieren")
+        self.put(self.root / "code" / self.live, first)
+        self.put(self.history / "datei", retired)
+        sha = hashlib.sha256(retired).hexdigest()
+        old_run = {"path": self.archived, "sha256": sha, "completed_at": "2020-01-01T12:00:00+00:00", "exit_code": 0}
+        self.put(self.history / "SHA256SUMS", f"{sha}  datei\n".encode())
+        self.put_json(self.history / "BELEG.json", {"path": self.archived, "approved_sha256": sha,
+                      "archived_sha256": sha, "archived_at": "2020-01-02T12:00:00+00:00", "run": old_run})
+        self.put_json(self.root / "runs" / (self.archived + ".json"), old_run)
+        self.put_json(self.root / "runs" / (self.live + ".json"), {
+            **old_run, "path": self.live, "sha256": hashlib.sha256(first).hexdigest()})
+        self.put_json(self.register, {"schema": 1, "id": self.site_id, "files": {
+            self.live: {"sha256": hashlib.sha256(first).hexdigest(), "cleanup": "behalten"},
+            self.archived: {"sha256": sha, "cleanup": "nach-erfolg-archivieren",
+                            "archive": self.archive_id, "supplement": "historical"}}})
+        self.original = self.register.read_bytes()
+
+    @staticmethod
+    def put(path, data):
+        path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        path.write_bytes(data)
+        path.chmod(0o600)
+
+    def put_json(self, path, data):
+        # Deliberately different from the new writer. Rollback must preserve the original bytes.
+        self.put(path, (json.dumps(data, indent=4) + "\n").encode())
+
+    def tree(self, root):
+        """Compare content, mode, inode and modification time, including any added files."""
+        return {path.relative_to(root).as_posix(): (path.read_bytes(), path.stat().st_mode,
+                path.stat().st_ino, path.stat().st_mtime_ns) for path in root.rglob("*") if path.is_file()}
+
+    def migrate(self, *args, success=True):
+        result = subprocess.run([sys.executable, str(HERE.parent / "tools/migrate_local_extensions.py"),
+                                 "--controller", str(self.controller), *map(str, args)],
+                                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "CONTROLLER_LANG": "en"},
+                                capture_output=True, text=True, timeout=15)
+        self.assertEqual(result.returncode, 0 if success else 1, result.stdout + result.stderr)
+        return result
+
+    def backups(self):
+        return sorted(self.root.glob("register.json.schema1.*.bak"))
+
+    def test_preview_migration_and_rollback_preserve_historical_evidence(self):
+        baseline = self.tree(self.work)
+        original_proof = ext.archive_proof(self.root, self.archived, json.loads(self.original)["files"][self.archived])
+        self.migrate("--check")
+        self.assertEqual(self.tree(self.work), baseline)
+        self.migrate("--apply")
+        self.assertEqual(len(self.backups()), 1)
+        backup, = self.backups()
+        self.assertEqual(backup.read_bytes(), self.original)
+        self.assertEqual((backup.stat().st_uid, backup.stat().st_mode & 0o777), (os.geteuid(), 0o600))
+        self.assertEqual((self.register.stat().st_mode & 0o777, self.register.stat().st_uid), (0o600, os.geteuid()))
+        self.assertNotEqual(self.register.stat().st_ino, baseline[self.register.relative_to(self.work).as_posix()][2])
+        expected = json.loads(self.original)
+        expected["schema"] = 2
+        expected["files"][self.live]["cleanup"] = "keep"
+        expected["files"][self.archived]["cleanup"] = "archive-after-success"
+        self.assertEqual(ext.read_json(self.register), expected)
+        self.assertTrue(ext.passed(ext.inspect(self.controller)))
+        self.assertEqual(ext.archive_proof(self.root, self.archived, expected["files"][self.archived]), original_proof)
+        after_apply = self.tree(self.work)
+        self.migrate("--check")
+        self.migrate("--apply")
+        self.assertEqual(self.tree(self.work), after_apply)
+        self.migrate("--rollback", backup.name)
+        self.assertEqual(self.register.read_bytes(), self.original)
+        self.migrate("--rollback", backup)
+        self.assertEqual(self.register.read_bytes(), self.original)
+        after_rollback = self.tree(self.work)
+        for name, file_state in baseline.items():
+            if name != self.register.relative_to(self.work).as_posix():
+                self.assertEqual(after_apply[name], file_state, name)
+                self.assertEqual(after_rollback[name], file_state, name)
+        self.assertEqual(ext.inspect(self.controller)["status"], "MIGRATION_REQUIRED")
+
+    def test_cron_reports_schema1_before_network_or_controller_changes(self):
+        # A normal controller has already taken this lock during installation.
+        self.put(self.work / ".controller.controller-lock", b"")
+        initial = self.tree(self.work)
+        report = ext.inspect(self.controller)
+        self.assertEqual(report["status"], "MIGRATION_REQUIRED")
+        self.assertEqual(report["schema"], 1)
+        self.assertIn("migrate_local_extensions.py", str(report["migration_command"]))
+        self.assertFalse(ext.passed(report))
+        with patch.object(rollout, "rollout", side_effect=AssertionError("rollout must not start")), \
+                patch.object(rollout, "checkout", side_effect=AssertionError("no fetch")), \
+                patch.object(rollout.install, "recover_transaction", side_effect=AssertionError("no writes")), \
+                redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(rollout.main(["--root", str(self.controller), "--auto", "--json"]), 1)
+        response = json.loads(out.getvalue())
+        self.assertFalse(response["applied"])
+        self.assertEqual(response["local_extensions"]["status"], "MIGRATION_REQUIRED")
+        self.assertIn("migrate_local_extensions.py", str(response["local_extensions"]["migration_command"]))
+        self.assertEqual(self.tree(self.work), initial)
+
+    def test_legacy_code_requires_register_rollback_for_both_update_and_restore(self):
+        # Create the same private backup/receipt pair as a past v1 -> v2 code update.
+        active = self.controller / "controller-base.json"
+        new = self.work / "new-code" / active.name
+        self.put(new, active.read_bytes())
+        self.put_json(active, {})
+        old = active.read_bytes()
+        legacy_source = self.work / "old-code" / active.name
+        self.put(legacy_source, old)
+        versions = self.controller / "versions.txt"
+        self.put(versions, b"Allgm|s1.0.0|https://github.com/example/fixture.git|\n")
+        files = {active.name: new}
+        _, token = rollout.install.update_plan(self.controller, files, "allgm")
+        with redirect_stdout(io.StringIO()):
+            rollout.install.update_controller(self.controller, files, "allgm", token, receipt_source="staging")
+        code_backup, = (d.name for d in rollout.install.backup_home(self.controller).iterdir()
+                        if rollout.install.BACKUP_ID.fullmatch(d.name))
+        self.migrate("--apply")
+        register_backup, = self.backups()
+        before = self.tree(self.controller)
+        local_before = self.tree(self.root)
+        arguments = ["--root", str(self.controller), "--json", "--lang", "en"]
+        with patch.object(rollout, "checkout", return_value=(legacy_source.parent, {active.name: legacy_source})) as checkout, \
+                patch.object(rollout.install, "update_controller", side_effect=AssertionError("code writes blocked")), \
+                redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            self.assertEqual(rollout.main([*arguments, "--apply"]), 2)
+            checkout.assert_called_once()
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            self.assertEqual(rollout.main([*arguments, "--rollback", code_backup]), 2)
+        self.assertEqual(self.tree(self.controller), before)
+        self.assertEqual(self.tree(self.root), local_before)
+        self.migrate("--rollback", register_backup)
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            self.assertEqual(rollout.main([*arguments, "--rollback", code_backup]), 0)
+        self.assertEqual(active.read_bytes(), old)
+        self.assertEqual(self.register.read_bytes(), self.original)
+        self.assertTrue(ext.archive_proof(self.root, self.archived, json.loads(self.original)["files"][self.archived]))
+
+    def test_damaged_historical_archive_blocks_migration_without_side_effects(self):
+        self.put(self.history / "SHA256SUMS", b"damaged synthetic checksum\n")
+        baseline = self.tree(self.root)
+        self.migrate("--check", success=False)
+        self.migrate("--apply", success=False)
+        self.assertEqual(self.tree(self.root), baseline)
+
+    def test_shared_controller_lock_and_rollback_after_local_revision_change(self):
+        with cli.locked(self.controller):
+            self.migrate("--apply", success=False)
+        self.assertEqual(self.register.read_bytes(), self.original)
+        self.assertEqual(self.backups(), [])
+        self.migrate("--apply")
+        backup, = self.backups()
+        source = self.root / "code" / self.live
+        source.write_bytes(source.read_bytes() + b"# approved revision\n")
+        current = ext.read_json(self.register)
+        current["files"][self.live]["sha256"] = ext.sha(source)
+        self.put_json(self.register, current)
+        baseline = self.tree(self.root)
+        self.migrate("--rollback", backup, success=False)
+        self.assertEqual(self.tree(self.root), baseline)
+
+    def test_schema1_packages_and_supplements_install_as_schema2_with_both_header_languages(self):
+        self.migrate("--apply")
+        for suffix, name, header in [
+                ("", "scripts/legacy.sh", "#!/bin/sh\n# manuell-integriert: ja\n# bereinigung: behalten\nexit 0\n"),
+                ("addon", "playbooks/local-example.yml", "---\n# manually-integrated: yes\n# cleanup: keep\n[]\n")]:
+            package = self.work / ("bundle-" + (suffix or "site"))
+            script = package / "code" / name
+            self.put(script, header.encode())
+            legacy = {"schema": 1, "id": self.site_id, "files": {name: {"sha256": ext.sha(script), "cleanup": "behalten"}}}
+            if suffix:
+                legacy["supplement"] = suffix
+            self.put_json(package / "register.json", legacy)
+            baseline = self.tree(package)
+            cli.install(self.controller, package)
+            self.assertEqual(self.tree(package), baseline)
+            stored = ext.read_json(self.register)
+            self.assertEqual(stored["schema"], 2)
+            entry = stored["files"][name]
+            self.assertEqual(entry["cleanup"], "keep")
+            self.assertEqual(entry.get("supplement"), suffix or None)
+            self.assertEqual(ext.sha(self.root / "code" / name), ext.sha(script))
+        self.assertTrue(ext.passed(ext.inspect(self.controller)))
+
+    def test_policy_recognizes_canonical_cleanup_for_both_languages_and_file_types(self):
+        for filename, start in [("entry.sh", "#!/bin/bash\n"), ("play.yml", "---\n")]:
+            for header, cleanup, expected in [
+                    ("# manuell-integriert: ja", "# bereinigung: behalten", "keep"),
+                    ("# manuell-integriert: ja", "# bereinigung: nach-erfolg-archivieren", "archive-after-success"),
+                    ("# manually-integrated: yes", "# cleanup: keep", "keep"),
+                    ("# manually-integrated: yes", "# cleanup: archive-after-success", "archive-after-success")]:
+                with self.subTest(filename=filename, cleanup=cleanup):
+                    source = self.work / filename
+                    self.put(source, f"{start}{header}\n{cleanup}\n".encode())
+                    before = source.read_bytes()
+                    self.assertEqual(cli.policy(source), expected)
+                    self.assertEqual(source.read_bytes(), before)

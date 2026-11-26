@@ -55,15 +55,8 @@ def timestamp():
     return datetime.now(timezone.utc).isoformat()
 
 
-def policy(path):
-    with ext.regular(path).open(encoding="utf8") as stream:
-        top = [stream.readline().strip() for _ in range(3)]
-    offset = int(top[0] == "---" or top[0].startswith("#!"))
-    ext.require(top[offset] == "# manuell-integriert: ja", tr("package.missing_marker"))
-    for value in (ext.KEEP, ext.ONCE):
-        if top[offset+1] == "# bereinigung: " + value:
-            return value
-    raise ValueError(tr("package.cleanup_policy"))
+# Keep the original importable API while sharing the exact header parser with the checker.
+policy = ext.policy
 
 
 def approve(bundle, name, expected):
@@ -71,8 +64,12 @@ def approve(bundle, name, expected):
     path = ext.path_in(code, name)
     ext.require(ext.sha(path) == expected, tr("package.digest_mismatch"))
     manifest = ext.path_in(bundle, "register.json")
-    data = ext.read_json(manifest) if manifest.exists() else {"schema": 1, "id": uuid.uuid4().hex, "files": {}}
-    data["files"][name] = {"sha256": expected, "cleanup": policy(path)}
+    data = ext.read_json(manifest) if manifest.exists() else {"schema": 2, "id": uuid.uuid4().hex, "files": {}}
+    value = policy(path)
+    ext.require(type(data.get("schema")) is int and data["schema"] in (1, 2), tr("extension.invalid_register"))
+    if data["schema"] == 1:
+        value = next(old for old, canonical in ext.LEGACY_CLEANUP.items() if canonical == value)
+    data["files"][name] = {"sha256": expected, "cleanup": value}
     record(manifest, data)
 
 
@@ -82,7 +79,7 @@ def new_supplement(parent, target, name):
     identifier = ext.read_json(parent / "register.json")["id"]
     target.mkdir(mode=0o700)
     (target / "code").mkdir(mode=0o700)
-    record(target / "register.json", {"schema": 1, "id": identifier, "supplement": name, "files": {}})
+    record(target / "register.json", {"schema": 2, "id": identifier, "supplement": name, "files": {}})
 
 
 @contextmanager
@@ -116,12 +113,14 @@ def install(controller, bundle):
         ext.require(ext.regular(pin).read_text().strip() == identifier, tr("package.wrong_site"))
     current = {}
     if dest.exists() or dest.is_symlink():
-        ext.require(ext.inspect(controller)["status"] == "OK", tr("package.existing_review"))
+        report = ext.inspect(controller)
+        ext.require(report["status"] == "OK", report.get("migration_command") or tr("package.existing_review"))
         current = ext.read_json(dest / "register.json")["files"]
     owner = source.get("supplement")
     merged = current.copy()
     for name, entry in source["files"].items():
         ext.require(not ext.overlaps_base(controller, name), tr("package.path_owned", path=name))
+        entry = {**entry, "cleanup": ext.normalize_cleanup(entry["cleanup"], source["schema"])}
         ext.require(set(entry) == {"sha256", "cleanup"} and policy(ext.path_in(bundle/"code", name)) == entry["cleanup"],
                     tr("package.marked_files"))
         previous = current.get(name)
@@ -130,6 +129,9 @@ def install(controller, bundle):
             if previous["sha256"] == entry["sha256"]:
                 continue  # Keep this revision's archive and run receipt.
         merged[name] = {**entry, "supplement": owner} if owner else entry
+    # The installed checker must be able to read the register produced by this tool.
+    descriptor = ext.path_in(controller, "controller-base.json")
+    ext.require_compatible({"status": "OK", "schema": 2}, ext.read_json(descriptor) if descriptor.exists() else {})
     if dest.is_dir() and merged == current:
         print(tr("package.current"))
         return
@@ -149,7 +151,7 @@ def install(controller, bundle):
                 target.chmod(0o600)
                 proof = ext.path_in(stage, "runs/" + name + ".json")
                 proof.unlink(missing_ok=True)
-        record(stage/"register.json", {"schema": 1, "id": identifier, "files": merged})
+        record(stage/"register.json", {"schema": 2, "id": identifier, "files": merged})
         ext.require(ext.scan(stage, identifier)["status"] == "OK", tr("package.copy_digest"))
         if not pin.exists():
             write(pin, identifier + "\n")
@@ -272,7 +274,7 @@ def main(argv=None):
     if args.action=="approve":
         bundle=args.bundle.absolute()
         ext.require(not bundle.is_symlink() and bundle.is_dir(), tr("package.missing_bundle"))
-        ext.require(bundle != ext.location(args.controller.resolve()), tr("package.approve_source"))
+        ext.require(bundle.resolve() != ext.location(args.controller.resolve()).resolve(), tr("package.approve_source"))
         with locked(bundle):
             approve(bundle,args.path,args.sha256)
         return
@@ -288,7 +290,7 @@ def main(argv=None):
         allowed = args.action=="archive" and report["status"]=="PRUEFBEDARF" and all(
             row["status"] in ("OK","ARCHIVIERT") or (row["path"]==args.path and row["status"]=="ARCHIVIERUNG_OFFEN")
             for row in report["files"])
-        ext.require(report["status"]=="OK" or allowed,tr("package.local_digest"))
+        ext.require(report["status"]=="OK" or allowed, report.get("migration_command") or tr("package.local_digest"))
         data=ext.read_json(root/"register.json")
         if args.action=="run":
             run(controller,root,data["files"],args.path,args.limit)

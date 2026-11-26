@@ -1,0 +1,9 @@
+{
+  "extension.marker_required": "The manual integration marker is missing from the file header.",
+  "extension.cleanup_header": "The cleanup declaration is missing or does not match the integration marker.",
+  "extension.target_schema": "The target controller declares an unsupported local register schema.",
+  "extension.rollback_register": "The target cannot read the active local register. Restore the matching schema 1 backup with tools/migrate_local_extensions.py --rollback before rolling back the controller.",
+  "status.MIGRATION_REQUIRED": "Local register migration required",
+  "status.POLICY_MISMATCH": "Cleanup declaration differs from the register",
+  "extension.unverified_target": "The target controller descriptor does not match its verified pre-update digest."
+}

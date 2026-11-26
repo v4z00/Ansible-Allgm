@@ -25,6 +25,7 @@ from controller_i18n import preload_for_update, tr
 from staging_manifest import public_library
 import controller_addons as addon
 import controller_transaction as transaction
+import local_extensions
 
 CODE_ROOTS = {
     "bin", "config", "descriptions", "examples", "lib",
@@ -427,17 +428,38 @@ def put_files(dest, pending, restore, validate=None):
                       transaction_path, validate)
 
 
-def recover_transaction(dest):
-    if dest.is_dir():
-        backups = backup_home(dest)
-        if (backups / ".transaction").is_dir():
-            # Recovery can also replace the active language files. A previous crash
-            # may already have removed one, so a missing catalog must not prevent recovery.
-            try:
-                preload_for_update()
-            except FileNotFoundError:
-                pass
-        transaction.recover(dest, backups, transaction_path)
+def restore_capability(root, original_tree, changed, prior_hash):
+    """Read the pre-update descriptor from a verified backup, or the unchanged live receipt."""
+    rel = "controller-base.json"
+    if changed:
+        if prior_hash is None:
+            return {}
+        source = require_safe(original_tree, rel, file_required=True)
+    else:
+        source = require_safe(root, rel)
+        current = addon.receipt(root / RECEIPT)
+        prior_hash = current.get("files", {}).get(rel)
+        if prior_hash is None and not source.exists():
+            return {}
+    require(prior_hash and sha(source) == prior_hash, tr("extension.unverified_target"))
+    return read_json(source)
+
+
+def recover_transaction(dest, local=None):
+    if not dest.is_dir():
+        return
+    backups = backup_home(dest)
+    interrupted = backups / ".transaction"
+    if interrupted.exists() and not interrupted.is_symlink():
+        report = local if local is not None else local_extensions.inspect(dest)
+        if report["status"] != "NICHT_EINGERICHTET":
+            journal = local_extensions.read_json(local_extensions.path_in(interrupted, "journal.json"))
+            entries = journal["files"]
+            rel = "controller-base.json"
+            before = entries[rel]["before"] if rel in entries else None
+            metadata = restore_capability(dest, interrupted / "original", rel in entries, before[0] if before else None)
+            local_extensions.require_compatible(report, metadata, rollback=True)
+    transaction.recover(dest, backups, transaction_path)
 
 
 def installed_profile(dest):
@@ -531,7 +553,7 @@ def update_controller(dest, all_files, profile, accepted, receipt_source=None, r
     print(tr("update.undo", name=name))
 
 
-def rollback_controller(dest, name):
+def rollback_controller(dest, name, local=None):
     require(BACKUP_ID.fullmatch(name), "Ungültige Sicherungskennung")
     backups = backup_home(dest)
     backup = backups / name
@@ -540,6 +562,12 @@ def rollback_controller(dest, name):
     require(plan["schema"] == 1 and plan["target"] == str(dest.resolve())
             and receipt_hash(dest) == plan["installed_receipt"],
             "Diese Sicherung passt nicht zum aktuellen Codewechsel")
+    report = local if local is not None else local_extensions.inspect(dest)
+    if report["status"] != "NICHT_EINGERICHTET":
+        rel = "controller-base.json"
+        changes = plan["files"]
+        metadata = restore_capability(dest, backup, rel in changes, changes.get(rel, {}).get("before"))
+        local_extensions.require_compatible(report, metadata, rollback=True)
     with tempfile.TemporaryDirectory(dir=backups, prefix=".restore-") as tmp:
         work = Path(tmp)
         saved, revert = work / "saved", work / "revert"
@@ -610,13 +638,16 @@ def main():
             if handle is not None:
                 fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
             scratch = Path(tmp)
+            local = None if args.export_code else local_extensions.inspect(target)
+            if local and not args.rollback:
+                require(local_extensions.passed(local), local.get("migration_command") or tr("package.local_digest"))
             if args.update and not args.apply:
                 require(not (backup_home(target) / ".transaction").exists(),
                         "Interrupted controller transaction: use update-check --apply for recovery")
             elif not args.export_code:
-                recover_transaction(target)
+                recover_transaction(target, local)
             if args.rollback:
-                rollback_controller(target, args.rollback)
+                rollback_controller(target, args.rollback, local)
                 return 0
             profile = name.lower() if name else "allgm"
             addons = load_addons(args.addon, profile, target)
@@ -625,6 +656,8 @@ def main():
                     "URL or token supplied for undeclared add-on")
             files, sources, layout = local_sources(overlay, name, addons)
             if not args.export_code:
+                descriptor = files.get("controller-base.json")
+                local_extensions.require_compatible(local, read_json(descriptor) if descriptor else {})
                 registered = addon.registrations(version_lines(target / VERSIONS, optional=True))
                 require(registered.keys() <= {n.casefold() for n in addons},
                         "Provide checkouts of all registered add-ons or use update-check")
@@ -638,8 +671,6 @@ def main():
                 conflicts, retired = inspect_addon_install(target, BASE, files, layout, previous, baseline)
                 require(not conflicts, "Add-on migration blocked: " + ", ".join(conflicts))
                 if addons:
-                    local = rollout.local_extensions.inspect(target)
-                    require(rollout.local_extensions.passed(local), "Local extension integrity check failed")
                     variables, registry, overlaps = rollout.guards(target, files, scratch, local["files"])
                     require(not (variables or registry or overlaps), "Prospective module validation failed")
                 if args.update:

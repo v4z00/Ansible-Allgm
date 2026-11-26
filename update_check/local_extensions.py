@@ -2,6 +2,7 @@
 import hashlib
 import json
 import os
+import shlex
 import sys
 from pathlib import Path
 import re
@@ -13,13 +14,58 @@ from controller_i18n import status_text, tr
 HEX = re.compile(r"[0-9a-f]{64}\Z")
 IDENT = re.compile(r"[a-f0-9]{32}\Z")
 PART = re.compile(r"[a-zA-Z0-9_-][a-zA-Z0-9._-]*\Z")
-KEEP = "behalten"
-ONCE = "nach-erfolg-archivieren"
+KEEP = "keep"
+ONCE = "archive-after-success"
+LEGACY_CLEANUP = {"behalten": KEEP, "nach-erfolg-archivieren": ONCE}
+MIGRATION_REQUIRED = "MIGRATION_REQUIRED"
 
 
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+def normalize_cleanup(value, schema=None):
+    require(isinstance(value, str), tr("extension.invalid_file"))
+    if schema in (None, 1) and value in LEGACY_CLEANUP:
+        return LEGACY_CLEANUP[value]
+    require(schema in (None, 2) and value in (KEEP, ONCE), tr("extension.invalid_file"))
+    return value
+
+
+def policy(path):
+    with regular(path).open("rb") as stream:
+        first = stream.readline(256).strip()
+        marker = stream.readline(256).strip() if first == b"---" or first.startswith(b"#!") else first
+        cleanup = stream.readline(256).strip()
+    markers = {b"# manuell-integriert: ja": (b"# bereinigung: ", 1),
+               b"# manually-integrated: yes": (b"# cleanup: ", 2)}
+    require(marker in markers, tr("extension.marker_required"))
+    prefix, schema = markers[marker]
+    require(cleanup.startswith(prefix), tr("extension.cleanup_header"))
+    value = cleanup[len(prefix):].decode("ascii", errors="replace")
+    return normalize_cleanup(value, schema)
+
+
+def migration_hint(controller):
+    tool = controller / "tools/migrate_local_extensions.py"
+    if not tool.is_file() or tool.is_symlink():
+        # During the first upgrade the installed controller may not yet ship the migrator.
+        tool = Path(__file__).resolve().parents[1] / "tools/migrate_local_extensions.py"
+    return shlex.join(["python3", str(tool), "--controller", str(controller), "--check"])
+
+
+def require_compatible(report, metadata, *, rollback=False):
+    if report["status"] == "NICHT_EINGERICHTET":
+        return
+    require(isinstance(metadata, dict), tr("extension.target_schema"))
+    supported = metadata.get("local_extension_schema", 1)
+    require(type(supported) is int and supported in (1, 2), tr("extension.target_schema"))
+    if (rollback and report["status"] == MIGRATION_REQUIRED and report.get("integrity_status") == "OK"
+            and supported == 1):
+        return
+    require(passed(report), report.get("migration_command") or tr("package.local_digest"))
+    require(supported == report.get("schema"), tr("extension.rollback_register"))
 
 
 def supplement_name(value):
@@ -102,7 +148,8 @@ def overlaps_base(controller, name):
 
 def scan(root, expected_id=None, controller=None, *, delivery=False):
     register = read_json(path_in(root, "register.json"))
-    require(isinstance(register, dict) and register.get("schema") == 1
+    require(isinstance(register, dict) and type(register.get("schema")) is int
+            and register["schema"] in (1, 2)
             and isinstance(register.get("id"), str) and IDENT.fullmatch(register["id"])
             and isinstance(register.get("files"), dict), tr("extension.invalid_register"))
     require(expected_id in (None, register["id"]), tr("extension.wrong_register"))
@@ -130,25 +177,34 @@ def scan(root, expected_id=None, controller=None, *, delivery=False):
         row = {"path": name}
         status = "NICHT_REGISTRIERT"
         if name in register["files"]:
-            require(isinstance(entry, dict) and isinstance(entry.get("sha256"), str) and HEX.fullmatch(entry["sha256"])
-                    and entry.get("cleanup") in (KEEP, ONCE), tr("extension.invalid_file"))
+            require(isinstance(entry, dict) and isinstance(entry.get("sha256"), str) and HEX.fullmatch(entry["sha256"]),
+                    tr("extension.invalid_file"))
+            cleanup = normalize_cleanup(entry.get("cleanup"), register["schema"])
             if "supplement" in entry:
                 row["supplement"] = supplement_name(entry["supplement"])
             row["approved_sha256"] = entry["sha256"]
             if "archive" in entry:
                 archive_proof(root, name, entry)
+                require(cleanup == ONCE, tr("extension.invalid_file"))
                 status = "ARCHIVIERT" if name not in actual else "ARCHIVIERUNG_OFFEN"
             elif name not in actual:
                 status = "FEHLT"
             else:
                 row["measured_sha256"] = sha(path)
                 status = "OK" if row["measured_sha256"] == entry["sha256"] else "SHA_ABWEICHUNG"
+                if status == "OK" and policy(path) != cleanup:
+                    status = "POLICY_MISMATCH"
         if status == "OK" and controller and overlaps_base(controller, name):
             status = "BASIS_KONFLIKT"
         row["status"] = status
         rows.append(row)
-    return {"status": "OK" if all(row["status"] in ("OK","ARCHIVIERT") for row in rows) else "PRUEFBEDARF",
-            "files": rows}
+    integrity = "OK" if all(row["status"] in ("OK", "ARCHIVIERT") for row in rows) else "PRUEFBEDARF"
+    report = {"status": integrity, "integrity_status": integrity, "schema": register["schema"], "files": rows}
+    if controller is not None and not delivery and register["schema"] == 1:
+        report["migration_command"] = migration_hint(controller)
+        if integrity == "OK":
+            report["status"] = MIGRATION_REQUIRED
+    return report
 
 
 def inspect(controller):
@@ -179,5 +235,7 @@ def display(report):
         print(" ", status_text(row["status"]), row["path"] + origin)
         if row["status"] == "SHA_ABWEICHUNG":
             print(tr("extension.expected"), row["approved_sha256"], tr("extension.actual"), row["measured_sha256"])
+    if "migration_command" in report:
+        print(" ", report["migration_command"])
     if "error" in report:
         print(" ", report["error"])

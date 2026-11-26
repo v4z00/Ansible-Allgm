@@ -165,7 +165,7 @@ def prune(root, days):
             shutil.rmtree(item)
 
 
-def rollout(root, args, local_files=()):
+def rollout(root, args, local_report):
     marker = root / install.VERSIONS
     private_file(marker)
     lines = install.version_lines(marker)
@@ -190,7 +190,9 @@ def rollout(root, args, local_files=()):
                         tr("update.module_url"))
         allgm, combined = checkout(folder, "Allgm", rows["Allgm"], root, branch)
         descriptor = combined.get("controller-base.json")
-        capability = manifest.load(descriptor).get("addon_contract", 0) if descriptor else 0
+        metadata = manifest.load(descriptor) if descriptor else {}
+        local_extensions.require_compatible(local_report, metadata)
+        capability = metadata.get("addon_contract", 0)
         install.require(type(capability) is int and capability in (0, 1),
                         tr("update.unsupported_contract"))
         install.require(capability == 1 or not registrations,
@@ -213,7 +215,7 @@ def rollout(root, args, local_files=()):
                   "modules": install.addon.module_info(sources, addons, install.version_for, branch)}
         migration_issues, retired = install.inspect_addon_install(root, allgm, combined, layout,
                                                                   previous, baseline)
-        variable_issues, registry_issues, local_conflicts = guards(root, combined, folder, local_files)
+        variable_issues, registry_issues, local_conflicts = guards(root, combined, folder, local_report["files"])
         combined[install.VERSIONS] = install.version_source(root, sources, folder, branch=branch, addons=addons)
         candidates = install.update_files(combined)
         if saved_profile and (branch == "staging" or previous_branch == "staging"):
@@ -283,23 +285,24 @@ def main(argv=None):
         fd = os.open(lock, os.O_CREAT | os.O_NOFOLLOW | os.O_RDWR, 0o600)
         with os.fdopen(fd, "r+"):
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            if args.apply or args.auto or args.rollback:
-                install.recover_transaction(root)
-            elif (install.backup_home(root) / ".transaction").exists():
-                raise ValueError(tr("update.interrupted"))
-            if args.rollback:
-                install.rollback_controller(root, args.rollback)
-                return 0
             local = local_extensions.inspect(root)
             if not args.json:
                 local_extensions.display(local)
-            if not local_extensions.passed(local):
+            rollback_legacy = args.rollback and local["status"] == local_extensions.MIGRATION_REQUIRED
+            if not local_extensions.passed(local) and not rollback_legacy:
                 if args.json:
                     print(json.dumps(machine_report({"branch": branch, "applied": False, "local_extensions": local})))
                 else:
                     print(tr("update.local_block", branch=branch))
                 return 1
-            status, result = rollout(root, args, local["files"])
+            if args.apply or args.auto or args.rollback:
+                install.recover_transaction(root, local)
+            elif (install.backup_home(root) / ".transaction").exists():
+                raise ValueError(tr("update.interrupted"))
+            if args.rollback:
+                install.rollback_controller(root, args.rollback, local)
+                return 0
+            status, result = rollout(root, args, local)
             result["local_extensions"] = local
         if args.json:
             print(json.dumps(machine_report(result), ensure_ascii=False, indent=2))

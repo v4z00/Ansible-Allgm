@@ -1,0 +1,9 @@
+{
+  "extension.marker_required": "Im Dateikopf fehlt die manuelle Freigabemarkierung.",
+  "extension.cleanup_header": "Die Bereinigungsregel im Dateikopf fehlt oder passt nicht zur Markierung.",
+  "extension.target_schema": "Die Zielversion deklariert ein unbekanntes Registerschema.",
+  "extension.rollback_register": "Das Ziel unterstützt dieses lokale Register nicht. Vor dem Code-Rollback das passende Schema-1-Backup mit tools/migrate_local_extensions.py --rollback wiederherstellen.",
+  "status.MIGRATION_REQUIRED": "Registermigration erforderlich",
+  "status.POLICY_MISMATCH": "Bereinigungsregel weicht vom Register ab",
+  "extension.unverified_target": "Die Basisdeklaration des Rückwechselziels stimmt nicht mit seinem SHA-Nachweis überein."
+}

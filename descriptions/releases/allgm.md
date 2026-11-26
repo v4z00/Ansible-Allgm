@@ -1,5 +1,14 @@
 # Changelog
 
+## s0.7.0 – Lokale Freigaben migrieren
+
+Neue Standortpakete verstehen deutsche und englische Dateiköpfe. Für einen
+bestehenden Controller zeigt `tools/migrate_local_extensions.py --check` die
+anstehende Registermigration an. Beim Übernehmen entsteht eine private
+Sicherung. Die freigegebenen Skripte und Archivbelege behalten ihre SHA-256.
+Die [Anleitung](../commands/update-check.md#lokales-register-migrieren)
+beschreibt Vorschau, Wechsel und Rücknahme.
+
 ## s0.6.0 – Deutsch und Englisch auf einem Controller
 
 `bin/control --lang en help` zeigt die englische Hilfe. Dauerhaft lässt sich

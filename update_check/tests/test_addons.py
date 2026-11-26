@@ -309,14 +309,39 @@ class AddonTests(unittest.TestCase):
         write(self.target, ".local/local-extension-id", pin + "\n")
         code = write(local, "code/" + SSS_PATH, "---\n# manuell-integriert: ja\n# bereinigung: behalten\n[]\n")
         digest = hashlib.sha256(code.read_bytes()).hexdigest()
-        write(local, "register.json", {"schema": 1, "id": pin,
-              "files": {SSS_PATH: {"sha256": digest, "cleanup": "behalten"}}})
+        write(local, "register.json", {"schema": 2, "id": pin,
+              "files": {SSS_PATH: {"sha256": digest, "cleanup": "keep"}}})
         local_before = snapshot(local)
         result = json.loads(self.check("--remote", "--json", success=False))
         self.assertEqual(result["local_extensions"]["status"], "OK")
         self.assertEqual(result["local_conflicts"], [SSS_PATH])
         self.assert_blocked()
         self.assertEqual(snapshot(local), local_before)
+
+    def test_checkout_installer_preserves_legacy_register_until_explicit_migration(self):
+        self.install()
+        local = self.target.with_name(self.target.name + "-local")
+        pin = "b" * 32
+        write(self.target, ".local/local-extension-id", pin + "\n")
+        name = "scripts/local-task.sh"
+        file = write(local, "code/" + name, "#!/bin/sh\n# manuell-integriert: ja\n# bereinigung: behalten\n")
+        write(local, "register.json", {"schema": 1, "id": pin,
+              "files": {name: {"sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "cleanup": "behalten"}}})
+        before = snapshot(self.target), snapshot(local)
+        repo = self.repos["Allgm"]
+        cmd = [repo / "bin/install-controller", "--target", self.target]
+        for option in ("--skip-runtime", "--update"):
+            self.invoke([*cmd, option], success=False)
+            self.assertEqual((snapshot(self.target), snapshot(local)), before)
+        migrator = [sys.executable, repo / "tools/migrate_local_extensions.py", "--controller", self.target]
+        self.invoke([*migrator, "--apply"])
+        self.invoke([*cmd, "--update"])
+        after = snapshot(self.target), snapshot(local)
+        meta = json.loads((repo / "controller-base.json").read_text())
+        meta.pop("local_extension_schema")
+        write(repo, "controller-base.json", meta)
+        self.invoke([*cmd, "--update"], success=False)
+        self.assertEqual((snapshot(self.target), snapshot(local)), after)
 
     def test_fresh_install_rejects_alias_collision_before_writing_controller(self):
         self.make_addon("SSS")
@@ -489,3 +514,46 @@ class AddonTests(unittest.TestCase):
         self.assertIn("Controller code restored", result)
         self.assertFalse((self.target / "lib/i18n/status_codes.json").exists())
         self.assertEqual(json.loads(self.check("--remote", "--json"))["versions"], old_preview["versions"])
+
+    @unittest.skipUnless(os.environ.get("CONTROLLER_TEST_REPO_DIR"),
+                         "set CONTROLLER_TEST_REPO_DIR to exercise the previous register format")
+    def test_registered_site_can_migrate_and_return_to_previous_controller(self):
+        # Last published schema-1 checker. Its own tooling creates the historical register.
+        previous = "ddae5ac0b5326d9780c6924aae25674060930566"
+        self.load_full_snapshot("Allgm", previous)
+        self.install()
+        receipt_before = self.receipt.read_bytes()
+        package = self.work / "approved-package"
+        name = "scripts/site-only.sh"
+        source = write(package, "code/" + name, "#!/bin/sh\n# manuell-integriert: ja\n# bereinigung: behalten\nexit 0\n")
+        old = [sys.executable, self.target / "tools/local_extension.py", "--controller", self.target]
+        self.invoke([*old, "approve", package, name, hashlib.sha256(source.read_bytes()).hexdigest()])
+        self.invoke([*old, "install", package])
+        site = self.target.with_name(self.target.name + "-local")
+        before = (site / "register.json").read_bytes()
+        code_before = snapshot(site / "code")
+        self.assertEqual(json.loads(before)["schema"], 1)
+
+        self.load_full_snapshot("Allgm", destination="staging")
+        repo = self.repos["Allgm"]
+        checker = [sys.executable, repo / "update_check/check.py", "--root", self.target]
+        migrate = [sys.executable, repo / "tools/migrate_local_extensions.py", "--controller", self.target]
+        report = json.loads(self.invoke([*checker, "--staging", "--apply", "--json"], success=False))
+        self.assertEqual(report["local_extensions"]["status"], "MIGRATION_REQUIRED")
+        self.assertEqual(self.receipt.read_bytes(), receipt_before)
+        self.invoke([*migrate, "--check"])
+        self.invoke([*migrate, "--apply"])
+        backup, = site.glob("register.json.schema1.*.bak")
+        self.assertEqual(backup.read_bytes(), before)
+        self.invoke([*checker, "--staging", "--apply"])
+        self.assertEqual(json.loads(self.check("--only", "local", "--json"))["local_extensions"]["status"], "OK")
+        controller_backup = max((self.target / ".local/controller-updates").iterdir()).name
+        installed = self.receipt.read_bytes()
+        self.check("--rollback", controller_backup, success=False)
+        self.assertEqual(self.receipt.read_bytes(), installed)
+        self.invoke([*migrate, "--rollback", backup])
+        self.check("--rollback", controller_backup)
+        self.assertEqual(self.receipt.read_bytes(), receipt_before)
+        self.assertEqual((site / "register.json").read_bytes(), before)
+        self.assertEqual(snapshot(site / "code"), code_before)
+        self.assertEqual(json.loads(self.check("--only", "local", "--json"))["local_extensions"]["status"], "OK")

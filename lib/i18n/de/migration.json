@@ -1,0 +1,23 @@
+{
+  "migration.applied": "Schema 2 aktiv ({count} Einträge). Sicherung: {backup}",
+  "migration.apply_help": "Schema 1 privat sichern und das Register atomar auf Schema 2 umstellen.",
+  "migration.backup_digest": "SHA-256 der Sicherung stimmt nicht mit dem Sicherungsnamen überein.",
+  "migration.backup_mode": "Die Sicherung muss Modus 0600 haben.",
+  "migration.backup_path": "Eine direkt im lokalen Registerverzeichnis liegende Migrationssicherung angeben.",
+  "migration.busy": "Der Controller ist durch einen anderen Vorgang gesperrt.",
+  "migration.changed": "Register seit dem Einlesen verändert. Vorgang erneut prüfen.",
+  "migration.check_help": "Vorschau ohne Schreibzugriffe (Standard).",
+  "migration.current": "Das Register verwendet bereits Schema 2.",
+  "migration.description": "Das aktive Erweiterungsregister prüfen, auf Schema 2 umstellen oder zurücknehmen.",
+  "migration.integrity": "SHA-Prüfung der lokalen Erweiterungen oder Archivbelege fehlgeschlagen. Register bleibt unverändert.",
+  "migration.invalid": "Register, Schema oder lokale Standortkennung ungültig.",
+  "migration.io_error": "Register, Standortkennung oder Sicherung fehlen, sind unsicher oder konnten nicht sicher gelesen oder geschrieben werden.",
+  "migration.lock_file": "Die Controller-Lockdatei ist keine reguläre Datei mit einem einzelnen Link.",
+  "migration.path": "Einen direkten Controller-Pfad ohne Symlinks und ohne .. angeben.",
+  "migration.permissions": "Eigentümer und Schreibrechte des Registers und seiner Verzeichnisse prüfen.",
+  "migration.preview": "Vorschau: {count} Einträge von Schema 1 auf Schema 2. Zum Umstellen --apply verwenden.",
+  "migration.regular": "Die Registrierung benötigt reguläre Dateien ohne weitere Hardlinks.",
+  "migration.restored": "Schema 1 entspricht der Sicherung.",
+  "migration.rollback_help": "Eine passende private Sicherung bytegenau wiederherstellen.",
+  "migration.stale": "Das Register wurde nach der Migration geändert. Rücknahme gestoppt."
+}

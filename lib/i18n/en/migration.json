@@ -1,0 +1,23 @@
+{
+  "migration.applied": "Schema 2 active ({count} entries). Backup: {backup}",
+  "migration.apply_help": "Back up schema 1 privately and atomically install the schema 2 register.",
+  "migration.backup_digest": "The backup SHA-256 does not match its recorded file name.",
+  "migration.backup_mode": "The backup must have mode 0600.",
+  "migration.backup_path": "Select a migration backup directly inside the local register directory.",
+  "migration.busy": "Another operation holds the controller lock.",
+  "migration.changed": "Register changed after it was read. Review it again.",
+  "migration.check_help": "Read-only preview (default).",
+  "migration.current": "The register already uses schema 2.",
+  "migration.description": "Inspect, migrate or restore the active local-extension register.",
+  "migration.integrity": "Local extension or archive integrity check failed. Register unchanged.",
+  "migration.invalid": "Invalid register, schema or local registration identifier.",
+  "migration.io_error": "Register, registration marker or backup missing, unsafe or inaccessible.",
+  "migration.lock_file": "The controller lock must be a regular file with a single link.",
+  "migration.path": "Specify a direct controller path without symlinks or .. components.",
+  "migration.permissions": "Check ownership and write permissions of the register and its directories.",
+  "migration.preview": "Preview: {count} entries from schema 1 to schema 2. Run --apply to migrate.",
+  "migration.regular": "Registration requires regular files without additional hard links.",
+  "migration.restored": "Schema 1 matches the backup.",
+  "migration.rollback_help": "Restore the matching private backup byte for byte.",
+  "migration.stale": "The register changed after migration. Rollback stopped."
+}
