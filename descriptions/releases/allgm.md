@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.2 – Controller-Prüfer 1.5.3
+
+Die Prüfungen für Updates, Bereinigung und Feature-Schalter sind leichter zu pflegen. Befehle, Exitcodes und die Struktur der JSON-Berichte bleiben kompatibel. Eine Konfigurationsmigration ist für diesen Patch nicht nötig.
+
 ## 0.8.1 – Profile, Add-ons und zweisprachige Bedienung
 
 Ein Controller kann ein Standortprofil und mehrere Git-Add-ons gemeinsam installieren, prüfen und zurückrollen. CLI, Beschreibungen und Entwicklerleitfäden gibt es auf Deutsch und Englisch. Checkmk unterstützt native OMD-Backups. Für vorhandene Controller mit dem älteren Checker oder lokalen Freigaben zuerst den [Migrationsweg](https://github.com/v4z00/Ansible-Allgm/blob/main/descriptions/commands/update-check.md#sss-aus-einem-älteren-controller-übernehmen) mit Vorschau und Sicherung verwenden. Der erste Wechsel ist ein manueller Wartungsschritt.

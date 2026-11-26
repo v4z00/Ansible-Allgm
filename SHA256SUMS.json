@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "aaf6721dc37c40b4233accfc081f25776ff3bd1d2a4b9d5cea760d1c2cf86665",
+      "sha256": "ceb9b2c03afb769df3b1e518520c4e1798e9a3313a1c5ffffcb054fef5d6d6fb",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -779,7 +779,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "9c79165a6dda3a9faf4f273c328c8b74083b7433834a2c21e80ec98525bf53ef",
+      "sha256": "34e66f995cc3385b012d3e88d111587616f124f6a69e19278ef70dfaddb77853",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -1011,7 +1011,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "9d23792ada7678d9c8a841d50aa6fe2dbb3fbd2919f927f6eb4286a73221b9ac",
+      "sha256": "cbe3d308dc3821416f67ae947e7a9780111fe9707a97ec930068c5d35f598ac5",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1607,7 +1607,7 @@
       "mode": "0644"
     },
     "scripts/feature_audit.py": {
-      "sha256": "ab6d679664182f5d1387b5b7740612e8afe3efbc328891f662d8c3d951e841b8",
+      "sha256": "60ed98036ab8b0da8c1d5e7dc5dfa513bf3e6c9b7146116677bf06906448768a",
       "mode": "0644"
     },
     "scripts/feature_catalog.json": {
@@ -1723,15 +1723,15 @@
       "mode": "0644"
     },
     "tools/update_check/build_release.py": {
-      "sha256": "7305f9292a562f86b4d5330f4d53d185521cb39de8c8ce499d3862ba08ca4cc2",
+      "sha256": "dbddc143054ee044afcc0c774347545c3fd34d6a92975bc5cf2fd2d370c92e8f",
       "mode": "0644"
     },
     "update_check/VERSION.txt": {
-      "sha256": "ded1b601e81d31ca1f65c4f3ccf2ebd7992b6390e37bc2a86f3837282f1e00cf",
+      "sha256": "c03e3824001f39b9518249b8d6522422fc4de7227e12a568c0164662b03b7758",
       "mode": "0644"
     },
     "update_check/check.py": {
-      "sha256": "fa3f301abc314f1ed83f3019cc27848e81eaf8648c591e80cb255f02965bbfab",
+      "sha256": "890f0b01367f27d240f86dfbdbed7cd40bac372997a40d4c8a80c00b293c7d53",
       "mode": "0644"
     },
     "update_check/check.sh": {
@@ -1739,7 +1739,7 @@
       "mode": "0755"
     },
     "update_check/cleanup.py": {
-      "sha256": "6cbeb9968fdf6e7e1d6f2ee4d8780b243b83e0fb1f876209f6535ffe9bc80c0a",
+      "sha256": "ef0fd75326697b291b075104c0d4408030aa89fad020193671758a4759121738",
       "mode": "0644"
     },
     "update_check/cleanup_plan.json": {
@@ -1751,7 +1751,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "dd0e53d3129eb115f16533baa94f1857285b198dec9b547755f206fefd588152",
+      "sha256": "9d9149642bba4aba00694527469443088ffc3b528a3c724208f42b7a429d2e5d",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1767,7 +1767,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "01c250946a6ed01805c38ae4d54bcaf957ef3024b89a7f62570760891d5423ab",
+      "sha256": "784b9259cd073d951f45c0c9ade65f43a7dd3831cebc0b4840120fc81523bed1",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1783,11 +1783,11 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "63bb41475d550d1c3fd0505b05c7323d1a1b23a33d69f14913e4866119422252",
+      "sha256": "16a5816d085f357d5f4bbcd8f630df6b2f111495a49dcd753d66b80032e92a31",
       "mode": "0644"
     },
     "update_check/probes.py": {
-      "sha256": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
+      "sha256": "3ef5592956d6f9e7072310b39b3a9cdf5e38057b194faa4790a30ea38c01fa70",
       "mode": "0644"
     },
     "update_check/profile.json": {
@@ -1795,7 +1795,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "501cdadf0e6dde31a8c8a3660d9cbce4437baca1913b52b5abb4a800b2f64933",
+      "sha256": "58e7d5f8e85603c24ecf75cfb865cc2f5b64f9778e1e19363ff6c807ef86d20d",
       "mode": "0644"
     },
     "update_check/rollout.py": {
@@ -1891,7 +1891,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_profiles_cleanup.py": {
-      "sha256": "51a3aa5411800c9f0da357cdf8fddb356677ad4ed1784b926b33973167d01c85",
+      "sha256": "13e18794abf6379ec77dde7ea9b3086b947a4c0dcf093ebc672d59a3593eec28",
       "mode": "0644"
     }
   }
