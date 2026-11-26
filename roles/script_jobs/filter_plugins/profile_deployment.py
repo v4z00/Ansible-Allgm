@@ -82,7 +82,7 @@ def service(spec, target, library, owner, group):
     sections = {'Unit': [('Description', text(spec.get('description', 'Managed script service')).replace('%', '%%'))],
                 'Service': [('Type', kind), ('User', account(spec.get('user', owner))),
                             ('Group', account(spec.get('group', group))),
-                            ('WorkingDirectory', quote(absolute(fixed(spec.get('working_directory', '{target}'), target, library)))),
+                            ('WorkingDirectory', absolute(fixed(spec.get('working_directory', '{target}'), target, library)).replace('%', '%%')),
                             ('Environment', quote('SCRIPT_LIBRARY_ROOT=' + library))]}
     for key in ('after', 'before', 'wants', 'requires', 'conflicts'):
         if key in spec:sections['Unit'].append((key.title(), dependencies(spec[key])))
@@ -109,7 +109,7 @@ def service(spec, target, library, owner, group):
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 <= value <= 86400:
                 raise ValueError('Timeout values require finite seconds between 0 and 86400')
             sections['Service'].append((directive, str(value)))
-    if 'pid_file' in spec:sections['Service'].append(('PIDFile', quote(absolute(fixed(spec['pid_file'], target, library)))))
+    if 'pid_file' in spec:sections['Service'].append(('PIDFile', absolute(fixed(spec['pid_file'], target, library)).replace('%', '%%')))
     if 'kill_mode' in spec:
         if spec['kill_mode'] not in ('control-group', 'mixed', 'process', 'none'):raise ValueError('Invalid kill mode')
         sections['Service'].append(('KillMode', spec['kill_mode']))

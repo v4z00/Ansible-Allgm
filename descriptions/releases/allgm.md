@@ -1,5 +1,11 @@
 # Changelog
 
+## s0.8.11 – Gültige systemd-Pfadangaben
+
+Jobmodul 0.5.4 erzeugt WorkingDirectory und PIDFile ohne Anführungszeichen.
+Die erzeugten Dienstdefinitionen werden dadurch von systemd korrekt geladen.
+Bestehende Profile behalten ihre Pfade und ausdrücklichen Aktivierungseinstellungen.
+
 ## s0.8.10 – Cronfenster und Standardwerte im Dienstdeployment
 
 Jobmodul 0.5.3 wertet mehrere tägliche und häufige Cronfenster korrekt aus.

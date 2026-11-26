@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "script_jobs",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "files": {
     "artifacts/script-library/bin/job-status": "48e59321a3f8cd7e907205e00fbf48fa4a4c42d4ffa6c0165f3243fdf202bbf0",
     "artifacts/script-library/bin/script-jobs": "77dd5d1c4a4dd0184fe01edfc9d3b1b4d9ec41ea5e5f0fd64ece86bc361933b4",
@@ -47,7 +47,7 @@
     "playbooks/scripts/summary_jobs.yml": "ac6fbab4e7add7ba5625df407c92492db49d0e068359539fb34ba8f7eba4ab7f",
     "roles/script_jobs/defaults/main.yml": "d43bab89763028a7311e916b459847d8db9ea428b4ff625273f5d4a0e427e618",
     "roles/script_jobs/filter_plugins/local_config.py": "a040e1923a3678db9b1df20c6bdc659490a8f94cc400f5f03cf83ce54f2969e5",
-    "roles/script_jobs/filter_plugins/profile_deployment.py": "59468a41da2f0b2d4848dfca775e38cf5d2e1fe0abb043c004b0c1c285fe664a",
+    "roles/script_jobs/filter_plugins/profile_deployment.py": "bb149f44b4527aebba603a1c8dc0c0b1487d6cba0c2cec1adb48c305673e50d7",
     "roles/script_jobs/tasks/main.yml": "38faf5577f57846d1cbc2773f7c16210270ef858382116bfc4787ed169dea324",
     "roles/script_jobs/tasks/systemd_deploy.yml": "ede3be08d586af28a10cb38aa603735713ad1448f6cc9b2f7cea95c7c0cdf87b",
     "roles/script_jobs/tasks/systemd_plan.yml": "5bfd472b58b2515655a1fb0fd88bd960cdc1760f3f0a8e803dc91fc579f9440e",
@@ -68,7 +68,7 @@
     "tools/job_tests/test_central_summary.py": "599f1045d7d0a1626dd904585c7ec08e996b977db03aba0328a21246d4a24fd6",
     "tools/job_tests/test_controller_failures.py": "6f6841e9b6255c87a5d198f77ad7407040cfe930bc431814083c2900605005fd",
     "tools/job_tests/test_jobs.py": "90ee93bc941b1665be032ffda0eb4ddb552020ec17c01aa296a559b6e00e9784",
-    "tools/job_tests/test_profile_deployment.py": "fc448cd66e77263811bb09407608c401c8ab820053b8e888dcf397a4d19c8a23",
+    "tools/job_tests/test_profile_deployment.py": "88ce18367b0093c75c21acbedcfa6b5074b5805f1ac1222b27522e141cfb822f",
     "tools/job_tests/test_recovery.py": "2832dfbfcc61ad4107d18509bfa63a63065abfdf8ec187cb40f196527dbaeade",
     "tools/job_tests/test_summary.py": "6a995ff3c356bb25c22d2c2b51a1d467a8ddeae8e3705b0903e8fd2263a39838",
     "tools/job_tests/test_systemd_discovery.py": "9a59dd8568021e2f05e5fcf74dab5199608561596ca0f01675f56eb8d0339894",

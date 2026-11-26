@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import pwd
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -72,6 +73,20 @@ class Profiles(unittest.TestCase):
         for spec in ({'description': 'x\nExecStart=/bad'}, {'enabled': 'yes'}, {'state': 'start'}, {'restart': 'bad'}):
             with self.assertRaises((ValueError, KeyError)):
                 planner.service({'unit': 'fixture.service', 'mode': 'active', 'exec_start': ['/bin/true'], **spec}, '/opt/example', '/scripte', 'root', 'root')
+
+    def test_path_directives_follow_systemd_path_syntax(self):
+        row=planner.service({'unit':'fixture.service','mode':'oneshot','type':'oneshot',
+                             'exec_start':['/usr/bin/true'],'working_directory':'/tmp/example space',
+                             'pid_file':'/tmp/example%file.pid'},'/opt/example','/scripte','root','root')
+        values=dict(row['sections']['Service'])
+        self.assertEqual(values['WorkingDirectory'],'/tmp/example space')
+        self.assertEqual(values['PIDFile'],'/tmp/example%%file.pid')
+        if shutil.which('systemd-analyze'):
+            unit=self.root/'fixture.service'
+            unit.write_text(''.join('['+section+']\n'+''.join(k+'='+v+'\n' for k,v in directives)+'\n'
+                                    for section,directives in row['sections'].items()))
+            r=subprocess.run(['systemd-analyze','verify',str(unit)],capture_output=True,text=True)
+            self.assertEqual(r.returncode,0,r.stderr)
 
     def test_tagged_ansible_numbers_are_accepted_without_accepting_flags_or_nonfinite_values(self):
         class TaggedInt(int):pass
@@ -192,6 +207,7 @@ class ProfileIntegration(unittest.TestCase):
             self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
             unit = (root / 'units/fixture.service').read_text()
             self.assertIn('ExecStart="' + str(root / 'installed/programs/watcher.sh') + '"', unit)
+            self.assertIn('WorkingDirectory=' + str(root / 'installed') + '\n',unit)
             self.assertEqual((root / 'installed/programs/watcher.sh').read_bytes(), program.read_bytes())
             rendered = json.loads((root / 'installed/settings.json').read_text())
             self.assertEqual(rendered['API_TOKEN'], 'synthetic-profile-api');self.assertEqual(rendered['BOT_TOKEN'], '')
