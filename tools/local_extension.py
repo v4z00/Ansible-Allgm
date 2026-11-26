@@ -131,7 +131,9 @@ def install(controller, bundle):
         merged[name] = {**entry, "supplement": owner} if owner else entry
     # The installed checker must be able to read the register produced by this tool.
     descriptor = ext.path_in(controller, "controller-base.json")
-    ext.require_compatible({"status": "OK", "schema": 2}, ext.read_json(descriptor) if descriptor.exists() else {})
+    layout = "internal" if dest == controller / ".local/extensions" else "sibling"
+    ext.require_compatible({"status": "OK", "schema": 2, "layout": layout},
+                           ext.read_json(descriptor) if descriptor.exists() else {})
     if dest.is_dir() and merged == current:
         print(tr("package.current"))
         return

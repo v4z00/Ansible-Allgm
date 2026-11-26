@@ -28,7 +28,8 @@ class LocalExtensionsTest(unittest.TestCase):
         (self.controller / "bin").mkdir(parents=True)
         (self.controller / "bin/control").touch()
         (self.controller / "ansible.cfg").touch()
-        (self.controller / "controller-base.json").write_text('{"local_extension_schema":2}\n')
+        (self.controller / "controller-base.json").write_text(
+            '{"local_extension_schema":2,"local_extension_layouts":["sibling","internal"]}\n')
         self.bundle = self.controller.parent / "example"
         self.name = "scripts/task.sh"
         self.source = self.bundle / "code" / self.name
@@ -75,6 +76,17 @@ class LocalExtensionsTest(unittest.TestCase):
         self.install()
         self.assertEqual((internal / 'code' / self.name).read_bytes(), self.source.read_bytes())
         self.assertEqual(ext.inspect(self.controller)["status"], "OK")
+
+    def test_internal_layout_blocks_unsupported_target_and_rollback(self):
+        self.install()
+        self.root.rename(self.controller / ".local/extensions")
+        report = ext.inspect(self.controller)
+        self.assertEqual(report["layout"], "internal")
+        for rollback in (False, True):
+            with self.assertRaises(ValueError):
+                ext.require_compatible(report, {"local_extension_schema": 2}, rollback=rollback)
+        ext.require_compatible(report, {"local_extension_schema": 2,
+                                       "local_extension_layouts": ["sibling", "internal"]})
 
     def test_archive_requires_run_and_no_caller_and_preserves_both_hashes(self):
         self.install()

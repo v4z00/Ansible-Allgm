@@ -7,5 +7,6 @@
   "status.POLICY_MISMATCH": "Bereinigungsregel weicht vom Register ab",
   "extension.unverified_target": "Die Basisdeklaration des Rückwechselziels stimmt nicht mit seinem SHA-Nachweis überein.",
   "extension.prospective_conflict": "Verwaltete Pfade des ausgewählten Stands kollidieren mit lokalen Erweiterungen: {paths}",
-  "extension.ambiguous_location": "Zwei lokale Zusatzregister vorhanden. Genau eine Ablage verwenden; nichts wurde automatisch ausgewaehlt."
+  "extension.ambiguous_location": "Zwei lokale Zusatzregister vorhanden. Genau eine Ablage verwenden; nichts wurde automatisch ausgewaehlt.",
+  "extension.target_layout": "Die Zielversion unterstützt die interne Registerablage nicht. Vor dem Rückwechsel das vollständige Register an den Nachbarpfad zurücklegen."
 }
