@@ -779,7 +779,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "e840b8e5e3f2db38d5963d40b3abfe7ca84f36fe8026dfc145e1198cc9fbfa8b",
+      "sha256": "9c79165a6dda3a9faf4f273c328c8b74083b7433834a2c21e80ec98525bf53ef",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -1011,7 +1011,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "484194f4cf2b16dbaaa38ce568ced4fe9ad46f259b0f13a3e9199f315e3062d1",
+      "sha256": "9d23792ada7678d9c8a841d50aa6fe2dbb3fbd2919f927f6eb4286a73221b9ac",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.1 – Profile, Add-ons und zweisprachige Bedienung
+
+Ein Controller kann ein Standortprofil und mehrere Git-Add-ons gemeinsam installieren, prüfen und zurückrollen. CLI, Beschreibungen und Entwicklerleitfäden gibt es auf Deutsch und Englisch. Checkmk unterstützt native OMD-Backups. Für vorhandene Controller mit dem älteren Checker oder lokalen Freigaben zuerst den [Migrationsweg](https://github.com/v4z00/Ansible-Allgm/blob/main/descriptions/commands/update-check.md#sss-aus-einem-älteren-controller-übernehmen) mit Vorschau und Sicherung verwenden. Der erste Wechsel ist ein manueller Wartungsschritt.
+
 ## s0.8.1 – Developer guides / Entwicklerleitfäden
 
 English and German guides cover the controller architecture, custom commands, profiles, Git add-ons and local packages. Add-on authors can create and verify their Git manifests with `addon-index` and `addon-verify`.
