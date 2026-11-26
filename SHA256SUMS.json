@@ -779,7 +779,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "22277c50677573c7b5691d2395b30459a94407261eb9f5577c31ea7c3d43c258",
+      "sha256": "055b934f712535c84508e24ffd673babec94b4f593c9ebdda0b86ffc6bd46cf0",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -1563,7 +1563,7 @@
       "mode": "0644"
     },
     "scripts/controller_i18n.py": {
-      "sha256": "d1d286cd603f4986ce326531d646ba65966d723a2e61888f2f6848d15c337e3e",
+      "sha256": "d7029a1d9fab3263b9982f2ad48298c8724b735a5139c4f492c6e1a6da5c90c9",
       "mode": "0644"
     },
     "scripts/deploy_apache_certificate.sh": {
@@ -1655,7 +1655,7 @@
       "mode": "0644"
     },
     "tools/install_controller.py": {
-      "sha256": "82ebd7381a077dcfecb412db705106b17275d6ed02597a8738d21be29070f57c",
+      "sha256": "3945cc47850592e5c7ab39a29b2ceadcd75542e00a36b86bad6b82756e15548f",
       "mode": "0644"
     },
     "tools/job_tests/test_ansible_jobs.py": {
@@ -1723,7 +1723,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "a578c852d07db3383a2eab55a23a50c004bb69df0ef5bcd7bfe6717275028b2b",
+      "sha256": "9139f7bb34145657442e185fffacf6a36b80670d24b5d3fabe555a3752edf19e",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1739,7 +1739,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "991379a194b5c9ba60901c3b114c93cfe015f96e5e4f64d719b8bdeff333a9e8",
+      "sha256": "a7c7daf540aaa239417831127598588ef1eed1712cac28ca9b8b1e24270f0c91",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1755,7 +1755,7 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "5a3a06a95847b8e55586be87c7cbb425a845268ec5a7e0afebae13025c071dcd",
+      "sha256": "2cea9f96e76511100957a9795766e576319416f3bb652e54a47f3dd92ab72fd1",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1787,7 +1787,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_addons.py": {
-      "sha256": "aa825327d15331a04be64269ee0c9a238ee4952758b5d455b5cd561c1cd07538",
+      "sha256": "71a63211166b54729c5c106fc304797561d620d213d8da40b93a17edc4ea91d2",
       "mode": "0644"
     },
     "update_check/tests/test_branches.py": {
@@ -1823,7 +1823,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_i18n.py": {
-      "sha256": "7ec4cb338d24e2a902b46d1784ef758d864ca5ce0ba90864aee2ed242df5c4a2",
+      "sha256": "6bca054bdbd16188162039352b87039fcbdd6792ba9b95fefe68984a7ed7b2d4",
       "mode": "0644"
     },
     "update_check/tests/test_local_extensions.py": {

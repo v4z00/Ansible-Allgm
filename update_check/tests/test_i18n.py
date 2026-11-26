@@ -131,6 +131,24 @@ class CatalogTests(unittest.TestCase):
         self.assertNotIn("status_code", rows)
         i18n.configure(lang="de")
 
+    def test_transaction_keeps_output_and_errors_after_catalogs_disappear(self):
+        cached = (i18n.catalog, i18n.status_codes, i18n.shared_errors)
+        with tempfile.TemporaryDirectory() as tmp:
+            catalogs = Path(tmp) / "lib/i18n"
+            shutil.copytree(ROOT / "lib/i18n", catalogs)
+            for resource in cached:
+                resource.cache_clear()
+                self.addCleanup(resource.cache_clear)
+            self.addCleanup(i18n.configure, lang="de")
+            with patch.object(i18n, "CATALOGS", catalogs):
+                i18n.preload_for_update()
+                shutil.rmtree(catalogs)
+                for lang in ("de", "en"):
+                    i18n.configure(lang=lang)
+                    self.assertIn("backup", i18n.tr("update.roll_back", name="backup"))
+                    self.assertEqual(i18n.machine_report({"status": "FEHLT"})["status_code"], "missing")
+                self.assertEqual(i18n.error_text("Sicherung fehlt"), "Backup is missing")
+
     def test_shared_verifier_errors_preserve_details_in_both_languages(self):
         try:
             i18n.configure(lang="en")

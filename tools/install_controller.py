@@ -21,7 +21,7 @@ import github_https
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE / "update_check"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from controller_i18n import tr
+from controller_i18n import preload_for_update, tr
 from staging_manifest import public_library
 import controller_addons as addon
 import controller_transaction as transaction
@@ -422,13 +422,22 @@ def transaction_path(root, rel):
 
 
 def put_files(dest, pending, restore, validate=None):
+    preload_for_update()
     transaction.apply(dest, backup_home(dest, create=True), pending, restore,
                       transaction_path, validate)
 
 
 def recover_transaction(dest):
     if dest.is_dir():
-        transaction.recover(dest, backup_home(dest), transaction_path)
+        backups = backup_home(dest)
+        if (backups / ".transaction").is_dir():
+            # Recovery can also replace the active language files. A previous crash
+            # may already have removed one, so a missing catalog must not prevent recovery.
+            try:
+                preload_for_update()
+            except FileNotFoundError:
+                pass
+        transaction.recover(dest, backups, transaction_path)
 
 
 def installed_profile(dest):

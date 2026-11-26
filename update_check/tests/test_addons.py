@@ -478,3 +478,14 @@ class AddonTests(unittest.TestCase):
         self.assertEqual(old_preview["versions"], {"Allgm": (repo / "VERSION.txt").read_text().strip()})
         for path in stage_only:
             self.assertFalse((self.target / path).exists(), path)
+
+        # The verified new checkout can migrate the old controller without making its legacy
+        # checker load the new contract. Roll back with the now-installed new checker.
+        git(repo, "switch", "-q", "staging")
+        self.invoke([sys.executable, repo / "update_check/rollout.py", "--staging", "--apply", "--root", self.target])
+        self.assertTrue((self.target / "lib/i18n/status_codes.json").is_file())
+        backup = max((self.target / ".local/controller-updates").iterdir()).name
+        result = self.check("--lang=en", "--rollback", backup)
+        self.assertIn("Controller code restored", result)
+        self.assertFalse((self.target / "lib/i18n/status_codes.json").exists())
+        self.assertEqual(json.loads(self.check("--remote", "--json"))["versions"], old_preview["versions"])

@@ -165,6 +165,14 @@ def shared_errors(lang):
     return patterns
 
 
+def preload_for_update():
+    """Keep the running checker's output usable when a transaction replaces its files."""
+    status_codes()
+    for lang in LANGUAGES:
+        catalog(lang)
+        shared_errors(lang)
+
+
 def error_text(error):
     text = str(error)
     if text in status_codes():
