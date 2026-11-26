@@ -52,7 +52,7 @@
   no_log: true
 - name: Render private JSON settings from explicit host variables
   ansible.builtin.copy:
-    content: "{{ (lookup('ansible.builtin.file', item.source) | from_json) | combine(script_jobs_job_config.get(item.config_key, {}), recursive=True) | script_jobs_local_config | to_nice_json }}"
+    content: "{{ (lookup('ansible.builtin.file', item.source) | from_json) | combine(script_jobs_job_config.get(item.config_key, {}), recursive=True) | combine(script_jobs_profile_config.get(item.config_key, {}), recursive=True) | script_jobs_local_config | to_nice_json }}"
     dest: "{{ item.dest }}"
     mode: '0600'
     owner: "{{ item.owner }}"

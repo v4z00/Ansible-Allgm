@@ -92,7 +92,7 @@ Objektprofile mit `source`, `target` und `services` können zusätzlich private 
     "scripts/job_console.py"
   ],
   "source_hashes": {
-    "roles/script_jobs/defaults/main.yml": "d78878e22bb6c06993b645a8a692a4a1ecf03edbc9caea857df1d4f2c28088f6",
+    "roles/script_jobs/defaults/main.yml": "9114b80c2f6a2bfd0fac1ec801becd6c37ec537c586d7c986df004e2c93e20c5",
     "roles/script_jobs/tasks/main.yml": "38faf5577f57846d1cbc2773f7c16210270ef858382116bfc4787ed169dea324",
     "roles/script_jobs/filter_plugins/local_config.py": "a040e1923a3678db9b1df20c6bdc659490a8f94cc400f5f03cf83ce54f2969e5",
     "artifacts/script-library/bin/script-jobs": "77dd5d1c4a4dd0184fe01edfc9d3b1b4d9ec41ea5e5f0fd64ece86bc361933b4",

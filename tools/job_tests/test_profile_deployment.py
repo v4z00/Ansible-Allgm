@@ -155,6 +155,7 @@ class ProfileIntegration(unittest.TestCase):
                     'script_jobs_owner': who, 'script_jobs_group': team,
                     'script_jobs_systemd_unit_dir': str(root / 'units'), 'script_jobs_systemd_unit_owner': who, 'script_jobs_systemd_unit_group': team,
                     'script_jobs_job_config': {'fixture': {'API_TOKEN': 'synthetic-api', 'BOT_TOKEN': 'synthetic-do-not-copy'}},
+                    'script_jobs_profile_config': {'fixture': {'API_TOKEN': 'synthetic-profile-api'}},
                     'script_jobs_systemd_profiles': {'watcher': {'source': 'watcher', 'target': str(root / 'installed'), 'library': True,
                         'services': [{'unit': 'fixture.service', 'mode': 'active', 'exec_start': ['{target}/programs/watcher.sh'], 'wanted_by': ['multi-user.target']}]}},
                     'script_jobs_systemd_selected_profiles': ['watcher']}
@@ -174,7 +175,7 @@ class ProfileIntegration(unittest.TestCase):
             self.assertIn('ExecStart="' + str(root / 'installed/programs/watcher.sh') + '"', unit)
             self.assertEqual((root / 'installed/programs/watcher.sh').read_bytes(), program.read_bytes())
             rendered = json.loads((root / 'installed/settings.json').read_text())
-            self.assertEqual(rendered['API_TOKEN'], 'synthetic-api');self.assertEqual(rendered['BOT_TOKEN'], '')
+            self.assertEqual(rendered['API_TOKEN'], 'synthetic-profile-api');self.assertEqual(rendered['BOT_TOKEN'], '')
             self.assertEqual((root / 'installed/settings.json').stat().st_mode & 0o777, 0o600)
             self.assertTrue((root / 'installed/lib/common/hm_load_config.sh').is_file())
             self.assertFalse(marker.exists());self.assertIn('daemon-reload', log.read_text());self.assertNotIn(' start ', log.read_text())
