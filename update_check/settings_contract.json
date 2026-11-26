@@ -93,11 +93,6 @@
       "required": false
     },
     {
-      "key": "features.sss",
-      "type": "boolean",
-      "required": false
-    },
-    {
       "key": "site_id",
       "type": "string",
       "required": false

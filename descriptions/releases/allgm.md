@@ -1,5 +1,12 @@
 # Changelog
 
+## s0.5.0 – SSS als eigenes Git-Add-on
+
+Die Basis liefert den SSS-Notfallkoffer jetzt über das optionale Add-on.
+Bestehende Installationen mit aktivem SSS brauchen dessen Registrierung vor
+dem Wechsel. Der [Migrationsweg](../commands/update-check.md#sss-aus-einem-%C3%A4lteren-controller-%C3%BCbernehmen)
+erhält lokale Anpassungen und beschreibt die Rücknahme.
+
 ## s0.4.1 – Gemeinsame Updates für Profile und Add-ons
 
 Der Checker prüft registrierte Git-Add-ons zusammen mit der Basis und dem Standortprofil.

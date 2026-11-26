@@ -104,7 +104,12 @@ def managed_baseline(root):
         receipt = {rel: value for rel, value in data["files"].items()
                    if manifest.ship(rel) and manifest.allowed(rel)
                    and isinstance(value, str) and SHA.fullmatch(value)}
-        return data.get("profile"), data.get("source"), receipt
+        previous_branch = data.get("source")
+        if not previous_branch and data.get("schema") == 2:
+            installed_version = data["modules"]["Allgm"]["version"]
+            if install.STAGING_VERSION.fullmatch(installed_version):
+                previous_branch = "staging"
+        return data.get("profile"), previous_branch, receipt
     # Existing controllers with the previous checker already carry a verified code list.
     directory = root / "update_check"
     legacy = {}

@@ -136,11 +136,6 @@
         "playbooks/monitoring/deploy_telegraf.yml",
         "bin/control.d/telegraf.json"
       ]
-    },
-    "sss": {
-      "sources": [
-        "group_vars/all/settings.yml"
-      ]
     }
   }
 }

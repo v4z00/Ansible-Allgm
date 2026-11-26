@@ -35,7 +35,6 @@ features:
   kerberos: false
   kerberos_keytabs: false
   telegraf: false
-  sss: false
 system_timezone: Europe/Berlin
 chrony_ntp_servers:
 - pool.ntp.org

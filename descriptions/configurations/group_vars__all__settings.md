@@ -323,15 +323,6 @@ Vertrauliche Werte werden nicht dokumentiert.
       "default": false
     },
     {
-      "id": "features.sss",
-      "label": "features.sss",
-      "description": "Vorhandene Konfigurationsoption aus group_vars/all/settings.yml. Standortwerte bleiben lokal; kein automatisches Setzen.",
-      "type": "boolean",
-      "required": false,
-      "sensitive": false,
-      "default": false
-    },
-    {
       "id": "system_timezone",
       "label": "system_timezone",
       "description": "Vorhandene Konfigurationsoption aus group_vars/all/settings.yml. Standortwerte bleiben lokal; kein automatisches Setzen.",
@@ -1125,7 +1116,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "examples/settings/all_settings.example.yml"
   ],
   "source_hashes": {
-    "examples/settings/all_settings.example.yml": "6c08dd222fa9c8c19a0d75b747591fa83415e2161094098a430a16c4c0d51779"
+    "examples/settings/all_settings.example.yml": "421f1e9d44cb1694b849c8a5349266582115b00e7374455ad9a98423a8cec187"
   }
 }
 ```

@@ -39,6 +39,37 @@ Das zeigt die Vorschau. Für die Übernahme hänge beim letzten Python-Aufruf `-
 
 ## Lokale SHA-Prüfung
 
+### SSS aus einem älteren Controller übernehmen
+
+Vor dem ersten Wechsel die eigene `versions.txt` sichern. Wer SSS bereits
+nutzt, ergänzt den unten gezeigten Eintrag. Veränderte Dateien aus dem alten
+SSS-Verzeichnis werden als Konflikt gemeldet. Eigene Konfiguration zuerst nach
+der [SSS-Anleitung](https://github.com/v4z00/Ansible-SSS/blob/staging/README.de.md)
+privat übernehmen. Den SHA-Konflikt vor dem Update einzeln prüfen.
+
+Für den einmaligen Übergang von einem älteren Checker gibt es den
+Brückenstand `c7d2d7cbd881a7387d2fa424c10dfabc48a3fd41`. Er enthält noch
+die alten SSS-Dateien und kann das neue Add-on-Format prüfen. Auf einem
+Controller mit bestehender Python-Umgebung zeigt dieser Aufruf die Vorschau:
+
+```bash
+(
+  set -eu
+  umask 077
+  work=$(mktemp -d)
+  trap 'rm -rf -- "$work"' EXIT
+  git clone --quiet --branch staging https://github.com/v4z00/Ansible-Allgm.git "$work/base"
+  cd "$work/base"
+  git checkout --quiet --detach c7d2d7cbd881a7387d2fa424c10dfabc48a3fd41
+  /root/ansible/.venv/bin/python /root/ansible/update_check/staging_manifest.py verify Allgm HEAD
+  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --staging
+)
+```
+
+Nach erfolgreicher Vorschau für die Übernahme beim letzten Aufruf `--apply`
+ergänzen. Über die ausgegebene Sicherungskennung stellt `--rollback` auch
+die vorherige Quittung und die zuvor vorhandene `versions.txt` wieder her.
+
 ### Git-Add-ons
 
 Ein Controller kann ein Standortprofil und mehrere Git-Add-ons verwenden. Die
@@ -337,7 +368,7 @@ Der Checker meldet den Zusatznamen und prüft die Dateien auch beim Cronlauf. Fe
     "update_check/configure.py": "c6c675198f99121dbd1d6f550481b2a9190bdb25a4c19d5ec45e7da4fb1340d3",
     "update_check/probes.py": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
     "update_check/cleanup.py": "b075547b1bfbfc3483563c2d3e79ff5ec2a5b9901a879b352ed45635228b2a36",
-    "update_check/rollout.py": "2ffda33a8113c3dba79a008dfbe36fb93fbf969fe02bd2cbb5e11443e8194a2c",
+    "update_check/rollout.py": "78dc8a3bc49c0880581424890649c43506339e349840509107277116d13e938f",
     "tools/github_https.py": "4939726758123ce18c3558bd22a668052a0bb028b62a1c71534b92ccb89e5bd5",
     "tools/install_controller.py": "bd5054c2d0dd01364362366f8c3a2f76f8250ef83d37f044ca97ed44ee1ad89d"
   }

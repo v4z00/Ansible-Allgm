@@ -1,5 +1,0 @@
----
-treuhaender:
-  - {id: "person1", vorname: "Person", nachname: "1", master_id: 1, infra_id: 1}
-  - {id: "person2", vorname: "Person", nachname: "2", master_id: 2, infra_id: 2}
-  - {id: "person3", vorname: "Person", nachname: "3", master_id: 3, infra_id: 3}

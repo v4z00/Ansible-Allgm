@@ -465,6 +465,8 @@ class AddonTests(unittest.TestCase):
     def test_full_base_downgrade_then_run_previous_checker(self):
         self.load_full_snapshot("Allgm", destination="staging")
         self.install()
+        stage_only = {"tools/controller_addons.py", "tools/controller_transaction.py", "update_check/legacy_sss.json"}
+        self.assertTrue(stage_only <= json.loads(self.receipt.read_text())["files"].keys())
         repo = self.repos["Allgm"]
         self.load_full_snapshot("Allgm", ref=os.environ["CONTROLLER_TEST_PRE_ADDON_REF"])
         self.assertNotIn("addon_contract", json.loads((repo / "controller-base.json").read_text()))
@@ -472,3 +474,5 @@ class AddonTests(unittest.TestCase):
         self.assertEqual((self.target / "update_check/rollout.py").read_bytes(), (repo / "update_check/rollout.py").read_bytes())
         old_preview = json.loads(self.check("--remote", "--json"))
         self.assertEqual(old_preview["versions"], {"Allgm": (repo / "VERSION.txt").read_text().strip()})
+        for path in stage_only:
+            self.assertFalse((self.target / path).exists(), path)

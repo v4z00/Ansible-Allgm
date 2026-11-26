@@ -127,13 +127,6 @@
       "example_only": false,
       "default": false
     },
-    "features.sss": {
-      "description": "Funktionsschalter fuer sss. Nur aktivieren, wenn dieses Modul eingerichtet werden soll.",
-      "source": "examples/settings/all_settings.example.yml",
-      "example": false,
-      "example_only": false,
-      "default": false
-    },
     "site_id": {
       "description": "Konfigurationswert site_id fuer die bestehende Rolle; Bedeutung und Typ anhand des zugeordneten Beispiels pruefen.",
       "source": "examples/settings/all_settings.example.yml",
