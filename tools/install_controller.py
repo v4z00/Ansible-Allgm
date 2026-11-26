@@ -428,7 +428,7 @@ def put_files(dest, pending, restore, validate=None):
                       transaction_path, validate)
 
 
-def restore_capability(root, original_tree, changed, prior_hash):
+def restore_capability(root, original_tree, changed, prior_hash, prior_receipt_hash=None):
     """Read the pre-update descriptor from a verified backup, or the unchanged live receipt."""
     rel = "controller-base.json"
     if changed:
@@ -437,12 +437,35 @@ def restore_capability(root, original_tree, changed, prior_hash):
         source = require_safe(original_tree, rel, file_required=True)
     else:
         source = require_safe(root, rel)
-        current = addon.receipt(root / RECEIPT)
-        prior_hash = current.get("files", {}).get(rel)
+        receipt = transaction_path(root, RECEIPT)
+        if prior_receipt_hash is not None:
+            # A partially applied transaction can already have replaced the live receipt.
+            receipt = transaction_path(original_tree, RECEIPT)
+            require(receipt.is_file() and sha(receipt) == prior_receipt_hash, tr("extension.unverified_target"))
+        prior_hash = addon.receipt(receipt).get("files", {}).get(rel)
         if prior_hash is None and not source.exists():
             return {}
     require(prior_hash and sha(source) == prior_hash, tr("extension.unverified_target"))
     return read_json(source)
+
+
+def check_local_restore(report, metadata, changes, *, recovering=False):
+    restored = {rel for rel, row in changes.items() if row["before"] is not None}
+    conflicts = [row["path"] for row in report["files"]
+                 if row["status"] in ("OK", "BASIS_KONFLIKT")
+                 and local_extensions.overlaps_managed(restored, row["path"])]
+    require(not conflicts, tr("extension.prospective_conflict", paths=", ".join(conflicts)))
+    if recovering and report["status"] == "PRUEFBEDARF":
+        # A half-applied write may itself be shadowing an approved local file.
+        # Only the verified journal undoing that write may bypass this transient overlap.
+        removed = set(changes) - restored
+        issues = [row for row in report["files"] if row["status"] not in ("OK", "ARCHIVIERT")]
+        if issues and all(row["status"] == "BASIS_KONFLIKT"
+                          and row["approved_sha256"] == row["measured_sha256"]
+                          and local_extensions.overlaps_managed(removed, row["path"]) for row in issues):
+            status = local_extensions.MIGRATION_REQUIRED if report["schema"] == 1 else "OK"
+            report = {**report, "status": status, "integrity_status": "OK"}
+    local_extensions.require_compatible(report, metadata, rollback=True)
 
 
 def recover_transaction(dest, local=None):
@@ -457,9 +480,27 @@ def recover_transaction(dest, local=None):
             entries = journal["files"]
             rel = "controller-base.json"
             before = entries[rel]["before"] if rel in entries else None
-            metadata = restore_capability(dest, interrupted / "original", rel in entries, before[0] if before else None)
-            local_extensions.require_compatible(report, metadata, rollback=True)
+            prior_receipt = entries.get(RECEIPT, {}).get("before")
+            metadata = restore_capability(dest, interrupted / "original", rel in entries,
+                                          before[0] if before else None, prior_receipt[0] if prior_receipt else None)
+            check_local_restore(report, metadata, entries, recovering=True)
+    if interrupted.exists() or interrupted.is_symlink():
+        # Recovery can itself replace or remove the active translation catalogs.
+        preload_for_update()
     transaction.recover(dest, backups, transaction_path)
+
+
+def inspect_before_change(dest, *, write, rollback=False):
+    """Never recover code automatically while an installed schema 1 register awaits migration."""
+    report = local_extensions.inspect(dest)
+    journal = backup_home(dest) / ".transaction"
+    if not journal.exists() and not journal.is_symlink():
+        return report
+    if report.get("schema") == 1 and not rollback:
+        return report
+    require(write, tr("update.interrupted"))
+    recover_transaction(dest, report)
+    return local_extensions.inspect(dest)
 
 
 def installed_profile(dest):
@@ -566,8 +607,9 @@ def rollback_controller(dest, name, local=None):
     if report["status"] != "NICHT_EINGERICHTET":
         rel = "controller-base.json"
         changes = plan["files"]
-        metadata = restore_capability(dest, backup, rel in changes, changes.get(rel, {}).get("before"))
-        local_extensions.require_compatible(report, metadata, rollback=True)
+        metadata = restore_capability(dest, backup, rel in changes, changes.get(rel, {}).get("before"),
+                                      plan["previous_receipt"])
+        check_local_restore(report, metadata, changes)
     with tempfile.TemporaryDirectory(dir=backups, prefix=".restore-") as tmp:
         work = Path(tmp)
         saved, revert = work / "saved", work / "revert"
@@ -638,14 +680,10 @@ def main():
             if handle is not None:
                 fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
             scratch = Path(tmp)
-            local = None if args.export_code else local_extensions.inspect(target)
+            local = None if args.export_code else inspect_before_change(
+                target, write=not args.update or bool(args.apply), rollback=bool(args.rollback))
             if local and not args.rollback:
                 require(local_extensions.passed(local), local.get("migration_command") or tr("package.local_digest"))
-            if args.update and not args.apply:
-                require(not (backup_home(target) / ".transaction").exists(),
-                        "Interrupted controller transaction: use update-check --apply for recovery")
-            elif not args.export_code:
-                recover_transaction(target, local)
             if args.rollback:
                 rollback_controller(target, args.rollback, local)
                 return 0
@@ -670,6 +708,8 @@ def main():
                 _, _, baseline = rollout.managed_baseline(target)
                 conflicts, retired = inspect_addon_install(target, BASE, files, layout, previous, baseline)
                 require(not conflicts, "Add-on migration blocked: " + ", ".join(conflicts))
+                local_conflicts = local_extensions.prospective_conflicts(files, local["files"])
+                require(not local_conflicts, tr("extension.prospective_conflict", paths=", ".join(local_conflicts)))
                 if addons:
                     variables, registry, overlaps = rollout.guards(target, files, scratch, local["files"])
                     require(not (variables or registry or overlaps), "Prospective module validation failed")

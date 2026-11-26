@@ -148,8 +148,7 @@ def guards(root, combined, temporary, local_files=()):
     issues.extend({k: row[k] for k in ("key", "path", "status") if k in row} for row in variables["errors"])
     release = check.load_json(here / "release.json")
     registry_issues = check.check_registry(stage, release.get("feature_defaults"), settings_root=root)["issues"]
-    local_conflicts = [row["path"] for row in local_files if row["status"] == "OK"
-                       and local_extensions.overlaps_base(stage, row["path"])]
+    local_conflicts = local_extensions.prospective_conflicts(combined, local_files)
     return issues, registry_issues, local_conflicts
 
 
@@ -285,7 +284,8 @@ def main(argv=None):
         fd = os.open(lock, os.O_CREAT | os.O_NOFOLLOW | os.O_RDWR, 0o600)
         with os.fdopen(fd, "r+"):
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            local = local_extensions.inspect(root)
+            local = install.inspect_before_change(root, write=bool(args.apply or args.auto or args.rollback),
+                                                  rollback=bool(args.rollback))
             if not args.json:
                 local_extensions.display(local)
             rollback_legacy = args.rollback and local["status"] == local_extensions.MIGRATION_REQUIRED
@@ -295,10 +295,6 @@ def main(argv=None):
                 else:
                     print(tr("update.local_block", branch=branch))
                 return 1
-            if args.apply or args.auto or args.rollback:
-                install.recover_transaction(root, local)
-            elif (install.backup_home(root) / ".transaction").exists():
-                raise ValueError(tr("update.interrupted"))
             if args.rollback:
                 install.rollback_controller(root, args.rollback, local)
                 return 0

@@ -135,6 +135,26 @@ def archive_proof(root, name, entry):
     return proof
 
 
+def overlaps_managed(paths, local_name):
+    """Compare the candidate's code paths without opening any site files."""
+    local = tuple(local_name.casefold().split("/"))
+    reserved = [local]
+    if "roles" in local[:-1]:
+        reserved.append(("roles", local[local.index("roles") + 1]))
+    for path in paths:
+        candidate = tuple(path.casefold().split("/"))
+        for name in reserved:
+            common = min(len(name), len(candidate))
+            if name[:common] == candidate[:common]:
+                return True
+    return False
+
+
+def prospective_conflicts(paths, local_files):
+    return [row["path"] for row in local_files if row["status"] == "OK"
+            and overlaps_managed(paths, row["path"])]
+
+
 def overlaps_base(controller, name):
     parts = Path(name).parts
     if "roles" in parts[:-1]:

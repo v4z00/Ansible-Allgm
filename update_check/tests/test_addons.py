@@ -323,8 +323,8 @@ class AddonTests(unittest.TestCase):
         local = self.target.with_name(self.target.name + "-local")
         pin = "b" * 32
         write(self.target, ".local/local-extension-id", pin + "\n")
-        name = "scripts/local-task.sh"
-        file = write(local, "code/" + name, "#!/bin/sh\n# manuell-integriert: ja\n# bereinigung: behalten\n")
+        name = "roles/site_task/tasks/main.yml"
+        file = write(local, "code/" + name, "---\n# manuell-integriert: ja\n# bereinigung: behalten\n[]\n")
         write(local, "register.json", {"schema": 1, "id": pin,
               "files": {name: {"sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "cleanup": "behalten"}}})
         before = snapshot(self.target), snapshot(local)
@@ -337,6 +337,11 @@ class AddonTests(unittest.TestCase):
         self.invoke([*migrator, "--apply"])
         self.invoke([*cmd, "--update"])
         after = snapshot(self.target), snapshot(local)
+        for rel in (name, "roles/site_task/defaults/main.yml"):
+            candidate = write(repo, rel, "---\n{}\n")
+            self.invoke([*cmd, "--update"], success=False)
+            self.assertEqual((snapshot(self.target), snapshot(local)), after)
+            candidate.unlink()
         meta = json.loads((repo / "controller-base.json").read_text())
         meta.pop("local_extension_schema")
         write(repo, "controller-base.json", meta)
