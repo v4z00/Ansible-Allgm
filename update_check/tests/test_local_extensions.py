@@ -64,6 +64,18 @@ class LocalExtensionsTest(unittest.TestCase):
         self.root.rename(self.root.with_suffix(".missing"))
         self.assertFalse(ext.passed(ext.inspect(self.controller)))
 
+    def test_installed_internal_register_is_checked_and_can_receive_updates(self):
+        self.install()
+        internal = self.controller / ".local/extensions"
+        self.root.rename(internal)
+        self.root = internal
+        self.assertEqual(ext.inspect(self.controller)["status"], "OK")
+        self.source.write_text(self.source.read_text() + "# reviewed update\n")
+        self.approve()
+        self.install()
+        self.assertEqual((internal / 'code' / self.name).read_bytes(), self.source.read_bytes())
+        self.assertEqual(ext.inspect(self.controller)["status"], "OK")
+
     def test_archive_requires_run_and_no_caller_and_preserves_both_hashes(self):
         self.install()
         sha = ext.sha(self.source)

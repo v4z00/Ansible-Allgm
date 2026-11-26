@@ -1,5 +1,14 @@
 # Changelog
 
+## s0.8.7 – Lokales Zusatzregister im Controllerzustand
+
+Prüfer 1.5.4 erkennt auf ausdrückliche Einrichtung auch `.local/extensions`
+innerhalb des Controllers. Der bisherige Nachbarordner bleibt unterstützt.
+Schemawechsel, Rücknahme und weitere lokale Paketupdates funktionieren mit beiden
+Ablagen; zwei gleichzeitige Register blockieren. Dateiinhalte und Freigabe-SHA
+bleiben erhalten. Kein automatisches Verschieben beim Update. Für ältere Prüfer
+den Registerordner vor dem Code-Rollback an den Nachbarpfad zurücklegen.
+
 ## s0.8.6 – Private Dienstordner und Units per Profil
 
 Jobmodul 0.5.0 ergänzt explizite Quell-/Zielordner mit erhaltenen relativen Pfaden.

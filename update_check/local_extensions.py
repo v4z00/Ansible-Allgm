@@ -108,7 +108,12 @@ def read_json(path):
 
 
 def location(controller):
-    return controller.with_name(controller.name + "-local")
+    legacy = controller.with_name(controller.name + "-local")
+    internal = controller / ".local/extensions"
+    if internal.exists() or internal.is_symlink():
+        require(not legacy.exists() and not legacy.is_symlink(), tr("extension.ambiguous_location"))
+        return internal
+    return legacy
 
 
 def marker(controller):

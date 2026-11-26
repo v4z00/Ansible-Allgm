@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "c074d5425fe451c07dbf79321a1710141d34c6e74780231b899ec1d620d04a19",
+      "sha256": "02939ea165d14df175ec4d4212b9937ec97bd5d4d79133a013a0ced33cc17aa6",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -779,7 +779,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "dfc803b457c642d3c0d7f3d4417b26d4df27af9f84b99f44d9f8f6f60b88749d",
+      "sha256": "23ed8534e6144ac8e5ea8c97f0445003fd194a9ac7da557ba9cb31d28b8a9628",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -1027,7 +1027,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "cc11475a5ae0feb9e7db7067754c241b4d31ba0a58151076440fac7dca97ed1a",
+      "sha256": "aa18d8b6714a835ea5e4b87024d7c8ffd30bf3c228f69db8148b3b318905b10b",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1131,7 +1131,7 @@
       "mode": "0644"
     },
     "lib/i18n/de/local_register.json": {
-      "sha256": "8c76a5c9c21a298feb18caad4b4559590743fffa1761b93c0c3772bf786faef3",
+      "sha256": "3ac8ec5afcbcc0f0c7d8bac37f07ad19304961ca33d4bb19312f57f59adf2e05",
       "mode": "0644"
     },
     "lib/i18n/de/migration.json": {
@@ -1151,7 +1151,7 @@
       "mode": "0644"
     },
     "lib/i18n/en/local_register.json": {
-      "sha256": "8a8441e81fca6bdc6377f521695af1ce14c1d7386319e7fe8faeeb78b6a187ca",
+      "sha256": "58dcd206e6ec7fbf99e656005538997325988e2c10d80713db1be6bb6f193692",
       "mode": "0644"
     },
     "lib/i18n/en/migration.json": {
@@ -1775,7 +1775,7 @@
       "mode": "0644"
     },
     "tools/migrate_local_extensions.py": {
-      "sha256": "a5b0677dc5e848b81ccee92b33703f1130764a12259b0391d87acbc7e9957799",
+      "sha256": "7043675fffecee75166ef62bebe1859a90b27e5ebca38ee4bd6d085003ea43ba",
       "mode": "0755"
     },
     "tools/pipe_install.py": {
@@ -1791,7 +1791,7 @@
       "mode": "0644"
     },
     "update_check/VERSION.txt": {
-      "sha256": "c03e3824001f39b9518249b8d6522422fc4de7227e12a568c0164662b03b7758",
+      "sha256": "879a67a197446479e783c8e22a58681fed324f09eac1ce808f6a5a4c5e1894ad",
       "mode": "0644"
     },
     "update_check/check.py": {
@@ -1815,7 +1815,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "736f26b22b499afed831aabc4dd81e88b288bac964fc51aa4105e672dfb32d34",
+      "sha256": "85890b8b01fff4a704e39a46bdbdb27fe2db96a9d570a77cf586a68162cd92aa",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1823,7 +1823,7 @@
       "mode": "0644"
     },
     "update_check/local_extensions.py": {
-      "sha256": "ce0b1f1074d17daedf552f7c85aaf84bec8829ddbff25183b34152c243e118f7",
+      "sha256": "75691caa93298ec88638e50fe181ab7fc15df869177f1483efa634f164382e20",
       "mode": "0644"
     },
     "update_check/manifests/bootstrap.json": {
@@ -1831,7 +1831,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "f5804b9223188454ae0709543bb287c0ffbe7669aa1b191bc180c85a4b0b9a7e",
+      "sha256": "27cce727385cc12afe395beb673d61a654872dca46f58489e79f6fbbd57a1e8a",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1847,7 +1847,7 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "16a5816d085f357d5f4bbcd8f630df6b2f111495a49dcd753d66b80032e92a31",
+      "sha256": "d8b4e4fe36ee5ba6bb3a745ed922ca03d7f4e9fb645937aab3cd3acc8a034d47",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1859,7 +1859,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "899f9c3aeba2c31aebeb3fde3efa40d98fd7f16ed1b81ae7b184ba797539cbf6",
+      "sha256": "36d672ea7f253b66e44664006abd1868e1de7dc3687b43674dfa85c2f4fcc2cc",
       "mode": "0644"
     },
     "update_check/rollout.py": {
@@ -1939,7 +1939,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_local_extensions.py": {
-      "sha256": "4831b205e17a16afa1af55c7831edb770e97a331e057974c4dfbdfdc106e86e5",
+      "sha256": "d9f1ae654cdb92a625ce4058b646a9f12765ad1760f66a96c14ff953371c115a",
       "mode": "0644"
     },
     "update_check/tests/test_local_restore_paths.py": {
@@ -1947,7 +1947,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_migrate_local_extensions.py": {
-      "sha256": "a05c8611cb5416387456b53797297d5d5e249b1eba547e62868292536870aa01",
+      "sha256": "a512820243119fb07bb0323598cf596ab2c993c9b8f63d2e78f523627129c280",
       "mode": "0644"
     },
     "update_check/tests/test_pipe_install.py": {

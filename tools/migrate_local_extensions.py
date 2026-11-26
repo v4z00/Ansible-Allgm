@@ -171,7 +171,8 @@ def run(controller, *, apply=False, rollback=None):
         scope.enter_context(locked(parent, "." + controller.name + ".controller-lock", not (apply or rollback)))
         project = scope.enter_context(directory(parent, controller.name))
         state = scope.enter_context(directory(project, ".local"))
-        folder = scope.enter_context(directory(parent, local.name))
+        local_parent = state if local.parent == controller / ".local" else parent
+        folder = scope.enter_context(directory(local_parent, local.name))
         raw_id, _ = read_file(state, "local-extension-id")
         try:
             identifier = raw_id.decode("ascii").strip()

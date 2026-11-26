@@ -6,5 +6,6 @@
   "status.MIGRATION_REQUIRED": "Local register migration required",
   "status.POLICY_MISMATCH": "Cleanup declaration differs from the register",
   "extension.unverified_target": "The target controller descriptor does not match its verified pre-update digest.",
-  "extension.prospective_conflict": "Managed paths in the selected release collide with local extensions: {paths}"
+  "extension.prospective_conflict": "Managed paths in the selected release collide with local extensions: {paths}",
+  "extension.ambiguous_location": "Two local extension registers exist. Use exactly one location; neither was selected automatically."
 }
