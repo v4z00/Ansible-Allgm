@@ -15,4 +15,15 @@ def local_job_config(values):
 
 class FilterModule:
     def filters(self):
-        return {'script_jobs_local_config': local_job_config}
+        return {'script_jobs_local_config': local_job_config,
+                'script_jobs_systemd_config': systemd_config}
+
+
+def systemd_config(profiles, selected):
+    import importlib.util
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[3] / 'artifacts/script-library/lib/python/job_store.py'
+    spec = importlib.util.spec_from_file_location('script_jobs_systemd_validator', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.Systemd.resolve_profiles(profiles, selected)

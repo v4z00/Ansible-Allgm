@@ -82,6 +82,19 @@ class Discovery(unittest.TestCase):
         self.assertNotIn('BOT_TOKEN', run.call_args.kwargs['env'])
         self.assertTrue(run.call_args.kwargs['capture_output'])
 
+    def test_uninstantiated_templates_are_listed_without_invalid_status_queries(self):
+        def command(args):
+            if 'list-unit-files' in args:
+                return 0, 'example@.service disabled\n' if '--type=service' in args else ''
+            if 'list-units' in args:return 0, ''
+            self.fail('No systemctl show for a template without an instance')
+        output=io.StringIO()
+        with patch.dict(self.namespace,command=command),patch.object(sys,'argv',['reader','[]']),patch('pwd.getpwall',return_value=[]),contextlib.redirect_stdout(output):
+            self.assertEqual(self.namespace['main'](),0)
+        result=json.loads(output.getvalue())
+        self.assertTrue(result['complete'])
+        self.assertEqual(result['uninstantiated_templates'][0]['unit'],'example@.service')
+
 
 @unittest.skipUnless(os.environ.get('ANSIBLE_JOBS_INTEGRATION') == '1', 'explicit local Ansible integration')
 class CollectorIntegration(unittest.TestCase):

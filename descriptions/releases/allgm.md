@@ -1,5 +1,18 @@
 # Changelog
 
+## s0.8.5 – Systemd-Statusprofile im Skript-Deployment
+
+Bestehende Dienste lassen sich ueber zentrale Profile und eine ausdrueckliche
+Hostauswahl in lokale SQLite und die zentrale Summary einbinden. Das bestehende
+Skript-Deployment verteilt die feste Statuskonfiguration; Zuordnungen werden
+nicht aus Skript- oder Unitdateien erraten. Units, MainPID, Starts und Cron bleiben
+bei dieser Statusanbindung unveraendert. Dauerlaeufer, Oneshots und optionale
+Dienste werden getrennt bewertet; es handelt sich um Momentaufnahmen.
+
+Fuer die Nutzung erst Library und ausgewaehlte Profile bereitstellen. Ohne
+Profilauswahl bleibt das bisherige Verhalten erhalten. Bestandsabfrage 0.1.1
+behandelt uninstanziierte Vorlagen separat statt als fehlgeschlagene Units.
+
 ## s0.8.4 – Custom-systemd-Bestand ohne Secret-Export
 
 Ein eigenständiger lesender Ansible-Sammler findet Custom-/Skriptservices und

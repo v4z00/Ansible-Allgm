@@ -86,11 +86,14 @@ def main():
   for line in text.splitlines():
    fields=line.lstrip('● ').split()
    if fields and UNIT.fullmatch(fields[0]):names.add(fields[0])
- services={};timers={};total=len(names)
+ services={};timers={};templates=[];total=len(names)
  for name in sorted(names):
   if len(services)+len(timers)>4096 or time.monotonic()-started>120:
    errors.append('query-budget-exceeded');break
   if DENIED.search(name):continue
+  if '@.' in name:
+   templates.append({'unit':name,'local_definition':os.path.lexists('/etc/systemd/system/'+name)})
+   continue
   data=properties(name)
   if data is None:errors.append('unit-query-failed:'+name);continue
   fragment=data.get('FragmentPath','');drops=data.get('DropInPaths','').split()
@@ -113,12 +116,15 @@ def main():
  homes={Path(p.pw_dir) for p in pwd.getpwall() if p.pw_dir.startswith('/')}
  directories=[Path('/etc/systemd/user')]+[home/'.config/systemd/user' for home in homes]
  for directory in directories:
-  if directory.is_dir():
-   for path in sorted(directory.glob('*')):
-    if path.suffix in ('.service','.timer') and not DENIED.search(path.name):user_units.append(str(path))
+  try:
+   if directory.is_dir():
+    for path in sorted(directory.glob('*')):
+     if path.suffix in ('.service','.timer') and not DENIED.search(path.name):user_units.append(str(path))
+  except OSError:errors.append('user-unit-directory-inaccessible')
  result={'schema':1,'created_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
          'scope':'system-manager','complete':not errors,'installed_or_loaded_units':total,
          'services':list(services.values()),'timers':selected,'errors':errors,
+         'uninstantiated_templates':templates,
          'user_unit_files_require_review':user_units,
          'privacy':'no script/config contents, environment values, credentials or command arguments exported',
          'limitations':['User-manager units require separate review; filenames only.',
@@ -173,7 +179,7 @@ PLAY = '''---
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--version', action='version', version='GET_SYSTEMD_SCRIPTS 0.1.0')
+    parser.add_argument('--version', action='version', version='GET_SYSTEMD_SCRIPTS 0.1.1')
     parser.add_argument('--project', type=Path, default=Path('/root/ansible'))
     parser.add_argument('--inventory')
     parser.add_argument('--limit', required=True)

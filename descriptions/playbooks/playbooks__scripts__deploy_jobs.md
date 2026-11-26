@@ -15,7 +15,7 @@ Aufruf: `ansible-playbook playbooks/scripts/deploy_jobs.yml`. Voraussetzungen un
     "playbooks/scripts/deploy_jobs.yml"
   ],
   "source_hashes": {
-    "playbooks/scripts/deploy_jobs.yml": "63bf749c89e095234580eb665d29d690b6a4a46da4d64316670ef0c4d640864c"
+    "playbooks/scripts/deploy_jobs.yml": "2130e09fdf591f239dce5959d61e3f3a5642625dc93e61f0f94e7b0738c5da1c"
   },
   "i18n": {
     "de": {

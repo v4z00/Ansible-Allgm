@@ -23,6 +23,9 @@ hm_job_item 101 success 'Synthetic item'
     manifest.append({'path':name,'kind':'config' if name.endswith('.json') else 'script','sha256':hashlib.sha256(p.read_bytes()).hexdigest()})
    (source/'deployment.json').write_text(json.dumps({'files':manifest}))
    inventory={'all':{'children':{'all_linux_systems':{'hosts':{'fixture':{'ansible_connection':'local','ansible_become':False,'ansible_python_interpreter':sys.executable,'script_jobs_python':sys.executable,'script_jobs_source_root':str(d/'source'),'script_jobs_target_root':str(target),'script_library_root':str(target),'script_jobs_database_path':str(db),'script_jobs_owner':pwd.getpwuid(os.getuid()).pw_name,'script_jobs_group':grp.getgrgid(os.getgid()).gr_name}}}}}}
+   hostvars=inventory['all']['children']['all_linux_systems']['hosts']['fixture']
+   hostvars['script_jobs_systemd_profiles']={'watcher':[{'unit':'fixture.service','mode':'active'}]}
+   hostvars['script_jobs_systemd_selected_profiles']=['watcher']
    (d/'inventory.json').write_text(json.dumps(inventory));(d/'ansible.cfg').write_text('[defaults]\ninventory='+str(d/'inventory.json')+'\nlocal_tmp='+str(d/'local-tmp')+'\nremote_tmp='+str(d/'remote-tmp')+'\nroles_path='+str(ROOT/'roles')+'\n')
    env=dict(os.environ,ANSIBLE_CONFIG=str(d/'ansible.cfg'),SCRIPT_JOBS_CALLBACK='0')
    command=['ansible-playbook',str(ROOT/'playbooks/scripts/deploy_jobs.yml'),'-l','fixture']
@@ -31,6 +34,13 @@ hm_job_item 101 success 'Synthetic item'
    self.assertFalse((d/'executed').exists());self.assertFalse((d/'executed-template').exists())
    rendered=json.loads((target/'config/demo.json').read_text());self.assertEqual(rendered['BOT_TOKEN'],'');self.assertEqual(rendered['EMAIL'],'');self.assertEqual(rendered['PBS_SECRET'],'synthetic-backup-secret')
    self.assertTrue((target/'bin/job-status').stat().st_mode&0o100)
+   systemd_config=db.parent/'systemd.json'
+   self.assertEqual(json.loads(systemd_config.read_text()),[{'unit':'fixture.service','mode':'active','name':'systemd:fixture'}])
+   self.assertEqual(systemd_config.stat().st_mode&0o777,0o600)
+   # This deploy test never queries the machine's real systemd manager.
+   # A separate isolated integration below uses a fake status transport.
+   hostvars['script_jobs_systemd_selected_profiles']=[]
+   (d/'inventory.json').write_text(json.dumps(inventory))
    run=subprocess.run(['bash',str(target/'demo.sh')],capture_output=True,text=True);self.assertEqual(run.returncode,0,run.stderr)
    status_env=dict(env,ANSIBLE_CALLBACK_PLUGINS=str(ROOT/'tools/callbacks'),ANSIBLE_CALLBACKS_ENABLED='script_job_results',SCRIPT_JOBS_CALLBACK='1',SCRIPT_JOBS_CONTROLLER_DB=str(d/'recursive.db'))
    last=subprocess.run(['ansible-playbook',str(ROOT/'playbooks/scripts/show_status.yml'),'--limit','fixture'],env=status_env,capture_output=True,text=True)

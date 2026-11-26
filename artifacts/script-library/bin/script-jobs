@@ -152,6 +152,9 @@ def main():
     s=sub.add_parser('runs');s.add_argument('--job');s.add_argument('--status');s.add_argument('--category');s.add_argument('--limit',type=int,default=100)
     s=sub.add_parser('latest');s.add_argument('--job');s.add_argument('--category');s.add_argument('--source');s.add_argument('--json',action='store_true');s.add_argument('--config',action='append',default=[]);s.add_argument('--db',dest='latest_db')
     s=sub.add_parser('details');s.add_argument('--run',required=True)
+    for command in ('systemd-status','systemd-record'):
+        s=sub.add_parser(command);s.add_argument('--config',required=True)
+        if command=='systemd-record':s.add_argument('--sample',required=True);s.add_argument('--expect-profiles')
     for command in ('export','watch'):
         s=sub.add_parser(command);s.add_argument('--after',type=int,default=0);s.add_argument('--epoch');s.add_argument('--limit',type=int,default=200)
         if command=='watch':s.add_argument('--seconds',type=float,default=30);s.add_argument('--poll',type=float,default=1)
@@ -162,6 +165,9 @@ def main():
     s=sub.add_parser('prune');s.add_argument('--days',type=int,default=90)
     s=sub.add_parser('report');s.add_argument('--category',choices=['general','vzdump'],default='general');s.add_argument('--run');s.add_argument('--preview',action='store_true');s.add_argument('--config',action='append',default=[])
     a=p.parse_args()
+    if a.command=='systemd-status':
+        from job_store import Systemd
+        print(json.dumps(Systemd.observe(Systemd.load(a.config)),ensure_ascii=False));return 0
     if a.command=='run' and a.arguments[:1]==['--']:a.arguments=a.arguments[1:]
     if a.command=='run' and a.arguments==['--check-config']:
         # A validation request is never recorded as an actual backup run.
@@ -172,7 +178,7 @@ def main():
     elif a.command=='latest':
         if a.latest_db:a.db=a.latest_db
         elif a.config:a.db=config(a.config).get('JOB_DATABASE_PATH',a.db)
-    if a.command in ('runs','latest','details','export','watch','cursor') and not Path(a.db).exists():
+    if a.command in ('runs','latest','details','export','watch','cursor','systemd-record') and not Path(a.db).exists():
         print(json.dumps({'status':'not_attached','schema':1}));return 3
     store=Store(a.db)
     try:
@@ -189,6 +195,14 @@ def main():
         elif a.command in ('event','item','finish'):
             store.update(a.run,a.status,a.message,item=getattr(a,'item',None),exit_code=getattr(a,'exit_code',None));result={'ok':True}
         elif a.command=='runs':result=store.runs(a.job,a.status,a.category,a.limit)
+        elif a.command=='systemd-record':
+            from job_store import Systemd
+            bindings=Systemd.load(a.config)
+            if a.expect_profiles is not None:
+                expected=json.loads(a.expect_profiles)
+                if bindings!=Systemd.resolve_profiles(expected['profiles'],expected['selected']):
+                    raise ValueError('Deployed systemd profile selection differs from inventory')
+            result=Systemd.record(store,bindings,a.sample)
         elif a.command=='latest':
             result=store.latest(a.job,a.category,a.source)
             if not a.json:

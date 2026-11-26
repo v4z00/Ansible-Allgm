@@ -8,3 +8,5 @@ script_jobs_common_config: "{{ script_library_common_config | default({}) }}"
 script_jobs_job_config: "{{ script_library_job_config | default({}) }}"
 script_jobs_sets: {}
 script_jobs_selected_sets: []
+script_jobs_systemd_profiles: {}
+script_jobs_systemd_selected_profiles: []
