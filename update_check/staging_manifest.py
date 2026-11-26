@@ -4,10 +4,13 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
+import stat
 import subprocess
 import sys
+import tempfile
 
 MANIFEST = "SHA256SUMS.json"
 CODE_DIRS = {"bin", "config", "descriptions", "lib", "playbooks", "roles",
@@ -200,21 +203,44 @@ def verify_addon(root, name, ref="HEAD"):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("action", choices=("index", "verify"))
+    ap.add_argument("action", choices=("index", "verify", "addon-index", "addon-verify"))
     ap.add_argument("profile", type=profile_name)
     ap.add_argument("ref", nargs="?", default="HEAD")
     args = ap.parse_args()
     root = Path(git(Path.cwd(), "rev-parse", "--show-toplevel").decode().strip())
     try:
-        if args.action == "index":
-            data = create(root, args.profile, ":index")
+        if args.action in ("index", "addon-index"):
+            build = create_addon if args.action == "addon-index" else create
+            data = build(root, args.profile, ":index")
             target = root / MANIFEST
-            if target.is_symlink():
-                raise ValueError("Manifest ist ein Link")
-            target.write_text(json.dumps(data, indent=2) + "\n")
+            mode = 0o600
+            try:
+                info = target.lstat()
+            except FileNotFoundError:
+                pass
+            else:
+                if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                    raise ValueError("Manifest must be a regular file with a single link.")
+                mode = stat.S_IMODE(info.st_mode) & 0o666
+            with tempfile.NamedTemporaryFile(dir=root, delete=False) as stream:
+                temporary = Path(stream.name)
+                try:
+                    os.fchmod(stream.fileno(), mode)
+                    stream.write((json.dumps(data, indent=2) + "\n").encode())
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                    os.replace(temporary, target)
+                finally:
+                    temporary.unlink(missing_ok=True)
+            directory = os.open(root, os.O_RDONLY | os.O_DIRECTORY)
+            try:
+                os.fsync(directory)
+            finally:
+                os.close(directory)
             git(root, "add", "--", MANIFEST)
         else:
-            verify(root, args.profile, args.ref)
+            verifier = verify_addon if args.action == "addon-verify" else verify
+            verifier(root, args.profile, args.ref)
     except (ValueError, OSError, subprocess.CalledProcessError) as error:
         print(error, file=sys.stderr)
         return 2

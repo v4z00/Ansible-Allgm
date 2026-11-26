@@ -1,17 +1,17 @@
 {
   "schema": 1,
   "id": "version_pruefer",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "scope": "Lokaler Versionspruefer",
   "version_files": [
     "update_check/VERSION.txt"
   ],
   "files": {
-    "update_check/check.py": "619c886418e143eacada0b131dec93ab809fdc905c85b54592feb3bdbb35cb95",
+    "update_check/check.py": "fa3f301abc314f1ed83f3019cc27848e81eaf8648c591e80cb255f02965bbfab",
     "update_check/check.sh": "7a70c071c39ed3ec710c0b37af0bc438f8a0296f1e0eb7fb966a42e63e4c9d85",
     "update_check/configure.py": "2c7e913b78c703326eb4116bbb2f6a3ea7402903357eb12ba977bb988e2e22b7",
     "update_check/probes.py": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
-    "update_check/VERSION.txt": "dfe7d71b3f428eb73ed853f8fded65e2986896e21d69f45ebf06bb623b450e14",
+    "update_check/VERSION.txt": "ded1b601e81d31ca1f65c4f3ccf2ebd7992b6390e37bc2a86f3837282f1e00cf",
     "update_check/tests/test_check.py": "0acd1d021c3fde1f64e782f565b9897a74bc6d34702bdbb650d52d28b05dea03",
     "bin/control.d/update-check.json": "adb0a79c424f87249ca66e73d2256bc2f477017e3ce4ebc906364678a95b3177",
     "bin/control.d/update-check.sh": "7cc1fc9287cff92e352ad038519366d7dfd04d4efe99d1c70d980de0c62ac807",
@@ -25,7 +25,7 @@
     "update_check/tests/test_docker_update.py": "62d9d451034e60dee0d1cdc7faeff8ab2a852234497cacb60093005048892f7c",
     "update_check/tests/test_branches.py": "381f52127176cf9fa4a1342ecabccc850b569902435a1aff91cdb02bcc053372",
     "update_check/rollout.py": "5fee32129a8d78b1dc85e55e734ebc5845d5fbcde4a5cd92024fa83fd78e45f9",
-    "update_check/staging_manifest.py": "9a95424571ba8a9e239b4cdf830f81680c448fea0753041f02adc5e8b360de3e",
+    "update_check/staging_manifest.py": "9f400e659f5c2f252212467d6d1f85dbadabac04ed7af22cea96a8334d98d6e9",
     "update_check/legacy_sss.json": "5bebe1706ecfbccb4317aaebf4863aa018a118375b48ebd6d1fb20016615c50c",
     "update_check/tests/test_addons.py": "d71472c4a5dbc6f6a99f11e7cf326c6d3c2b7128d5507afa92db72a9b8b183da",
     "scripts/controller_i18n.py": "d7029a1d9fab3263b9982f2ad48298c8724b735a5139c4f492c6e1a6da5c90c9",
@@ -46,7 +46,8 @@
     "update_check/tests/test_apache_certificate_paths.py": "2228e2d8865bdfd7d18098a1d799b93aea7a9a1af5b66bab37f0ff520e710c59",
     "update_check/tests/test_checkmk_backup_modes.py": "4d962a4f328fd304544ec5cf8ae67a4c78982091647c4d1a158adb2f3c4bacd2",
     "update_check/tests/test_controller_paths.py": "8af9fe08f6fb7bad654b06c7395cbe22f335dc8b2d82e5a003bd19fa8226a015",
-    "update_check/tests/test_docker_deploy.py": "342a0d17096e0f524bfdf9289c7d632e7aad7c61d1dccfe365866cd5adb8fb29"
+    "update_check/tests/test_docker_deploy.py": "342a0d17096e0f524bfdf9289c7d632e7aad7c61d1dccfe365866cd5adb8fb29",
+    "update_check/tests/test_extending_examples.py": "99aa4231dd7e880d682d2d04f86f838fe1c6048cbe87b88b9ce020207af91053"
   },
   "file_features": {}
 }

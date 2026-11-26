@@ -1,5 +1,11 @@
 # Changelog
 
+## s0.8.1 – Developer guides / Entwicklerleitfäden
+
+English and German guides cover the controller architecture, custom commands, profiles, Git add-ons and local packages. Add-on authors can create and verify their Git manifests with `addon-index` and `addon-verify`.
+
+Die zweisprachigen Leitfäden zeigen die Architektur und den Weg vom ersten eigenen Befehl bis zum geprüften Zusatzpaket. Die neuen Manifestbefehle lassen sich direkt in Git-Hooks verwenden. Der Cleaner unterscheidet das Einlesen eines Git-Checkouts von einem tatsächlichen Aufrufer lokaler Skripte.
+
 ## s0.8.0 – Wählbare Betriebspfade und Backup-Modi
 
 Checkmk sichert vor einer Migration wahlweise im Docker-Container oder direkt mit OMD auf dem Zielhost. Bei Apache sind Quellen, Dateinamen und Ziele einstellbar. Das Docker-Deployment kann die Abschlussanzeige ohne Pause schreiben. Verwaiste Stacks brauchen weiterhin eine bestätigte Löschfreigabe.

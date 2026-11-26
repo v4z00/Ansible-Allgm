@@ -203,17 +203,30 @@ def is_code(rel, overlay=False):
     )
 
 
-def code_files(root, overlay=False):
+def code_files(checkout, overlay=False):
+    """Walk only deliverable directories in an offline checkout."""
+    roots = CODE_ROOTS | ({"configure_server_BASE.sh"} if overlay else BASE_FILES | {"artifacts"})
+    directories = CODE_ROOTS | {"examples/inventory"}
+    if not overlay:
+        directories |= {
+            "artifacts", "artifacts/script-library", "artifacts/script-library/bin",
+            "artifacts/script-library/lib", "artifacts/script-library/lib/common",
+            "artifacts/script-library/lib/data", "artifacts/script-library/lib/python",
+        }
     files = {}
-    for candidate in root.rglob("*"):
-        rel = candidate.relative_to(root).as_posix()
-        if rel == VERSIONS or not is_code(rel, overlay):
+    pending = [checkout / name for name in sorted(roots) if os.path.lexists(checkout / name)]
+    while pending:
+        candidate = pending.pop()
+        rel = candidate.relative_to(checkout).as_posix()
+        if rel not in directories and not is_code(rel, overlay):
             continue
-        require(not candidate.is_symlink(), f"Link in Codequelle: {rel}")
-        if candidate.is_dir():
-            continue
-        require(candidate.is_file(), f"Sonderdatei in Codequelle: {rel}")
-        files[rel] = candidate
+        mode = candidate.lstat().st_mode
+        require(not stat.S_ISLNK(mode), f"Link in Codequelle: {rel}")
+        if stat.S_ISDIR(mode):
+            pending.extend(candidate.iterdir())
+        else:
+            require(stat.S_ISREG(mode) and rel not in directories, f"Sonderdatei in Codequelle: {rel}")
+            files[rel] = candidate
     return files
 
 

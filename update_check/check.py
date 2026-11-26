@@ -19,7 +19,7 @@ except ImportError:
     cli_args(sys.argv[1:], Path(__file__).resolve().parents[1])
     raise SystemExit(tr('audit.dependency'))
 
-CHECKER_VERSION = '1.5.1'
+CHECKER_VERSION = '1.5.2'
 VERSION_RE = re.compile(r'(?<![A-Za-z0-9])\d+\.\d+\.\d+(?:[a-zA-Z][A-Za-z0-9.-]*)?')
 class AuditError(Exception): pass
 class UniqueLoader(yaml.SafeLoader): pass
