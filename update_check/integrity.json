@@ -11,7 +11,7 @@
     "release.json": "0805c04a5cee894f81eabc29fcd75bdcdf6ed1082089a879e2ee8cbabe25fd8b",
     "settings_contract.json": "a4ea612796751f32e1caaafd9e96b62220141373cb7a189e8d495a16f555566a",
     "settings_catalog.json": "8858d8b7cc888ae174f65f8346baaa2ed6621ed33b65d2953f9c0bb080698efb",
-    "manifests/controller_basis.json": "8afc04cd5ac38a3de2b452bffc45b10bfce83698e5e67885b2d81de1b855c084",
+    "manifests/controller_basis.json": "3dacfd24b9dc3c97c6cee752f52940a270752715f6abab5e61aa8497b21cef69",
     "manifests/host_updates.json": "bcba8ababa9e9b7fc66473d87b78b4be808a42732a56caeeb4aacc67812ebca3",
     "manifests/tls_tasks.json": "6aadc2a806fad83648de795b261749e856481447e4db783b70b0f9ed25faff22",
     "manifests/bootstrap.json": "9508caa12d375180587dd4022fc92c1d968dc3e86129bc02975ca0ab0d30dfdd",
