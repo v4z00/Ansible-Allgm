@@ -29,11 +29,23 @@ SHA = re.compile(r"[0-9a-f]{64}\Z")
 
 def show_versions(root):
     try:
-        rows = install.read_versions(root / install.VERSIONS)
+        lines = install.version_lines(root / install.VERSIONS)
+        rows = install.parse_versions(lines)
+        requested = install.addon.registrations(lines)
+        receipt = install.addon.receipt(root / install.RECEIPT)
+        recorded = {name.casefold(): (name, meta["version"])
+                    for name, meta in receipt.get("modules", {}).items()}
     except (OSError, ValueError):
         print("versions.txt fehlt, ist unlesbar oder enthält einen ungültigen Eintrag.", file=sys.stderr)
         return 1
     for name, (version, _, _) in rows.items():
+        if name.casefold() in recorded:
+            print(*recorded.pop(name.casefold()))
+        elif name.casefold() in requested:
+            print(name, "(pending installation)")
+        else:
+            print(name, version)
+    for name, version in recorded.values():
         print(name, version)
     if any(name.casefold() in ("tui", "ansible-tui") for name in rows):
         return 0
@@ -62,7 +74,7 @@ def private_file(path):
                     and not info.st_mode & 0o077, f"Private Datei mit Modus 0600 erforderlich: {path.name}")
 
 
-def checkout(scratch, name, row, controller, branch):
+def checkout(scratch, name, row, controller, branch, *, addon=False):
     _, url, token_file = row
     install.require(not github_https.legacy_https(url),
                     f"{name}: SSH-Eintrag über den Installer auf HTTPS umstellen")
@@ -70,6 +82,9 @@ def checkout(scratch, name, row, controller, branch):
         install.require(not token_file, f"{name} wird anonym geladen. Viertes Feld in versions.txt leeren.")
     root = scratch / name
     github_https.clone_branch(url, root, branch, token_file, controller)
+    if addon:
+        meta, mapping = install.addon.descriptor(root, name)
+        return root, meta, mapping
     entries = manifest.verify(root, name)
     files = {rel: root / rel for rel in entries}
     for rel, path in files.items():
@@ -83,8 +98,8 @@ def checkout(scratch, name, row, controller, branch):
 def managed_baseline(root):
     # A local receipt is the last successfully installed content, not a desired state.
     if install.receipt_hash(root) is not None:
-        data = manifest.load(root / install.RECEIPT)
-        install.require(data.get("schema") == 1 and isinstance(data.get("files"), dict),
+        data = install.addon.receipt(root / install.RECEIPT)
+        install.require(data.get("schema") in (1, 2) and isinstance(data.get("files"), dict),
                         "Installationsnachweis ungültig")
         receipt = {rel: value for rel, value in data["files"].items()
                    if manifest.ship(rel) and manifest.allowed(rel)
@@ -145,7 +160,10 @@ def prune(root, days):
 def rollout(root, args, local_files=()):
     marker = root / install.VERSIONS
     private_file(marker)
-    rows = install.read_versions(marker)
+    lines = install.version_lines(marker)
+    rows = install.parse_versions(lines)
+    registrations = install.addon.registrations(lines)
+    previous = install.addon.receipt(root / install.RECEIPT)
     branch = "staging" if args.staging else "main"
     saved_profile, previous_branch, baseline = managed_baseline(root)
     profile_id = install.installed_profile(root)
@@ -154,23 +172,53 @@ def rollout(root, args, local_files=()):
     with tempfile.TemporaryDirectory(prefix=f"ansible-{branch}-") as tmp:
         folder = Path(tmp).resolve()
         names = ["Allgm", profile] if profile != "Allgm" else ["Allgm"]
+        by_key = {n.casefold(): n for n in rows}
+        install.require(registrations.keys() <= by_key.keys()
+                        and registrations.keys().isdisjoint(n.casefold() for n in names),
+                        "Each # addon=NAME needs its own four-field module row")
+        install.require(install.addon.installed(previous).keys() <= registrations.keys(),
+                        "Restore missing registration for installed add-on before updating")
         install.require(all(name in rows and rows[name][1] for name in names),
                         "GitHub-URL für installierte Module in versions.txt eintragen")
         allgm, combined = checkout(folder, "Allgm", rows["Allgm"], root, branch)
+        descriptor = combined.get("controller-base.json")
+        capability = manifest.load(descriptor).get("addon_contract", 0) if descriptor else 0
+        install.require(type(capability) is int and capability in (0, 1),
+                        "Unsupported target controller add-on contract")
+        install.require(capability == 1 or not registrations,
+                        "Target release cannot manage the registered add-ons; keep the current release")
         sources = {"Allgm": allgm}
+        owners = dict.fromkeys(combined, "Allgm")
         if profile != "Allgm":
             overlay, extension = checkout(folder, profile, rows[profile], root, branch)
             sources[profile] = overlay
             combined = install.merge_overlay(combined, extension,
                                              manifest.load(overlay / "controller-overlay.json"), profile)
+            owners.update(dict.fromkeys(extension, profile))
+        addons = {}
+        for key in registrations:
+            name = by_key[key]
+            addons[name] = checkout(folder, name, rows[name], root, branch, addon=True)
+            sources[name] = addons[name][0]
+        combined, owners = install.addon.combine(combined, owners, addons)
+        layout = {"owners": owners,
+                  "modules": install.addon.module_info(sources, addons, install.version_for, branch)}
+        migration_issues, retired = install.inspect_addon_install(root, allgm, combined, layout,
+                                                                  previous, baseline)
         variable_issues, registry_issues, local_conflicts = guards(root, combined, folder, local_files)
-        combined[install.VERSIONS] = install.version_source(root, sources, folder, branch=branch)
+        combined[install.VERSIONS] = install.version_source(root, sources, folder, branch=branch, addons=addons)
         candidates = install.update_files(combined)
-        retired = set()
         if saved_profile and (branch == "staging" or previous_branch == "staging"):
-            retired = {rel for rel in install.update_files(baseline)
+            retired |= {rel for rel in install.update_files(baseline)
                        if rel not in combined and install.is_code(rel)}
-        plan, token = install.update_plan(root, candidates, profile.lower(), retired)
+        # An older checker must be able to read the receipt after switching back.
+        target_layout = layout if capability == 1 else None
+        if target_layout:
+            metadata_changed = (previous.get("modules") != layout["modules"]
+                                or previous.get("owners") != layout["owners"])
+        else:
+            metadata_changed = previous.get("schema") != 1
+        plan, token = install.update_plan(root, candidates, profile.lower(), retired, target_layout)
         changes = plan["files"]
         conflicts = [
             rel for rel, row in changes.items()
@@ -179,6 +227,7 @@ def rollout(root, args, local_files=()):
                 or (row["before"] is None and rel in baseline)
             )
         ]
+        conflicts = sorted(set(conflicts) | set(migration_issues))
         result = {"profile": profile, "branch": branch,
                   "versions": {name: install.version_for(source, branch) for name, source in sources.items()},
                   "changes": sorted(changes), "conflicts": conflicts,
@@ -187,10 +236,10 @@ def rollout(root, args, local_files=()):
         if variable_issues or registry_issues or conflicts or local_conflicts:
             return 1, result
         if args.apply or args.auto:
-            if changes or saved_profile is None or previous_branch != branch:
+            if changes or saved_profile is None or previous_branch != branch or metadata_changed:
                 # The shared controller lock remains held through preflight and writes.
                 with redirect_stdout(io.StringIO()) as details:
-                    install.update_controller(root, combined, profile.lower(), token, receipt_source=branch, retired=retired)
+                    install.update_controller(root, combined, profile.lower(), token, receipt_source=branch, retired=retired, layout=target_layout)
                 result["applied"] = True
                 result["result"] = details.getvalue().splitlines()
             if args.auto:
@@ -224,6 +273,10 @@ def main(argv=None):
         fd = os.open(lock, os.O_CREAT | os.O_NOFOLLOW | os.O_RDWR, 0o600)
         with os.fdopen(fd, "r+"):
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if args.apply or args.auto or args.rollback:
+                install.recover_transaction(root)
+            elif (install.backup_home(root) / ".transaction").exists():
+                raise ValueError("Interrupted controller transaction: run --apply for recovery")
             if args.rollback:
                 install.rollback_controller(root, args.rollback)
                 return 0

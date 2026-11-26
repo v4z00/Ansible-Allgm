@@ -1,5 +1,11 @@
 # Changelog
 
+## s0.4.1 – Gemeinsame Updates für Profile und Add-ons
+
+Der Checker prüft registrierte Git-Add-ons zusammen mit der Basis und dem Standortprofil.
+Die lokale Installationsquittung hält je Datei fest, welches Modul sie geliefert hat.
+Bei einem Rollback werden die Dateien, die Modulversionen und die vorherige Quittung gemeinsam wiederhergestellt.
+
 ## s0.4.0 – Zentrale Jobberichte und lokale Statusabfrage
 
 26. November 2026

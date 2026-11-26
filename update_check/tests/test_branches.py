@@ -31,6 +31,7 @@ class BranchTests(unittest.TestCase):
         for rel in (*cmd["requires"], "bin/control", "bin/control.d/update-check.json", "bin/control.d/update-check.sh",
                     "lib/controller_environment.sh", "scripts/control_runtime.py",
                     "tools/github_https.py", "tools/install_controller.py",
+                    "tools/controller_addons.py", "tools/controller_transaction.py",
                     "update_check/check.sh", "update_check/check.py", "update_check/rollout.py",
                     "update_check/local_extensions.py", "update_check/staging_manifest.py"):
             dest = self.remote / rel
@@ -131,6 +132,31 @@ class BranchTests(unittest.TestCase):
         self.control("update-check", "--auto")
         self.assertTrue(stable.exists() and not staged.exists())
         self.assertEqual(local.read_text(), "private\n")
+
+    def test_switch_to_legacy_release_writes_legacy_receipt(self):
+        self.git("switch", "-q", "staging")
+        self.file("controller-base.json", '{"schema":1,"addon_contract":1}')
+        self.commit()
+        self.control("update-check", "--staging", "--apply")
+        receipt = self.controller / rollout.install.RECEIPT
+        self.assertEqual(json.loads(receipt.read_bytes())["schema"], 2)
+        self.control("update-check", "--auto")
+        self.assertEqual(json.loads(receipt.read_bytes())["schema"], 1)
+        self.assertIn("Allgm 1.2.3", self.control("module-versions"))
+        self.control("update-check", "--staging", "--apply")
+        self.assertEqual(json.loads(receipt.read_bytes())["schema"], 2)
+
+    def test_legacy_release_rejects_registered_addon_without_fetching_it(self):
+        with self.marker.open("a") as stream:
+            stream.write("# addon=Extra\nExtra|1.0.0|https://github.com/example/unreachable.git|\n")
+        receipt = self.controller / rollout.install.RECEIPT
+        old = (receipt.read_bytes(), self.marker.read_bytes())
+        result = subprocess.run([str(self.controller / "bin/control"), "update-check", "--auto"],
+                                env=self.env, text=True, capture_output=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("cannot manage the registered add-ons", result.stderr)
+        self.assertEqual((receipt.read_bytes(), self.marker.read_bytes()), old)
+        self.assertFalse(rollout.install.backup_home(self.controller).exists())
 
     def test_cron_rejects_staging_and_missing_branch_never_uses_main_or_tag(self):
         self.control("update-check", "--auto", "--staging", code=2)

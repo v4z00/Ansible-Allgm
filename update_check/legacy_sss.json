@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "module": "SSS",
+  "feature": "sss",
+  "files": [
+    "descriptions/playbooks/playbooks__security__sss__setup.md",
+    "playbooks/security/sss/BEDIENUNGSANLEITUNG.md",
+    "playbooks/security/sss/README.md",
+    "playbooks/security/sss/START-HIER.md",
+    "playbooks/security/sss/config.yml",
+    "playbooks/security/sss/files/generate.py",
+    "playbooks/security/sss/files/install-voraussetzungen.ps1",
+    "playbooks/security/sss/files/install-voraussetzungen.sh",
+    "playbooks/security/sss/files/notfall_entschluesselung.html",
+    "playbooks/security/sss/files/recover.py",
+    "playbooks/security/sss/files/start-html.bat",
+    "playbooks/security/sss/files/start-html.command",
+    "playbooks/security/sss/files/start-html.ps1",
+    "playbooks/security/sss/files/start-html.sh",
+    "playbooks/security/sss/run.sh",
+    "playbooks/security/sss/setup.yml",
+    "playbooks/security/sss/start-generator.sh",
+    "playbooks/security/sss/tests/test_launcher.py",
+    "playbooks/security/sss/tests/test_sss.py",
+    "playbooks/security/sss/treuhaender.yml"
+  ]
+}

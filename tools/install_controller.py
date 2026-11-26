@@ -21,13 +21,15 @@ import github_https
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE / "update_check"))
 from staging_manifest import public_library
+import controller_addons as addon
+import controller_transaction as transaction
 
 CODE_ROOTS = {
     "bin", "config", "descriptions", "examples", "lib",
     "playbooks", "roles", "scripts", "templates", "tools", "update_check",
 }
 BASE_FILES = {
-    "README.md", "configure_server_BASE.sh", "controller-base.json",
+    "README.md", "configure_server_BASE.sh", "controller-base.json", "controller-addons-v1.json",
     "requirements-controller.txt", "requirements.yml", "requirements-extra.yml",
 }
 LOCAL_NAMES = {
@@ -96,27 +98,40 @@ def remote_for(source):
     return github_https.legacy_https(url) or github_https.https_url(url)
 
 
-def version_source(dest, sources, scratch, *, token_file=None, prompt=False, branch=None):
+def version_source(dest, sources, scratch, *, token_file=None, prompt=False, branch=None,
+                   addons=None, urls=None, tokens=None):
+    addons, urls, tokens = addons or {}, urls or {}, tokens or {}
     lines = version_lines(dest / VERSIONS, optional=True)
     rows = {name.casefold(): row for name, row in parse_versions(lines).items()}
     changes = {}
     for name, path in sources.items():
         _, url, saved_path = rows.get(name.casefold(), ("", "", ""))
+        key = name.casefold()
+        override = urls.get(key)
+        require(not override or not url or github_https.https_url(override) == url,
+                f"Existing source for {name} differs from requested URL")
+        url = override or url
         migrated = github_https.legacy_https(url)
         if migrated:
             url, saved_path = migrated, ""  # An SSH key can never serve as a token.
-        url = url or remote_for(path) or module_url(name)
-        if url.lower().removesuffix(".git") == f"https://github.com/v4z00/{name}".lower():
+        url = url or remote_for(path)
+        if not url and name in addons:
+            raise ValueError(f"Explicit --addon-url {name}=HTTPS_URL required for an offline checkout")
+        url = url or module_url(name)
+        if name not in addons and url.lower().removesuffix(".git") == f"https://github.com/v4z00/{name}".lower():
             url = module_url(name)
         if url:
             github_https.https_url(url)
         access = "anonymous"
-        if name.casefold() not in {"allgm", "homelab"}:
+        if name in addons:
+            access = addons[name][1].get("authentication", "anonymous")
+        elif name.casefold() not in {"allgm", "homelab"}:
             metadata = read_json(path / "controller-overlay.json")
             access = metadata.get("authentication", "token-file")
             require(access in {"anonymous", "token-file"}, "Unbekannte Authentifizierung im Overlay")
         if access == "token-file":
-            selected = token_file if token_file is not None else saved_path
+            supplied = tokens.get(key) if name in addons else token_file
+            selected = supplied if supplied is not None else saved_path
             if not selected and prompt:
                 try:
                     with open("/dev/tty") as tty_in, open("/dev/tty", "w") as tty_out:
@@ -127,12 +142,15 @@ def version_source(dest, sources, scratch, *, token_file=None, prompt=False, bra
             require(selected, "Der private Installer benötigt --token-file PFAD zur lokalen Token-Datei")
             github_https.read_token(selected, dest, *sources.values())
         else:
-            require(not saved_path and not (name.casefold() != "allgm" and token_file), f"{name} wird anonym geladen. Viertes Feld in versions.txt leeren.")
+            supplied = tokens.get(key) if name in addons else token_file if name.casefold() != "allgm" else None
+            require(not saved_path and not supplied, f"{name} wird anonym geladen. Viertes Feld in versions.txt leeren.")
             selected = ""
         changes[name.casefold()] = "|".join((name, version_for(path, branch), url, selected))
     output = [] if VERSION_HEADER in lines else [VERSION_HEADER, VERSION_HINT]
     for line in lines:
         output.append(changes.pop(line.partition("|")[0].casefold(), line))
+    registered = addon.registrations(lines)
+    output.extend(f"# addon={name}" for name in addons if name.casefold() not in registered)
     output.extend(changes.values())
     result = scratch / VERSIONS
     result.write_text("\n".join(output) + "\n")
@@ -208,14 +226,6 @@ def merge_overlay(base, extension, meta, name):
     return combined
 
 
-def compose(overlay, name=None):
-    base = code_files(BASE)
-    if overlay is None:
-        return base
-    return merge_overlay(base, code_files(overlay, overlay=True),
-                         read_json(overlay / "controller-overlay.json"), name)
-
-
 def copy_code(files, dest):
     for rel, src in files.items():
         file = dest / rel
@@ -242,8 +252,11 @@ def initialize(dest, files):
         (dest / "inventory" / name).symlink_to(f"../{name}", target_is_directory=True)
 
 
-def write_receipt(root, profile, hashes, source=None):
+def write_receipt(root, profile, hashes, source=None, layout=None):
     receipt = {"schema": 1, "profile": profile, "files": {rel: value for rel, value in hashes.items() if rel != VERSIONS}}
+    if layout is not None:
+        receipt.update(schema=2, modules=layout["modules"],
+                       owners={p: layout["owners"][p] for p in receipt["files"]})
     if source:
         receipt["source"] = source
     (root / RECEIPT).write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
@@ -254,63 +267,96 @@ def require_safe(root, rel, file_required=False):
     path = root / rel
     require(all(not p.is_symlink() for p in (path, *path.parents) if p.is_relative_to(root)),
             f"Link im Controllerpfad: {rel}")
+    require(all(not parent.exists() or parent.is_dir() for parent in path.parents
+                if parent.is_relative_to(root)), f"Not a controller directory: {rel}")
     if file_required:
         require(path.is_file(), f"Verwaltete Datei fehlt: {rel}")
     return path
 
 
-def add_overlay(dest, files, hashes, profile, scratch):
-    record = dest / RECEIPT
-    require(record.is_file() and not record.is_symlink(),
-            "Ziel enthält keine mit diesem Installer erstellte Installation")
-    previous = read_json(record)
-    require(previous.get("schema") == 1 and previous.get("profile") in {"allgm", profile},
-            "Unbekannter Installationsnachweis")
-    old = previous["files"]
-    for rel, expected in old.items():
-        require(sha(require_safe(dest, rel, file_required=True)) == expected,
-                f"Lokale Änderung im Codepfad: {rel}")
-    if previous["profile"] == profile:
-        require(old == {rel: value for rel, value in hashes.items() if rel != VERSIONS}, "Neue Codeversion über den Update-Weg einspielen")
-        state = dest / VERSIONS
-        if (not state.exists() or sha(state) != hashes[VERSIONS]
-                or stat.S_IMODE(state.stat().st_mode) != 0o600):
-            os.replace(files[VERSIONS], dest / VERSIONS)
-        return
-    require(previous["profile"] == "allgm" and profile != "allgm",
-            "Profilwechsel benötigt eine frische Installation")
-    base = code_files(BASE)
-    require(old == {rel: sha(path) for rel, path in base.items()},
-            "Zuerst den passenden Allgm-Quellstand verwenden")
-    changed = {rel: files[rel] for rel, value in hashes.items() if old.get(rel) != value}
-    for rel in changed:
-        path = require_safe(dest, rel)
-        require(rel == VERSIONS or rel in old or not path.exists(), f"Lokaler Pfad kollidiert mit Overlay: {rel}")
-        for parent in path.parents:
-            if parent == dest:
-                break
-            require(not parent.exists() or parent.is_dir(), f"Zielordner kollidiert mit Datei: {parent.name}")
-    new, saved = scratch / "new", scratch / "saved"
-    new.mkdir()
-    saved.mkdir()
-    copy_code(changed, new)
-    copy_code({rel: dest / rel for rel in changed if (dest / rel).is_file()}, saved)
-    write_receipt(new, profile, hashes)
-    installed = []
-    try:
-        for rel in sorted(changed):
-            path = dest / rel
-            path.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(new / rel, path)
-            installed.append(rel)
-        os.replace(new / RECEIPT, record)
-    except OSError:
-        for rel in reversed(installed):
-            if (saved / rel).is_file():
-                os.replace(saved / rel, dest / rel)
-            else:
-                (dest / rel).unlink()
-        raise
+def load_addons(paths, profile, dest):
+    loaded = {}
+    names = {"allgm", "homelab", profile.casefold()}
+    for path in paths:
+        require(not path.is_symlink() and path.is_dir(), "Invalid add-on checkout")
+        path = path.resolve()
+        require(not dest.resolve().is_relative_to(path), "Controller must be outside the source directory")
+        # Only the name is read before verification, solely to select the expected manifest.
+        name = read_json_from_git(path, "controller-addon.json").get("name")
+        require(isinstance(name, str) and VERSION_NAME.fullmatch(name) and name.casefold() not in names,
+                "Invalid or duplicate add-on name")
+        metadata, mapping = addon.descriptor(path, name)
+        loaded[name] = (path, metadata, mapping)
+        names.add(name.casefold())
+    return loaded
+
+
+def read_json_from_git(root, rel):
+    result = subprocess.run(["git", "-C", str(root), "show", f"HEAD:{rel}"],
+                            capture_output=True, check=True)
+    return json.loads(result.stdout)
+
+
+def local_sources(overlay, name, addons):
+    files = code_files(BASE)
+    owners = dict.fromkeys(files, "Allgm")
+    sources = {"Allgm": BASE}
+    if overlay:
+        extension = code_files(overlay, overlay=True)
+        files = merge_overlay(files, extension, read_json(overlay / "controller-overlay.json"), name)
+        owners.update(dict.fromkeys(extension, name))
+        sources[name] = overlay
+    files, owners = addon.combine(files, owners, addons)
+    sources.update({n: entry[0] for n, entry in addons.items()})
+    return files, sources, {"owners": owners,
+                            "modules": addon.module_info(sources, addons, version_for)}
+
+
+def inspect_addon_install(dest, base, files, layout, previous, baseline):
+    import check
+    return addon.installation_guards(dest, base, files, layout["owners"], layout["modules"],
+                                     previous, baseline, sha, require_safe, check.global_settings)
+
+
+def existing_install(dest, files, layout, profile, previous, baseline, retired):
+    require(previous and previous.get("profile") in {"allgm", profile},
+            "Migrate an existing controller through the reviewed --update plan")
+    module_names = set(previous.get("modules", {}))
+    if previous.get("schema") == 1:
+        module_names.add("Allgm")
+        module_names.update(n for n in layout["modules"] if n.casefold() == previous["profile"])
+    additions = set(layout["modules"]) - module_names
+    candidates = update_files(files)
+    for rel, old_hash in baseline.items():
+        require(sha(require_safe(dest, rel, file_required=True)) == old_hash,
+                f"Local change in managed file: {rel}")
+    if previous["profile"] != profile:
+        require(previous["profile"] == "allgm", "An installed profile cannot be replaced")
+        # A profile may replace only the exact base revision the operator already installed.
+        reference = code_files(BASE)
+        for rel, digest in baseline.items():
+            if previous.get("owners", {}).get(rel, "Allgm") == "Allgm" and rel in reference:
+                require(sha(reference[rel]) == digest, "First update the base release")
+    else:
+        for rel, src in candidates.items():
+            if rel == VERSIONS:
+                continue
+            owner = layout["owners"][rel]
+            if owner not in additions:
+                require(baseline.get(rel) == sha(src), "Use --update to change an installed release")
+        require(all(rel in files or rel in retired for rel in update_files(baseline)),
+                "Use --update to retire managed files")
+    for rel in candidates:
+        if rel != VERSIONS and rel not in baseline:
+            require(not require_safe(dest, rel).exists(), f"Local file collides with installation: {rel}")
+    updated_layout = {"owners": {p: n for p, n in layout["owners"].items() if p in candidates},
+                      "modules": layout["modules"]}
+    plan, token = update_plan(dest, candidates, profile, retired, updated_layout)
+    previous_owners = {p: n for p, n in previous.get("owners", {}).items() if p in candidates}
+    if (plan["files"] or previous.get("schema") != 2
+            or previous.get("modules") != layout["modules"]
+            or previous_owners != updated_layout["owners"]):
+        update_controller(dest, files, profile, token, previous.get("source"), retired, updated_layout)
 
 
 BACKUP_ID = re.compile(r"[0-9]{8}T[0-9]{12}Z-[0-9a-f]{12}")
@@ -329,9 +375,11 @@ def receipt_hash(dest):
     return sha(path) if path.exists() else None
 
 
-def update_plan(dest, files, profile, retired=()):
+def update_plan(dest, files, profile, retired=(), layout=None):
     data = {"schema": 1, "target": str(dest.resolve()), "profile": profile,
             "previous_receipt": receipt_hash(dest), "files": {}}
+    if layout is not None:
+        data["layout_sha256"] = hashlib.sha256(json.dumps(layout, sort_keys=True).encode()).hexdigest()
     for rel in sorted(files.keys() | set(retired)):
         src = files.get(rel)
         location = require_safe(dest, rel)
@@ -363,27 +411,22 @@ def backup_home(dest, create=False):
     return backups
 
 
+def transaction_path(root, rel):
+    if rel == RECEIPT:
+        path = root / RECEIPT
+        require(not root.is_symlink() and not path.is_symlink(), "Unsafe receipt path")
+        return path
+    return require_safe(root, rel)
+
+
 def put_files(dest, pending, restore, validate=None):
-    installed = []
-    try:
-        for rel, source in pending.items():
-            target = dest / rel
-            if source is None:
-                target.unlink()
-            else:
-                target.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(source, target)
-            installed.append(rel)
-        if validate:
-            validate()
-    except (OSError, ValueError):
-        for rel in reversed(installed):
-            source = restore.get(rel)
-            if source is None:
-                (dest / rel).unlink(missing_ok=True)
-            else:
-                os.replace(source, dest / rel)
-        raise
+    transaction.apply(dest, backup_home(dest, create=True), pending, restore,
+                      transaction_path, validate)
+
+
+def recover_transaction(dest):
+    if dest.is_dir():
+        transaction.recover(dest, backup_home(dest), transaction_path)
 
 
 def installed_profile(dest):
@@ -392,15 +435,16 @@ def installed_profile(dest):
     if receipt_hash(dest) is not None:
         receipt = read_json(dest / RECEIPT)
         name = receipt.get("profile")
-        require(receipt.get("schema") == 1 and isinstance(name, str) and VERSION_NAME.fullmatch(name),
+        require(receipt.get("schema") in (1, 2) and isinstance(name, str) and VERSION_NAME.fullmatch(name),
                 "Ungültiger Profilname im Installationsnachweis")
         profiles.add(name.casefold())
     if ((dest / "bin/control.d/.versions/homelab.json").is_file()
             or (dest / "roles/openwrt_operations").is_dir()):
         profiles.add("homelab")
+    recorded_addons = set(addon.installed(addon.receipt(dest / RECEIPT)))
     for marker in (dest / "update_check/extensions").glob("*/manifest.json"):
         name = marker.parent.name
-        if VERSION_NAME.fullmatch(name) and (dest / "roles" / name).is_dir():
+        if name.casefold() not in recorded_addons and VERSION_NAME.fullmatch(name) and (dest / "roles" / name).is_dir():
             profiles.add(name.casefold())
     if not profiles:
         for name in parse_versions(version_lines(dest / VERSIONS, optional=True)):
@@ -410,14 +454,14 @@ def installed_profile(dest):
     return next(iter(profiles), "allgm")
 
 
-def update_controller(dest, all_files, profile, accepted, receipt_source=None, retired=()):
+def update_controller(dest, all_files, profile, accepted, receipt_source=None, retired=(), layout=None):
     require(dest.is_dir() and (dest / "bin/control").is_file(),
             "Update erwartet einen vorhandenen Ansible-Controller mit bin/control")
     require(installed_profile(dest) in {"allgm", profile}, "Für diesen Bestand den passenden Overlay-Installer verwenden")
     files = update_files(all_files)
-    plan, token = update_plan(dest, files, profile, retired)
+    plan, token = update_plan(dest, files, profile, retired, layout)
     changed = plan["files"]
-    if not changed and not receipt_source:
+    if not changed and not receipt_source and layout is None:
         print("Der verwaltete Code entspricht bereits dem Staging-Stand.")
         return
     if not accepted:
@@ -454,8 +498,8 @@ def update_controller(dest, all_files, profile, accepted, receipt_source=None, r
             if hashes["before"] is not None:
                 require(sha(saved / rel) == hashes["before"],
                         f"Datei hat sich während der Vorbereitung geändert: {rel}")
-        require(update_plan(dest, files, profile, retired)[1] == token, "Bestand wurde während der Vorbereitung geändert")
-        write_receipt(new, profile, {rel: sha(src) for rel, src in files.items()}, receipt_source)
+        require(update_plan(dest, files, profile, retired, layout)[1] == token, "Bestand wurde während der Vorbereitung geändert")
+        write_receipt(new, profile, {rel: sha(src) for rel, src in files.items()}, receipt_source, layout)
         def verify_installed():
             for rel, hashes in changed.items():
                 target = dest / rel
@@ -467,7 +511,9 @@ def update_controller(dest, all_files, profile, accepted, receipt_source=None, r
                         f"Kontrolle nach Installation fehlgeschlagen: {rel}")
         plan["installed_receipt"] = sha(new / RECEIPT)
         (saved / "plan.json").write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n")
+        transaction.sync_files(saved)
         os.rename(saved, backups / name)
+        transaction.sync_directory(backups)
         put_files(dest, {rel: new / rel if rel in files or rel == RECEIPT else None for rel in (*changed, RECEIPT)},
                   {rel: restore / rel for rel in old}, verify_installed)
     print(f"Aktualisiert: {len(changed)} Codepfade. Sicherung: {backups / name}")
@@ -527,6 +573,9 @@ def main():
     action.add_argument("--update", action="store_true", help="Bestehenden Controller prüfen und Update planen")
     action.add_argument("--rollback", metavar="BACKUP", help="Einen bestätigten Codewechsel zurücksetzen")
     parser.add_argument("--apply", metavar="PLAN_SHA256", help="Den exakt geprüften Updateplan einspielen")
+    parser.add_argument("--addon", action="append", type=Path, default=[], metavar="CHECKOUT")
+    parser.add_argument("--addon-url", action="append", default=[], metavar="NAME=HTTPS_URL")
+    parser.add_argument("--addon-token-file", action="append", default=[], metavar="NAME=PATH")
     name = os.environ.get("ANSIBLE_STAGING_OVERLAY")
     if name and name.casefold() not in {"allgm", "homelab"}:
         parser.add_argument("--token-file", metavar="PFAD", help="Lokale Fine-Grained-Token-Datei (0600)")
@@ -550,23 +599,44 @@ def main():
             if handle is not None:
                 fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
             scratch = Path(tmp)
+            if args.update and not args.apply:
+                require(not (backup_home(target) / ".transaction").exists(),
+                        "Interrupted controller transaction: use update-check --apply for recovery")
+            elif not args.export_code:
+                recover_transaction(target)
             if args.rollback:
                 rollback_controller(target, args.rollback)
                 return 0
-            files = compose(overlay, name)
-            if not args.export_code:
-                sources = {"Allgm": BASE, **({name: overlay} if name else {})}
-                files[VERSIONS] = version_source(target, sources, scratch,
-                                                 token_file=getattr(args, "token_file", None), prompt=True)
             profile = name.lower() if name else "allgm"
-            if args.update:
-                update_controller(target, files, profile, args.apply)
-                return 0
-            hashes = {rel: sha(path) for rel, path in files.items()}
+            addons = load_addons(args.addon, profile, target)
+            urls, tokens = addon.assignments(args.addon_url), addon.assignments(args.addon_token_file)
+            require(urls.keys() | tokens.keys() <= {n.casefold() for n in addons},
+                    "URL or token supplied for undeclared add-on")
+            files, sources, layout = local_sources(overlay, name, addons)
+            if not args.export_code:
+                registered = addon.registrations(version_lines(target / VERSIONS, optional=True))
+                require(registered.keys() <= {n.casefold() for n in addons},
+                        "Provide checkouts of all registered add-ons or use update-check")
+                files[VERSIONS] = version_source(target, sources, scratch, addons=addons, urls=urls, tokens=tokens,
+                                                 token_file=getattr(args, "token_file", None), prompt=True)
             contains_files = target.exists() and (not target.is_dir() or any(target.iterdir()))
             if contains_files and not args.export_code:
-                add_overlay(target, files, hashes, profile, scratch)
+                previous = addon.receipt(target / RECEIPT)
+                import rollout
+                _, _, baseline = rollout.managed_baseline(target)
+                conflicts, retired = inspect_addon_install(target, BASE, files, layout, previous, baseline)
+                require(not conflicts, "Add-on migration blocked: " + ", ".join(conflicts))
+                if addons:
+                    local = rollout.local_extensions.inspect(target)
+                    require(rollout.local_extensions.passed(local), "Local extension integrity check failed")
+                    variables, registry, overlaps = rollout.guards(target, files, scratch, local["files"])
+                    require(not (variables or registry or overlaps), "Prospective module validation failed")
+                if args.update:
+                    update_controller(target, files, profile, args.apply, retired=retired, layout=layout)
+                    return 0
+                existing_install(target, files, layout, profile, previous, baseline, retired)
             else:
+                require(not args.update, "--update requires an existing controller")
                 require(not args.export_code or not target.exists(), "Exportziel existiert bereits")
                 prepared = scratch / "controller"
                 prepared.mkdir()
@@ -574,7 +644,13 @@ def main():
                     copy_code(files, prepared)
                 else:
                     initialize(prepared, files)
-                    write_receipt(prepared, profile, hashes)
+                    if addons:
+                        import check
+                        issues = check.check_registry(prepared)
+                        require(not issues["issues"], "Add-on registry conflicts")
+                    hashes = {rel: sha(src) for rel, src in files.items()}
+                    write_receipt(prepared, profile, hashes, layout=layout)
+                transaction.sync_files(prepared)
                 if args.export_code:
                     target.mkdir(mode=0o700)
                     try:
@@ -584,6 +660,7 @@ def main():
                         raise
                 else:
                     os.rename(prepared, target)
+                transaction.sync_directory(target.parent)
             if not (args.skip_runtime or args.export_code):
                 subprocess.run(["bash", str(target / "bin/setup-runtime")], check=True)
         print(f"Controller {profile}: {target}")

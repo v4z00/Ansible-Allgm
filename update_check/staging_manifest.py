@@ -14,7 +14,7 @@ CODE_DIRS = {"bin", "config", "descriptions", "lib", "playbooks", "roles",
              "scripts", "templates", "tools", "update_check"}
 CODE_FILES = {"configure_server_BASE.sh", "controller-base.json", "requirements-controller.txt",
               "requirements.yml", "requirements-extra.yml", "VERSION.txt",
-              "controller-overlay.json", "install-controller", "install.sh"}
+              "controller-overlay.json", "controller-addons-v1.json", "install-controller", "install.sh"}
 REPO_FILES = CODE_FILES | {".gitignore", "LICENSE", "README.md", MANIFEST}
 BLOCKED = {"inventory", "inventories", "host_vars", "group_vars", "ansible.cfg",
            "inventory_config.yml", "inventory.yml", "settings.yml", "secrets.yml",
@@ -85,7 +85,25 @@ def git(root, *args):
     return subprocess.check_output(["git", "-C", str(root), *args])
 
 
-def repo_tree(root, ref):
+def addon_allowed(name):
+    """Standalone add-ons seal their source tree, including repository-only files."""
+    path = PurePosixPath(name)
+    if path.as_posix() != name or path.is_absolute() or not path.parts:
+        return False
+    if name in {".gitignore", ".githooks/pre-commit", ".githooks/pre-push",
+                ".githooks/staging_manifest.py"}:
+        return True
+    for part in path.parts:
+        lower = part.casefold()
+        if (not PART.fullmatch(part) or part.startswith(".") or lower in BLOCKED
+                or lower.endswith(("-hostvars.yml", "-hostvars.yaml", ".pem", ".key",
+                                   ".token", ".p12", ".pfx", ".keytab", ".kdbx",
+                                   ".bak", ".pyc", ".log"))):
+            return False
+    return True
+
+
+def repo_tree(root, ref, path_policy=allowed):
     if ref == ":index":
         entries = git(root, "ls-files", "--stage", "-z")
     else:
@@ -97,13 +115,22 @@ def repo_tree(root, ref):
         attrs, filename = record.split(b"\t", 1)
         mode, mid, last = attrs.decode("ascii").split()
         name = filename.decode("utf-8")
-        if name in output or mode not in {"100644", "100755"} or not allowed(name):
+        if name in output or mode not in {"100644", "100755"} or not path_policy(name):
             raise ValueError(f"Unzulässiger Git-Pfad oder Dateityp: {name}")
         if ref == ":index" and last != "0" or ref != ":index" and mid != "blob":
             raise ValueError(f"Git-Konflikt oder Sonderdatei: {name}")
         output[name] = (mode, mid if ref == ":index" else last)
     if len({n.casefold() for n in output}) != len(output):
         raise ValueError("Dateipfade kollidieren auf macOS")
+    if path_policy is addon_allowed:
+        spellings = {}
+        files = {n.casefold() for n in output}
+        for name in output:
+            for parent in PurePosixPath(name).parents:
+                spelling = parent.as_posix()
+                key = spelling.casefold()
+                if key in files or spellings.setdefault(key, spelling) != spelling:
+                    raise ValueError("Conflicting add-on directory: " + spelling)
     return output
 
 
@@ -140,18 +167,33 @@ def create(root, profile, ref):
     return {"schema": 1, "profile": profile, "files": digest_objects(root, paths)}
 
 
-def verify(root, profile, ref="HEAD"):
-    raw = git(root, "show", f"{ref}:{MANIFEST}")
+def create_addon(root, profile, ref):
+    tree = repo_tree(root, ref, addon_allowed)
+    tree.pop(MANIFEST, None)
+    return {"schema": 1, "profile": profile, "files": digest_objects(root, tree)}
+
+
+def verify_seal(root, profile, ref, builder):
+    raw = git(root, "show", f"{ref}:{MANIFEST}" if ref != ":index" else ":" + MANIFEST)
     if len(raw) > 2 * 1024 * 1024:
         raise ValueError("Manifest zu groß")
     declared = json.loads(raw, object_pairs_hook=json_pairs)
     declared_profile = declared.get("profile")
     if not isinstance(declared_profile, str) or declared_profile.casefold() != profile.casefold():
         raise ValueError("Manifest gehört zu einem anderen Modul")
-    actual = create(root, declared_profile, ref)
-    if declared != actual:
+    actual = builder(root, declared_profile, ref)
+    if type(declared.get("schema")) is not int or declared != actual:
         raise ValueError(f"SHA-256-Manifest für {profile} stimmt nicht mit {ref} überein")
     return actual["files"]
+
+
+def verify(root, profile, ref="HEAD"):
+    return verify_seal(root, profile, ref, create)
+
+
+def verify_addon(root, name, ref="HEAD"):
+    """Verify tracked blobs without executing code from the add-on checkout."""
+    return verify_seal(root, name, ref, create_addon)
 
 
 def main():

@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "40b8eb4000a913a7791090535f291d3d369874162a89ef3c9e3d4e887a1b9e79",
+      "sha256": "f62184cee8787f2f6941c82041a5725d4edc9aa293ebe5dbf664406e82ec1fe1",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -547,7 +547,7 @@
       "mode": "0755"
     },
     "bin/install-controller": {
-      "sha256": "f2a37734569ee43c9026b7ea5757e21b16cc763e2e70d02fddfc316276acb5f2",
+      "sha256": "5f741619225e2493f80be4e4107d5d627209396edc69f15febf79810ebe6d928",
       "mode": "0755"
     },
     "bin/setup-runtime": {
@@ -567,7 +567,7 @@
       "mode": "0755"
     },
     "controller-base.json": {
-      "sha256": "d2e2576af96f85bd6f90b54fa0313f30c53567dff718c48286877b2e84949071",
+      "sha256": "a55cb1f9341f878399a334df5c573f5d6a091ffac1d389d8787733f26779f1a3",
       "mode": "0644"
     },
     "descriptions/README.txt": {
@@ -775,7 +775,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "9d5f7b0a58d839c257d07702ea1504abfec23429f4598679271a023aeecd1b9e",
+      "sha256": "32ca9a35ad34f75b221e92818d3aa14437cd1cceb07f31597d82844068818f93",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -1011,7 +1011,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "84529165cabe66f6be0311af9587803f4c363c52e1fad27afdc16abb4d9ff632",
+      "sha256": "03e19611a95ce750ba229c167718e8990869d9b8a55a43699439f0cf5fa8f420",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1087,7 +1087,7 @@
       "mode": "0644"
     },
     "install.sh": {
-      "sha256": "23f70f73b19c34e7101be969e495f59178b5ee356a1637c267ebe25aca5c0d27",
+      "sha256": "fdb3482ed05e6498dc9b6c026df5fc41a3805ba039316bce443fb8f1176ddf01",
       "mode": "0755"
     },
     "lib/control/helpers.sh": {
@@ -1682,12 +1682,20 @@
       "sha256": "b258b56055825433d48d2d0ec7bcb16c2e6248fc20d0246eeb505d4cede93f8a",
       "mode": "0644"
     },
+    "tools/controller_addons.py": {
+      "sha256": "c30966118eb5014e86a229c00327071fc08141b52a3f6be462b65f32a9b75478",
+      "mode": "0644"
+    },
+    "tools/controller_transaction.py": {
+      "sha256": "2ad68ffc58e375fe9f849570b75b3d08ff2f437dbce58b057d1531db5ae57327",
+      "mode": "0644"
+    },
     "tools/github_https.py": {
       "sha256": "4939726758123ce18c3558bd22a668052a0bb028b62a1c71534b92ccb89e5bd5",
       "mode": "0644"
     },
     "tools/install_controller.py": {
-      "sha256": "37fbdc748c33752d842fd429a94c66bdb53face74eb2ae59978f84cab069b1d4",
+      "sha256": "bd5054c2d0dd01364362366f8c3a2f76f8250ef83d37f044ca97ed44ee1ad89d",
       "mode": "0644"
     },
     "tools/job_tests/test_ansible_jobs.py": {
@@ -1719,7 +1727,7 @@
       "mode": "0644"
     },
     "tools/pipe_install.py": {
-      "sha256": "5b320a0a2a5745649b768b462edde5caaa577b063d386d3e0fe00b1deacecd55",
+      "sha256": "34788d6d1ae118cd7c35e2a32aaf02297d7210da6154e6a79d37b964a3fcec26",
       "mode": "0644"
     },
     "tools/update_check/build_catalog.py": {
@@ -1731,11 +1739,11 @@
       "mode": "0644"
     },
     "update_check/VERSION.txt": {
-      "sha256": "6cf4e084b47f33c9b02ef79279d157833868f8f70514169a768be353ee328fea",
+      "sha256": "64d23f858ef51b0f996e4966d4e27c0371b437e2d2787890b1f7ad22d4ec5663",
       "mode": "0644"
     },
     "update_check/check.py": {
-      "sha256": "639c47fa2eec26fa81a6e81e0b9f531c4794d894fc3480237b75bed553c941e1",
+      "sha256": "0081986f093b80ff3051e07ee8cf437124162704d58aa8210c2a585b2b448d01",
       "mode": "0644"
     },
     "update_check/check.sh": {
@@ -1755,7 +1763,11 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "18523a2015c281b5420d3b852c4034c8e72fd301b4e64b6058691af92a39228f",
+      "sha256": "2381a28e3ed3f82838668751d33bb09260d2cfc49c572ad107156d11e80c379e",
+      "mode": "0644"
+    },
+    "update_check/legacy_sss.json": {
+      "sha256": "5bebe1706ecfbccb4317aaebf4863aa018a118375b48ebd6d1fb20016615c50c",
       "mode": "0644"
     },
     "update_check/local_extensions.py": {
@@ -1767,7 +1779,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "31af710489d21f026c98c1bd6d2069d592c0743eab0f141dd88b25646ebd9f76",
+      "sha256": "6dea91cbba64128d6d157bb70066308dffbe4bf330da42d3003dc0e1d65eca94",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1783,7 +1795,7 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "b768bf3dce24ee07eec58217ce842fe0500f3e39570341d6467dc68cac681a05",
+      "sha256": "52579b38df28547a45fb1a95d5e249ba2897e2eec7068cb1cc0b9f2769d6ef60",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1795,11 +1807,11 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "c400c955d52a56059947502322e4c1977c96b3968c226f9d4ea552e31620669b",
+      "sha256": "9a06d454aebf4cef1afa2feac62e62c46796dd1523edbf3c6599b58359822f7d",
       "mode": "0644"
     },
     "update_check/rollout.py": {
-      "sha256": "24c024677c8430dc0f7468f71d0bb902b3001d84a97f88467cbcd1dadc05a6da",
+      "sha256": "2ffda33a8113c3dba79a008dfbe36fb93fbf969fe02bd2cbb5e11443e8194a2c",
       "mode": "0644"
     },
     "update_check/settings_catalog.json": {
@@ -1811,15 +1823,23 @@
       "mode": "0644"
     },
     "update_check/staging_manifest.py": {
-      "sha256": "908260b4bee4ef7b6a94768279a2a873d995b31b17773585781a91eb794948da",
+      "sha256": "c3fc2cbbb4ed497927445c87a6f99c2fc0389fa152f52c95c450904d91e1b2bf",
+      "mode": "0644"
+    },
+    "update_check/tests/test_addons.py": {
+      "sha256": "ee8e503d224f034919f5a36f91dd2831d8f4f14999284b03044daeeff20d59ac",
       "mode": "0644"
     },
     "update_check/tests/test_branches.py": {
-      "sha256": "7a2f45d54df701d3f15e33cef5d2857ed2949dae99a9c4c3e6873fb03bfd9b4d",
+      "sha256": "f3562010870e150584013b6e2e4350f1d6b3dfaf490c975f7389d53efad9dc6b",
       "mode": "0644"
     },
     "update_check/tests/test_check.py": {
       "sha256": "0acd1d021c3fde1f64e782f565b9897a74bc6d34702bdbb650d52d28b05dea03",
+      "mode": "0644"
+    },
+    "update_check/tests/test_controller_transaction.py": {
+      "sha256": "680c0d16c79110cdacc1118d6834f72149d400e58623690a459c51cc4787d6c0",
       "mode": "0644"
     },
     "update_check/tests/test_docker_update.py": {

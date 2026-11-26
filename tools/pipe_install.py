@@ -60,7 +60,14 @@ def save_token(source, destination):
             tmp.unlink(missing_ok=True)
 
 
-def install(profile, token_file, destination):
+def install(profile, token_file, destination, addon_urls=(), addon_tokens=()):
+    urls = installer.addon.assignments(addon_urls)
+    tokens = installer.addon.assignments(addon_tokens)
+    if not tokens.keys() <= urls.keys():
+        raise ValueError("A token requires the corresponding add-on URL")
+    requested = {value.partition("=")[0].casefold(): value.partition("=")[0] for value in addon_urls}
+    if "allgm" in urls or profile.casefold() in urls:
+        raise ValueError("Duplicate module name")
     if TARGET.is_symlink() or (TARGET.exists() and not TARGET.is_dir()):
         raise ValueError("Eigenes Controller-Verzeichnis ohne Symlink erforderlich")
     fresh = not TARGET.exists() or not any(TARGET.iterdir())
@@ -78,22 +85,29 @@ def install(profile, token_file, destination):
 
     verify_checkout(BASE, "Allgm")
     base_command = [str(BASE / "bin/install-controller"), "--target", str(TARGET)]
-    if profile == "Allgm":
+    command = base_command
+    if profile != "Allgm":
+        overlay = BASE.parent / f"Ansible-{profile}"
+        github_https.clone_main(installer.module_url(profile), overlay, token_file, TARGET)
+        verify_checkout(overlay, profile)
+        command = [str(overlay / "install-controller"), "--target", str(TARGET)]
+    for key, url in urls.items():
+        name = requested[key]
+        checkout = BASE.parent / ("addon-" + name)
+        github_https.clone_main(url, checkout, tokens.get(key, ""), TARGET)
+        installer.addon.descriptor(checkout, name)
+        command += ["--addon", str(checkout), "--addon-url", f"{name}={url}"]
+        if key in tokens:
+            command += ["--addon-token-file", f"{name}={tokens[key]}"]
+    # Old one-profile callers retain their bootstrap order. A multi-module
+    # installation is prepared from all sources and committed in one operation.
+    if fresh and profile != "Allgm" and not urls:
         subprocess.run(base_command, check=True)
-        return
-
-    overlay = BASE.parent / f"Ansible-{profile}"
-    github_https.clone_main(installer.module_url(profile), overlay, token_file, TARGET)
-    verify_checkout(overlay, profile)
-    # Verify both repositories before writing the first controller file.
-    if fresh:
-        subprocess.run(base_command, check=True)
-    args = [str(overlay / "install-controller"), "--target", str(TARGET)]
     if token_file:
         if destination:
             save_token(token_file, destination)
-        args += ["--token-file", destination or token_file]
-    subprocess.run(args, check=True)
+        command += ["--token-file", destination or token_file]
+    subprocess.run(command, check=True)
 
 
 if __name__ == "__main__":
@@ -101,13 +115,15 @@ if __name__ == "__main__":
     parser.add_argument("profile", type=staging_manifest.profile_name)
     parser.add_argument("--token-file", default="")
     parser.add_argument("--save-token-to")
+    parser.add_argument("--addon", action="append", default=[], metavar="NAME=HTTPS_URL")
+    parser.add_argument("--addon-token-file", action="append", default=[], metavar="NAME=PATH")
     args = parser.parse_args()
     try:
         # Serialize the base and profile stages across concurrent pipe installers.
         fd = os.open(TARGET.parent, os.O_DIRECTORY)
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            install(args.profile, args.token_file, args.save_token_to)
+            install(args.profile, args.token_file, args.save_token_to, args.addon, args.addon_token_file)
         finally:
             os.close(fd)
     except BlockingIOError:

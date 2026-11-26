@@ -15,7 +15,7 @@ try:
 except ImportError:
     raise SystemExit('FEHLER: Python-Paket PyYAML fehlt. Den Python-Interpreter der Ansible-Umgebung verwenden.')
 
-CHECKER_VERSION = '1.2.1'
+CHECKER_VERSION = '1.3.0'
 VERSION_RE = re.compile(r'(?<![A-Za-z0-9])\d+\.\d+\.\d+(?:[a-zA-Z][A-Za-z0-9.-]*)?')
 class AuditError(Exception): pass
 class UniqueLoader(yaml.SafeLoader): pass
@@ -156,7 +156,10 @@ def check_component(root,manifest,features=None):
         if not re.fullmatch(r'[a-f0-9]{64}',wanted):raise AuditError('SHA_UNGUELTIG')
         enabled=file_enabled(manifest,rel,features);active+=int(enabled)
         path=guarded(root,rel);actual=None
-        if not path.is_file():status='FEHLT'
+        lexical=root/rel
+        if any(p.is_symlink() for p in (lexical, *lexical.parents) if p.is_relative_to(root)):
+            status='UNSAFE_SYMLINK'
+        elif not path.is_file():status='FEHLT'
         else:
             try:actual=sha(path);status='OK' if actual==wanted else 'SHA_ABWEICHUNG'
             except OSError:status='UNLESBAR'
@@ -365,7 +368,24 @@ def check_registry(root,features=None,settings_root=None):
 def audit(root,here,only=None):
     installed = root / ".controller-install.json"
     receipt = load_json(installed) if installed.is_file() and not installed.is_symlink() else {}
-    live_manifest = receipt.get("files") if receipt.get("schema") == 1 and receipt.get("source") in ("main", "staging") else None
+    live_manifest = receipt.get("files") if receipt.get("schema") in (1, 2) and receipt.get("source") in ("main", "staging") else None
+    addon_manifests = []
+    if receipt.get("schema") == 2:
+        modules = receipt.get("modules", {})
+        owners = receipt.get("owners", {})
+        files = receipt.get("files", {})
+        if (not isinstance(modules, dict) or not isinstance(owners, dict)
+                or not isinstance(files, dict) or owners.keys() != files.keys()
+                or not all(name in modules for name in owners.values())):
+            raise AuditError("INVALID_MODULE_OWNERSHIP")
+        for name, meta in modules.items():
+            if meta["kind"] != "addon":
+                continue
+            addon_files = {p: files[p] for p, owner in owners.items() if owner == name}
+            addon_manifests.append({"schema": 1, "id": "addon-" + name.lower(), "version": meta["version"],
+                                    "files": addon_files, "scope": name})
+        if live_manifest is not None:
+            live_manifest = {p: h for p, h in live_manifest.items() if modules[owners[p]]["kind"] != "addon"}
     if live_manifest is None:
         seal=load_json(here/'integrity.json')
         for rel,wanted in seal.get('files',{}).items():
@@ -396,7 +416,10 @@ def audit(root,here,only=None):
             if only is None or only==result['id']: report['components'].append(result)
     if only is None or only=='settings':
         report['settings']=check_settings(root,load_json(here/'settings_contract.json'))
-    extension_manifests=[]
+    extension_manifests = list(addon_manifests)
+    for module in addon_manifests:
+        if only is None or only == module["id"]:
+            report["extensions"].append(check_component(root, module, features))
     for extension in sorted((here/'extensions').glob('*')):
         if not extension.is_dir():continue
         if extension.is_symlink() or not extension.resolve().is_relative_to(here):raise AuditError('ADDON_PFAD_UNGUELTIG')

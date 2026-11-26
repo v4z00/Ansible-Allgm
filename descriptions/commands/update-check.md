@@ -39,6 +39,31 @@ Das zeigt die Vorschau. Für die Übernahme hänge beim letzten Python-Aufruf `-
 
 ## Lokale SHA-Prüfung
 
+### Git-Add-ons
+
+Ein Controller kann ein Standortprofil und mehrere Git-Add-ons verwenden. Die
+vier Felder jeder Zeile bleiben erhalten. Ein eigener Kommentar registriert
+das jeweilige Add-on. Beispiel für die lokale `versions.txt`:
+
+```text
+# addon=SSS
+SSS|0.0.0|https://github.com/v4z00/Ansible-SSS.git|
+```
+
+Bei der ersten Registrierung dient `0.0.0` als Startwert. Die Vorschau zeigt
+die angebotene Version. Die Übernahme schreibt die installierte Version in
+die Datei. Andere Modulzeilen ohne Registrierung bleiben passive Einträge.
+Ein privates Git-Add-on verwendet das vierte Feld für den Pfad seiner
+Token-Datei. Für die Vorschau müssen alle registrierten Module den gewählten
+Branch anbieten.
+
+Mit `bin/control update-check --staging` zuerst den Plan prüfen, danach
+`bin/control update-check --apply --staging` ausführen. Für die Rücknahme
+die ausgegebene Sicherungskennung mit `bin/control update-check --rollback KENNUNG`
+angeben. Zu einem bereits installierten Add-on müssen Eintrag und Registrierung
+vorhanden bleiben. Der Checker bricht bei fehlenden Modulquellen, geänderten
+verwalteten Add-on-Dateien oder belegten Zielpfaden vor dem Austausch ab.
+
 `--only local` zeigt den getrennten Dateibericht. Der Cronlauf mit `--auto` meldet den Status vor dem Git-Abruf. Unbekannte, fehlende oder geänderte lokale Dateien sowie beschädigte Archive blockieren die Übernahme. Der Bericht nennt bei einzeln gelieferten Zusätzen den Paketnamen. Ein Namenskonflikt mit einem Basisplaybook oder einer Basisrolle wird als `BASIS_KONFLIKT` gemeldet.
 
 ## Lokales Erweiterungspaket anlegen
@@ -308,13 +333,13 @@ Der Checker meldet den Zusatznamen und prüft die Dateien auch beim Cronlauf. Fe
   "source_hashes": {
     "bin/control.d/update-check.json": "adb0a79c424f87249ca66e73d2256bc2f477017e3ce4ebc906364678a95b3177",
     "bin/control.d/update-check.sh": "7cc1fc9287cff92e352ad038519366d7dfd04d4efe99d1c70d980de0c62ac807",
-    "update_check/check.py": "639c47fa2eec26fa81a6e81e0b9f531c4794d894fc3480237b75bed553c941e1",
+    "update_check/check.py": "0081986f093b80ff3051e07ee8cf437124162704d58aa8210c2a585b2b448d01",
     "update_check/configure.py": "c6c675198f99121dbd1d6f550481b2a9190bdb25a4c19d5ec45e7da4fb1340d3",
     "update_check/probes.py": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
     "update_check/cleanup.py": "b075547b1bfbfc3483563c2d3e79ff5ec2a5b9901a879b352ed45635228b2a36",
-    "update_check/rollout.py": "24c024677c8430dc0f7468f71d0bb902b3001d84a97f88467cbcd1dadc05a6da",
+    "update_check/rollout.py": "2ffda33a8113c3dba79a008dfbe36fb93fbf969fe02bd2cbb5e11443e8194a2c",
     "tools/github_https.py": "4939726758123ce18c3558bd22a668052a0bb028b62a1c71534b92ccb89e5bd5",
-    "tools/install_controller.py": "37fbdc748c33752d842fd429a94c66bdb53face74eb2ae59978f84cab069b1d4"
+    "tools/install_controller.py": "bd5054c2d0dd01364362366f8c3a2f76f8250ef83d37f044ca97ed44ee1ad89d"
   }
 }
 ```
