@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import sys
+import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "update_check"))
@@ -66,10 +67,16 @@ def main():
         text+='\nPLAN = '+repr(plan)+'''\nif __name__=='__main__':
     try:standalone(PLAN)
     except (CleanupError,OSError,EOFError,KeyboardInterrupt):
-        print('Abbruch; Helfer bleibt erhalten. Vorschau/Archiv pruefen.',file=sys.stderr)
+        print(tr('cleanup.abort'),file=sys.stderr)
         sys.exit(1)
 '''
-        a.cleanup_script.write_text(text)
+        # A single Python zip application also works away from the controller checkout.
+        languages = here.parent / "lib/i18n"
+        with zipfile.ZipFile(a.cleanup_script, "x", compression=zipfile.ZIP_DEFLATED) as bundle:
+            bundle.writestr("__main__.py", text)
+            bundle.write(here.parent / "scripts/controller_i18n.py", "controller_i18n.py")
+            for catalog in sorted(languages.rglob("*.json")):
+                bundle.write(catalog, catalog.relative_to(here.parent).as_posix())
     print(('Aktualisiert' if a.write else 'Geprueft')+': '+str(len(set(changes)))+' unterschiedliche Code-/Pruefdateien. Keine Settings oder Secrets gehasht.')
     return 0 if a.write or not changes else 1
 if __name__=='__main__':

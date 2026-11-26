@@ -1,9 +1,9 @@
 ---
-- name: Deploy Telegraf the Secure Way
+- name: Deploy Telegraf
   hosts: all_linux_systems
   become: true
   pre_tasks:
-    - name: Telegraf-Funktion muss aktiviert sein
+    - name: Require the Telegraf feature
       ansible.builtin.assert:
         that: features.telegraf | bool
         fail_msg: "features.telegraf ist deaktiviert. Fuer einen bewussten Rollout zuerst in settings.yml aktivieren."
@@ -24,14 +24,14 @@
         state: directory
         mode: '0755'
 
-    - name: InfluxData Repository-Schluessel herunterladen
+    - name: Download the InfluxData repository key
       ansible.builtin.get_url:
         validate_certs: "{{ (tls_validate_certs | default({})).get('telegraf_repository_key', tls_validate_certs_default | default(true)) | bool }}"
         url: "{{ influx_key_url }}"
         dest: /tmp/influxdata-archive.key
         mode: '0600'
 
-    - name: Fingerabdruck des InfluxData-Schluessels lesen
+    - name: Read the InfluxData key fingerprint
       ansible.builtin.command:
         argv:
           - gpg
@@ -41,13 +41,13 @@
       register: influx_key_details
       changed_when: false
 
-    - name: InfluxData-Schluessel gegen den erwarteten Fingerabdruck pruefen
+    - name: Verify the InfluxData key against the expected fingerprint
       ansible.builtin.assert:
         that:
           - "('fpr:::::::::' ~ influx_key_fpr ~ ':') in influx_key_details.stdout"
         fail_msg: "Der InfluxData-Schluessel besitzt nicht den erwarteten Fingerabdruck."
 
-    - name: Geprueften InfluxData-Schluessel installieren
+    - name: Install the verified InfluxData key
       ansible.builtin.command:
         argv:
           - gpg
@@ -89,7 +89,7 @@
         mode: '0640'
       notify: restart_telegraf
 
-    - name: Heruntergeladenen Repository-Schluessel entfernen
+    - name: Remove the downloaded repository key
       ansible.builtin.file:
         path: /tmp/influxdata-archive.key
         state: absent

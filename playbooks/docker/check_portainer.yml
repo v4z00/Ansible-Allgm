@@ -1,14 +1,14 @@
 ---
-- name: Optionalen Portainer-TCP-Port vom Controller prüfen
+- name: Check the optional Portainer TCP endpoint from the controller
   hosts: docker_deployment_hosts
   gather_facts: false
   tasks:
-    - name: Portainer-Schalter als YAML-Boolean prüfen
+    - name: Validate the Portainer switch as a YAML boolean
       ansible.builtin.assert:
         that: (portainer_check_enabled | default(false)) is boolean
         fail_msg: portainer_check_enabled muss true oder false sein.
 
-    - name: Konfigurierten Portainer-Port erreichen
+    - name: Connect to the configured Portainer port
       when: portainer_check_enabled | default(false)
       delegate_to: localhost
       become: false

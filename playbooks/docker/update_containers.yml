@@ -5,9 +5,9 @@
   gather_facts: yes
 
   vars:
-    # Pfad zu den Configs auf den Remote-Servern
+    # Remote configuration directory
     docker_host_config_dir: "{{ docker_remote_base_dir }}/{{ inventory_hostname }}"
-    # Temporäre Datei für den Bericht auf dem Remote-Server
+    # Temporary report on the remote server
     summary_file: "/tmp/docker_update_summary.txt"
 
   tasks:
@@ -24,14 +24,14 @@
         recurse: yes
       register: compose_files
 
-    - name: Compose-Dateien für den Pflichtcheck verlangen
+    - name: Require Compose files for the mandatory check
       ansible.builtin.assert:
         that:
           - compose_files.matched > 0
           - (compose_files.files | map(attribute='path') | map('dirname') | unique | length) == compose_files.matched
-        fail_msg: Je Stack ist genau eine Compose-Datei erforderlich. Compose-Verzeichnisse und Suchmuster prüfen.
+        fail_msg: Each stack requires exactly one Compose file. Check the Compose directories and file patterns.
 
-    - name: Images aktualisieren und auf laufende oder gesunde Dienste warten
+    - name: Update images and wait for running or healthy services
       ansible.builtin.command:
         argv:
           - docker
@@ -52,7 +52,7 @@
       register: stack_update
       changed_when: "'Recreated' in stack_update.stderr or 'Created' in stack_update.stderr"
 
-    - name: Geänderte Stacks im Updatebericht erfassen
+    - name: Record changed stacks in the update report
       ansible.builtin.lineinfile:
         path: "{{ summary_file }}"
         line: "UPDATE: {{ item.item.path | dirname | basename }}"
@@ -62,48 +62,48 @@
       when: item.changed
 
     # ==============================================================================
-    # 2. PRUNE LOGIK (Aggressiv & Robust)
+    # Prune unused images.
     # ==============================================================================
     - name: "Prune Images and Log"
       shell: |
-        # Wir nutzen '-a', damit auch ungenutzte getaggte Images (wie alpine) gelöscht werden
+        # The -a flag includes unused tagged images.
         prune_output=$(docker image prune -a -f)
         
-        # Wir prüfen positiv, ob Docker "Deleted Images:" meldet. Das ist sicherer als auf "0B" zu prüfen.
+        # Match the Docker "Deleted Images:" output to determine whether anything changed.
         if echo "$prune_output" | grep -q "Deleted Images:"; then
              
-             # Größe extrahieren (alles nach 'Total reclaimed space: ')
-             # Falls die Sprache anders ist, steht hier evtl. nichts, aber das Skript stürzt nicht ab.
+             # Extract the value after 'Total reclaimed space: '.
+             # Localized Docker output can omit this field.
              cleaned_size=$(echo "$prune_output" | grep "Total reclaimed space" | sed 's/Total reclaimed space: //')
              
-             # Fallback für Anzeige, falls sed leer war
-             if [ -z "$cleaned_size" ]; then cleaned_size="Speicherplatz"; fi
+             # Use a fallback when sed returns no size.
+             if [ -z "$cleaned_size" ]; then cleaned_size="size unavailable"; fi
 
-             # Ins Logfile schreiben
+             # Append the result to the log.
              echo "CLEANED: $cleaned_size" >> {{ summary_file }}
              
-             # WICHTIG: Signalwort für Ansible ausgeben
+             # Emit the change marker consumed by Ansible.
              echo "ANSIBLE_CHANGED"
         fi
       args:
         executable: /bin/bash
       register: prune_result
-      # Der Task wird GELB (changed), wenn das Shell-Skript "ANSIBLE_CHANGED" ausgegeben hat
+      # Report the task as changed when the script prints ANSIBLE_CHANGED.
       changed_when: "'ANSIBLE_CHANGED' in prune_result.stdout"
 
     # ==============================================================================
-    # 3. FETCH: Bericht zum Management-Server holen
+    # Fetch the report to the controller.
     # ==============================================================================
     - name: "Fetch Report to Management Server"
       fetch:
         src: "{{ summary_file }}"
-        # Speichert die Datei lokal auf dem Controller unter: /tmp/docker_reports/HOSTNAME.txt
+        # Save the report locally under /tmp/docker_reports/HOSTNAME.txt.
         dest: "/tmp/docker_reports/{{ inventory_hostname }}.txt"
         flat: yes
         fail_on_missing: no
 
-- name: Docker-Quellen und Netze der aktualisierten Hosts prüfen
+- name: Check Docker sources and networks on the updated hosts
   ansible.builtin.import_playbook: check_docker.yml
 
-- name: Standortabhängige Portainer-Prüfung
+- name: Run the site-specific Portainer check
   ansible.builtin.import_playbook: check_portainer.yml

@@ -1,5 +1,5 @@
 ---
-- name: Root-Key-Zugang pruefen
+- name: Test root key access
   ansible.builtin.command:
     argv:
       - ssh
@@ -21,7 +21,7 @@
   changed_when: false
   failed_when: false
 
-- name: Konfigurierte Erstzugangskennwoerter bestimmen
+- name: Resolve configured bootstrap passwords
   ansible.builtin.set_fact:
     bootstrap_profile_password: >-
       {{
@@ -36,7 +36,7 @@
   when: bootstrap_root_key_test.rc != 0
   no_log: true
 
-- name: Fehlendes SSH-Passwort interaktiv abfragen
+- name: Prompt for the missing SSH password
   ansible.builtin.pause:
     prompt: >-
       SSH-Passwort fuer {{ bootstrap_entry.user | default('root') }}
@@ -48,7 +48,7 @@
     - bootstrap_profile_password | default('') | length == 0
   no_log: true
 
-- name: Fehlendes Become-Passwort interaktiv abfragen
+- name: Prompt for the missing privilege escalation password
   ansible.builtin.pause:
     prompt: >-
       sudo-/su-/Root-Passwort fuer {{ bootstrap_entry.name }}
@@ -61,7 +61,7 @@
     - bootstrap_profile_become_password | default('') | length == 0
   no_log: true
 
-- name: Effektive Erstzugangskennwoerter bestimmen
+- name: Resolve the effective bootstrap credentials
   ansible.builtin.set_fact:
     bootstrap_effective_password: >-
       {{
@@ -78,14 +78,14 @@
   when: bootstrap_root_key_test.rc != 0
   no_log: true
 
-- name: Erstzugang muss ein Kennwort besitzen
+- name: Require a password for initial access
   ansible.builtin.assert:
     that: bootstrap_effective_password | length > 0
     fail_msg: "Fuer {{ bootstrap_entry.name }} wurde kein Erstzugangskennwort angegeben."
   when: bootstrap_root_key_test.rc != 0
   no_log: true
 
-- name: Host mit vorhandenem Root-Key vormerken
+- name: Record the host for existing root key access
   ansible.builtin.add_host:
     name: "bootstrap_key_{{ bootstrap_entry.name }}"
     groups: bootstrap_key_ready
@@ -97,7 +97,7 @@
     ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
   when: bootstrap_root_key_test.rc == 0
 
-- name: Host mit individuellem Erstzugang vormerken
+- name: Record the host for individual bootstrap access
   ansible.builtin.add_host:
     name: "bootstrap_{{ bootstrap_entry.name }}"
     groups: bootstrap_runtime

@@ -1,5 +1,5 @@
 ---
-- name: Rechtlichen Login-Banner setzen
+- name: Set the legal login banner
   ansible.builtin.copy:
     dest: "{{ item }}"
     content: |
@@ -12,7 +12,7 @@
     mode: '0644'
   loop: [/etc/issue, /etc/issue.net]
 
-- name: login.defs haerten
+- name: Harden login.defs
   ansible.builtin.lineinfile:
     path: /etc/login.defs
     regexp: "^{{ item.key }}\\s+"
@@ -26,7 +26,7 @@
     - {key: SHA_CRYPT_MIN_ROUNDS, value: '5000'}
     - {key: SHA_CRYPT_MAX_ROUNDS, value: '5000'}
 
-- name: Verwaiste Pakete optional entfernen
+- name: Optionally remove orphaned packages
   ansible.builtin.apt:
     autoremove: true
     purge: true

@@ -1,5 +1,5 @@
 ---
-- name: Docker-Netzwerke aus host_vars verwalten
+- name: Manage Docker networks from host_vars
   hosts: docker_deployment_hosts
   become: true
   gather_facts: false
@@ -8,12 +8,12 @@
     host_docker_networks: "{{ docker_networks | default([]) }}"
 
   pre_tasks:
-    - name: Netzwerkdefinitionen vor jeder Aenderung pruefen
+    - name: Validate network definitions before applying changes
       ansible.builtin.import_tasks: tasks/validate_networks.yml
       tags: [docker, docker_networks]
 
   tasks:
-    - name: Docker-Netzwerke anlegen oder aktualisieren
+    - name: Create or update Docker networks
       community.docker.docker_network:
         name: "{{ item.name }}"
         driver: "{{ item.driver | default('bridge') }}"
@@ -28,7 +28,7 @@
         label: "{{ item.name }}"
       tags: [docker, docker_networks]
 
-    - name: Explizit entfernte Docker-Netzwerke loeschen
+    - name: Delete Docker networks explicitly marked for removal
       community.docker.docker_network:
         name: "{{ item.name }}"
         state: absent

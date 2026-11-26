@@ -1,39 +1,38 @@
-Deployment Zusammenfassung (Aggregiert)
+Deployment summary
 ======================================================================
-Ausgeführt auf: {{ ansible_date_time.iso8601_basic_short }}
-Management-Host: {{ ansible_host }}
+Run time: {{ ansible_date_time.iso8601_basic_short }}
+Management host: {{ ansible_host }}
 
 ----------------------------------------------------------------------
-1. BEREINIGUNG (PLAY 2)
+1. CLEANUP (PLAY 2)
 ----------------------------------------------------------------------
 {% set total_pruned = global_pruned_stacks | length %}
 {% set total_candidates = global_prune_candidates | default([]) | length %}
 {% if total_pruned > 0 %}
-✅ {{ total_pruned }} nicht mehr verwaltete Stacks entfernt:
+✅ {{ total_pruned }} orphan stacks removed:
 {% for stack in global_pruned_stacks | unique %}
   - {{ stack }}
 {% endfor %}
 {% elif total_candidates > 0 %}
-⚠️ {{ total_candidates }} nicht mehr verwaltete Stacks gefunden, aber nicht entfernt:
+⚠️ {{ total_candidates }} orphan stacks left in place:
 {% for stack in global_prune_candidates | map(attribute='Name') | unique %}
   - {{ stack }}
 {% endfor %}
 {% else %}
-✅ Keine Waisen-Stacks gefunden oder entfernt.
+✅ No orphan stacks found or removed.
 {% endif %}
 
 ----------------------------------------------------------------------
 2. DEPLOYMENT STATUS (PLAY 6)
 ----------------------------------------------------------------------
-{# Nutzt die global aggregierten Ergebnisse #}
 {% set deploy_changed = global_deployment_results | selectattr('changed') | list | length %}
 {% set deploy_total = global_deployment_results | length %}
 {% set deploy_fail_count = global_deployment_results | selectattr('failed', 'defined') | selectattr('failed', 'equalto', True) | list | length %}
 
 {% if deploy_fail_count > 0 %}
-❌ FEHLER: {{ deploy_fail_count }} Deployment(s) meldeten einen Fehler beim Start.
+❌ Deployments that failed to start: {{ deploy_fail_count }}
 {% else %}
-✅ Deployment abgeschlossen. {{ deploy_changed }} Stacks geändert.
+✅ Deployment complete. Changed stacks: {{ deploy_changed }}
 {% endif %}
 
 ----------------------------------------------------------------------
@@ -41,12 +40,12 @@ Management-Host: {{ ansible_host }}
 ----------------------------------------------------------------------
 {% set unhealthy_containers = global_problem_containers | unique %}
 {% if unhealthy_containers | length > 0 %}
-⚠️ Folgende Container konnten den Start-Check nicht bestehen (Hosts: {{ groups['docker_deployment_hosts'] | join(', ') }}):
+⚠️ Containers that failed the startup check (hosts: {{ groups['docker_deployment_hosts'] | join(', ') }}):
 {% for container in unhealthy_containers %}
   - {{ container }}
 {% endfor %}
 {% else %}
-✅ Alle erwarteten Container sind gestartet.
+✅ All expected containers are running.
 {% endif %}
 
 ======================================================================

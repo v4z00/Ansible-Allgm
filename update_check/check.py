@@ -8,14 +8,18 @@ import sys
 from pathlib import Path
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from controller_i18n import cli_args, machine_report, status_text, tr
+
 from staging_manifest import public_library
 import local_extensions
 try:
     import yaml
 except ImportError:
-    raise SystemExit('FEHLER: Python-Paket PyYAML fehlt. Den Python-Interpreter der Ansible-Umgebung verwenden.')
+    cli_args(sys.argv[1:], Path(__file__).resolve().parents[1])
+    raise SystemExit(tr('audit.dependency'))
 
-CHECKER_VERSION = '1.3.0'
+CHECKER_VERSION = '1.4.0'
 VERSION_RE = re.compile(r'(?<![A-Za-z0-9])\d+\.\d+\.\d+(?:[a-zA-Z][A-Za-z0-9.-]*)?')
 class AuditError(Exception): pass
 class UniqueLoader(yaml.SafeLoader): pass
@@ -312,6 +316,7 @@ def check_settings(root,contract,code_root=None,report_unknown=True,check_links=
             checked,alias_status=resolve_literal(value,values)
             if alias_status not in {'LITERAL','OK_ALIAS'}:status=alias_status
             elif not good_type(checked,rule['type']):status='FALSCHER_TYP'
+            elif rule.get('choices') and checked not in rule['choices']:status='UNGUELTIGE_AUSWAHL'
             elif rule.get('nonempty') and checked in ('',[],{},None):status='LEER'
             else:status='OK_ALIAS' if alias_status=='OK_ALIAS' else 'OK'
         rows.append({'key':key,'status':status,'expected_type':rule['type'],'required':bool(rule.get('required'))})
@@ -461,84 +466,86 @@ def display(report,details,color='auto'):
     palette={'ok':'32','info':'36','warning':'33','error':'31'}
     def line(text,severity='info'):
         print(('\033['+palette[severity]+'m'+text+'\033[0m') if enabled else text)
-    line('CONTROLLER-VERSIONSPRUEFUNG '+report['checker_version']+' (Prueflauf)', 'info')
-    print('Profil: '+report['controller_profile']+' | Sollkatalog: '+report['expected_controller_release'])
-    if report.get('delivery_scope')=='checker_only':print('Lieferumfang: nur Checker; andere Komponenten werden nicht aktualisiert.')
-    line('Release-Dateiabgleich: '+('VOLLSTAENDIG PASSEND' if report['controller_release_verified'] else 'AKTIVER UMFANG PASSEND' if report.get('active_scope_verified') else 'PRUEFBEDARF'),'ok' if report.get('active_scope_verified') else 'warning')
+    line(tr("audit.title", version=report["checker_version"]), 'info')
+    print(tr("audit.profile", profile=report["controller_profile"], release=report["expected_controller_release"]))
+    if report.get('delivery_scope')=='checker_only':print(tr("audit.checker_only"))
+    line(tr("audit.release", status=tr("audit.complete") if report["controller_release_verified"] else tr("audit.active_scope") if report.get("active_scope_verified") else status_text("PRUEFBEDARF")),'ok' if report.get('active_scope_verified') else 'warning')
     states=report.get('features',{})
     if states:
-        print('Features: '+str(sum(v=='aktiv' for v in states.values()))+' aktiv, '+str(sum(v=='deaktiviert' for v in states.values()))+' deaktiviert.')
+        print(tr("audit.features", enabled=sum(v=="aktiv" for v in states.values()), disabled=sum(v=="deaktiviert" for v in states.values())))
         if details:
-            for name,state in sorted(states.items()):print('  '+name+': '+state)
+            for name,state in sorted(states.items()):print('  '+name+': '+status_text(state))
     for row in report['components']+report['extensions']:
         status=row['status'];severity='ok' if status=='OK' else 'info' if status=='AKTIVER_UMFANG_OK' else 'info' if status=='NICHT_INSTALLIERT' else 'warning' if status in ('PRUEFMODUL_FEHLT','BEKANNTER_AELTERER_STAND') else 'error'
-        line('  '+row['id']+': '+status+' | SHA-bestaetigt: '+str(row.get('verified_version') or 'nicht belegt')+' | Soll: '+str(row.get('expected_version','-')),severity)
-        if details and row.get('declared_versions'):print('    Versionsmarker (unbestaetigt): '+', '.join(row['declared_versions']))
-        if 'matched' in row:print('    Aktive Dateien passend: '+str(row['matched'])+'/'+str(row['tracked']))
-        for issue in row.get('issues',[]):line('    '+issue['status']+' '+issue['path'],'error')
+        line(tr("audit.component", name=row["id"], status=status_text(status), verified=row.get("verified_version") or tr("audit.unverified"), expected=row.get("expected_version","-")),severity)
+        if details and row.get('declared_versions'):print(tr("audit.markers", markers=", ".join(row["declared_versions"])))
+        if 'matched' in row:print(tr("audit.matched", matched=row["matched"], tracked=row["tracked"]))
+        for issue in row.get('issues',[]):line('    '+status_text(issue['status'])+' '+issue['path'],'error')
         if details:
             for item in row.get('files',[]):
-                if not item['required']:line('    '+item['status']+' '+item['path'],'info')
+                if not item['required']:line('    '+status_text(item['status'])+' '+item['path'],'info')
     if report['settings']:
         settings=report['settings'];counts={level:sum(row.get('severity',setting_severity(row))==level for row in settings['fields']) for level in ['error','warning','info']}
         counts['error']+=len(settings['errors'])
-        print('Settings: '+str(len(settings['fields']))+' Felder; '+str(counts['error'])+' Fehler, '+str(counts['warning'])+' Warnungen, '+str(counts['info'])+' Informationen.')
-        for row in settings['errors']:line('  '+row['status']+' '+row.get('key',row.get('path','')),'error')
+        print(tr("audit.settings", fields=len(settings["fields"]), **counts))
+        for row in settings['errors']:line('  '+status_text(row['status'])+' '+row.get('key',row.get('path','')),'error')
         for row in settings['fields']:
             severity=row.get('severity',setting_severity(row))
-            if details or severity in ('warning','error'):line('  '+row['key']+': '+row['status'],severity)
-        if counts['info'] and not details:line('  Kontextabhaengige Informationen mit --details anzeigen.','info')
+            if details or severity in ('warning','error'):line('  '+row['key']+': '+status_text(row['status']),severity)
+        if counts['info'] and not details:line(tr("audit.details_hint"),'info')
         unknown=settings.get('unknown_variables',[])
-        line('Unbekannte Variablen (nur Informationen, nie automatisch loeschen): '+str(len(unknown)),'info')
+        line(tr("audit.unknown", count=len(unknown)),'info')
         for row in unknown:
-            line('  '+row['key']+': '+row['status']+'; Texttreffer: '+str(len(row['usage'])),'info')
+            line(tr("audit.references", key=row["key"], status=status_text(row["status"]), count=len(row["usage"])),'info')
             if details:
                 for hit in row['usage']:print('    '+hit['path']+':'+str(hit['line']))
     if report['registry']:
-        registry=report['registry'];line('Registry: '+str(registry['commands'])+' Befehle; '+str(len(registry['issues']))+' Befunde.','error' if registry['issues'] else 'ok')
-        for row in registry['issues']:line('  '+row['status']+' '+row['command']+' '+row.get('path',''),'error')
+        registry=report['registry'];line(tr("audit.registry", commands=registry["commands"], issues=len(registry["issues"])),'error' if registry['issues'] else 'ok')
+        for row in registry['issues']:line('  '+status_text(row['status'])+' '+row['command']+' '+row.get('path',''),'error')
     if report.get('extended_checks'):
-        print('Erweiterte Konfigurations-/API-Pruefung:')
+        print(tr("audit.extended_heading"))
         for row in report['extended_checks']['configuration_and_api_checks']:
-            line('  '+row['id']+': '+row['status'],'ok' if row['status']=='OK' else 'info' if row['status'].startswith('SKIP_') else 'warning')
-            for issue in row.get('issues',[]):line('    '+issue['status']+' '+issue['path'],'warning')
-        print('API-Aufrufe: '+str(report['extended_checks']['network_requests'])+'. Keine Nachrichten oder Aenderungen gesendet.')
-    line('Ergebnis: '+report['status']+'. Prueflauf ohne Deployment oder Dienst-Aenderungen.','ok' if report['status']=='OK' else 'warning')
+            line('  '+row['id']+': '+status_text(row['status']),'ok' if row['status']=='OK' else 'info' if row['status'].startswith('SKIP_') else 'warning')
+            for issue in row.get('issues',[]):line('    '+status_text(issue['status'])+' '+issue['path'],'warning')
+        print(tr("audit.requests", count=report["extended_checks"]["network_requests"]))
+    line(tr("audit.result", status=status_text(report["status"])),'ok' if report['status']=='OK' else 'warning')
     if report.get('cleanup'):
-        cleanup=report['cleanup'];line('Bereinigung: '+cleanup['status']+' | Kandidaten nach Projektpruefung: '+str(cleanup['candidates'])+' | erhalten: '+str(cleanup['retained']),'info')
-        print('  Laufnachweis: '+cleanup.get('receipt','NOCH_KEIN_LAUFNACHWEIS')+'. System-/Cronverweise werden vor Ausfuehrung zusaetzlich geprueft.')
-        if cleanup['candidates']:print('  Bereinigung pruefen/ausfuehren: bin/control update-check --cleanup (Vorschau und YES).')
+        cleanup=report['cleanup'];line(tr("audit.cleanup", status=status_text(cleanup["status"]), count=cleanup["candidates"], retained=cleanup["retained"]),'info')
+        print(tr("audit.receipt", status=status_text(cleanup.get("receipt","NOCH_KEIN_LAUFNACHWEIS"))))
+        if cleanup['candidates']:print(tr("audit.cleanup_hint"))
         if details:
-            for row in cleanup['files']:print('  '+row['status']+' '+row['path'])
+            for row in cleanup['files']:print('  '+status_text(row['status'])+' '+row['path'])
 
 
 def main():
-    if "--versions" in sys.argv[1:]:
+    argv = cli_args(sys.argv[1:], Path(__file__).resolve().parents[1])
+    if "--versions" in argv:
         from rollout import show_versions
-        parser = argparse.ArgumentParser(description="Installierte Module und Versionen anzeigen")
+        parser = argparse.ArgumentParser(description=tr("audit.versions_help"))
         parser.add_argument("--versions", action="store_true")
         parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
-        return show_versions(parser.parse_args().root)
-    if any(arg in {"--remote", "--apply", "--auto", "--rollback", "--staging"} for arg in sys.argv[1:]):
+        return show_versions(parser.parse_args(argv).root)
+    if any(arg in {"--remote", "--apply", "--auto", "--rollback", "--staging"} for arg in argv):
         import rollout
-        return rollout.main(sys.argv[1:])
-    parser=argparse.ArgumentParser(description=__doc__,
-        epilog="Git-Update: --remote für main, --staging für staging. Mit --apply übernehmen. --auto verwendet immer main.")
+        return rollout.main(argv)
+    parser=argparse.ArgumentParser(description=tr("audit.description"),
+        epilog=tr("audit.git_help"))
+    parser.add_argument("--lang", choices=("de", "en"), help=tr("cli.lang"))
     parser.add_argument('--root',type=Path,default=Path(__file__).resolve().parent.parent)
-    parser.add_argument('--json',action='store_true',help='Strukturierter Bericht ohne Settings-/Credentialwerte')
-    parser.add_argument('--details',action='store_true',help='Auch passende und optionale Settingsfelder auflisten')
-    parser.add_argument('--only',help='Nur Komponente/Add-on, settings, registry oder cleanup pruefen')
-    parser.add_argument('--configure',action='store_true',help='Interaktiv fehlende bekannte Variablen erklaeren/erfragen, Vorschau und YES vor Speicherung')
-    parser.add_argument('--color',choices=['auto','always','never'],default='auto',help='Terminalfarben; auto nutzt TTY und respektiert NO_COLOR. JSON bleibt ohne ANSI.')
-    parser.add_argument('--no-prompt',action='store_true',help='Keine optionale Bereinigungsfrage im normalen interaktiven Prueflauf')
-    parser.add_argument('--cleanup',action='store_true',help='Freigegebenen Altbestand pruefen, Vorschau/YES/Archiv; aktive/abhaengige Dateien erhalten')
-    parser.add_argument('--check',action='store_true',help='Erweiterte lokale Konfigurationspruefung und lesende GET-APIs fuer konfigurierte Dienste')
-    parser.add_argument('--offline',action='store_true',help='Mit --check keine Netzwerkaufrufe; nur lokale Struktur/Artefakte pruefen')
-    parser.add_argument('--timeout',type=int,default=8,help='API-Timeout pro Aufruf in Sekunden (1 bis 30, Standard 8)')
-    parser.add_argument('--field',action='append',default=[],help='Mit --configure gezielt diese bekannte Variable abfragen (mehrfach moeglich)')
-    parser.add_argument('--find-usage',metavar='VARIABLE',help='Nur lokale Textfundstellen anzeigen; keine Inhalte, keine automatische Loeschung')
-    parser.add_argument('--sort-settings',action='store_true',help='Settings-Bloecke nach Katalog ordnen, Vorschau und YES; keine Variablen abfragen')
-    args=parser.parse_args()
+    parser.add_argument('--json',action='store_true',help=tr("audit.json_help"))
+    parser.add_argument('--details',action='store_true',help=tr("audit.details_help"))
+    parser.add_argument('--only',help=tr("audit.only_help"))
+    parser.add_argument('--configure',action='store_true',help=tr("audit.configure_help"))
+    parser.add_argument('--color',choices=['auto','always','never'],default='auto',help=tr("audit.color_help"))
+    parser.add_argument('--no-prompt',action='store_true',help=tr("audit.no_prompt_help"))
+    parser.add_argument('--cleanup',action='store_true',help=tr("audit.cleanup_help"))
+    parser.add_argument('--check',action='store_true',help=tr("audit.check_help"))
+    parser.add_argument('--offline',action='store_true',help=tr("audit.offline_help"))
+    parser.add_argument('--timeout',type=int,default=8,help=tr("audit.timeout_help"))
+    parser.add_argument('--field',action='append',default=[],help=tr("audit.field_help"))
+    parser.add_argument('--find-usage',metavar='VARIABLE',help=tr("audit.usage_help"))
+    parser.add_argument('--sort-settings',action='store_true',help=tr("audit.sort_help"))
+    args=parser.parse_args(argv)
     try:
         if args.cleanup and (args.json or args.configure or args.sort_settings or args.check or args.only or args.find_usage):raise AuditError('BEREINIGUNG_GETRENNT_AUFRUFEN')
         if args.offline and not args.check:raise AuditError('OFFLINE_BENOETIGT_CHECK')
@@ -554,9 +561,9 @@ def main():
         if args.find_usage:
             hits=find_usage(root,args.find_usage)
             result={'variable':args.find_usage,'usage':hits,'deletion_allowed':False,'note':'Texttreffer sind kein vollstaendiger Nachweis dynamischer Verwendung.'}
-            if args.json:print(json.dumps(result,ensure_ascii=False,indent=2))
+            if args.json:print(json.dumps(machine_report(result),ensure_ascii=False,indent=2))
             else:
-                print(args.find_usage+': '+str(len(hits))+' lokale Textfundstellen. Keine Loeschfreigabe.')
+                print(args.find_usage+': '+str(len(hits))+tr("audit.matches"))
                 for hit in hits:print('  '+hit['path']+':'+str(hit['line']))
             return 0
         if args.field and not args.configure:raise AuditError('FIELD_BENOETIGT_CONFIGURE')
@@ -576,12 +583,12 @@ def main():
             import importlib.util
             spec=importlib.util.spec_from_file_location('controller_readonly_probes',here/'probes.py')
             probes=importlib.util.module_from_spec(spec);spec.loader.exec_module(probes)
-            report['extended_checks']=probes.run(root,sys.modules[__name__],offline=args.offline,timeout=args.timeout,active_files={r['path']:r['required'] for c in report['components']+report['extensions'] for r in c.get('files',[])},progress=lambda label:print('Pruefe '+label+' ...',file=sys.stderr,flush=True))
+            report['extended_checks']=probes.run(root,sys.modules[__name__],offline=args.offline,timeout=args.timeout,active_files={r['path']:r['required'] for c in report['components']+report['extensions'] for r in c.get('files',[])},progress=lambda label:print(tr('audit.probe', name=label),file=sys.stderr,flush=True))
             report['network_accessed']=report['extended_checks']['network_requests']>0
             if any(row['status']!='OK' and not row['status'].startswith('SKIP_') for row in report['extended_checks']['configuration_and_api_checks']):report['status']='PRUEFBEDARF'
-        print(json.dumps(report,ensure_ascii=False,indent=2)) if args.json else display(report,args.details,args.color)
+        print(json.dumps(machine_report(report),ensure_ascii=False,indent=2)) if args.json else display(report,args.details,args.color)
         if not args.json and not args.no_prompt and not any([args.cleanup,args.check,args.configure,args.sort_settings,args.only,args.find_usage]) and report.get('cleanup',{}).get('candidates',0) and sys.stdin.isatty() and sys.stdout.isatty():
-            if input('Freigegebene Altreste jetzt zur Bereinigung anzeigen? [j/N]: ').strip().lower() in {'j','ja','y','yes'}:
+            if input(tr("audit.cleanup_prompt")).strip().lower() in {'j','ja','y','yes'}:
                 import importlib.util
                 spec=importlib.util.spec_from_file_location('controller_cleanup_prompt',here/'cleanup.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
                 try:module.interactive(root,load_json(here/'cleanup_plan.json'))
@@ -590,7 +597,7 @@ def main():
         return 0 if report['status']=='OK' else 1
     except (AuditError,OSError,ValueError,KeyError,TypeError,UnicodeError,RecursionError) as exc:
         code=str(exc) if isinstance(exc,AuditError) else 'LOKALE_PRUEFDATEN_UNLESBAR'
-        if args.json: print(json.dumps({'status':'FEHLER','error':code,'read_only':not (args.cleanup or args.configure or args.sort_settings)}))
-        else: print('FEHLER: '+code+'. Pruefung/Aktion abgebrochen; vorhandene Sicherungen/Nachweise pruefen.',file=sys.stderr)
+        if args.json: print(json.dumps(machine_report({'status':'FEHLER','error':code,'read_only':not (args.cleanup or args.configure or args.sort_settings)})))
+        else: print(tr("audit.error_label")+status_text(code)+tr("audit.error_hint"),file=sys.stderr)
         return 2
 if __name__=='__main__': raise SystemExit(main())

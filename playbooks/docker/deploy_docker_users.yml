@@ -1,5 +1,5 @@
 ---
-- name: Docker-Service-User aus host_vars verwalten
+- name: Manage Docker service accounts from host_vars
   hosts: docker_deployment_hosts
   become: true
   gather_facts: false
@@ -9,7 +9,7 @@
       {{ docker_service_users | default([]) | selectattr('managed', 'defined') | selectattr('managed') | list }}
 
   pre_tasks:
-    - name: Freigegebene Service-User validieren
+    - name: Validate approved service accounts
       ansible.builtin.assert:
         that:
           - item.name is defined
@@ -24,7 +24,7 @@
         label: "{{ item.name | default('unbenannt') }}"
       tags: [docker, docker_users]
 
-    - name: Doppelte freigegebene UIDs verhindern
+    - name: Reject duplicate UIDs among approved accounts
       ansible.builtin.assert:
         that:
           - managed_docker_service_users | map(attribute='uid') | list | unique | length == managed_docker_service_users | length
@@ -32,7 +32,7 @@
       tags: [docker, docker_users]
 
   tasks:
-    - name: Primaergruppen der Docker-Service-User anlegen
+    - name: Create primary groups for Docker service accounts
       ansible.builtin.group:
         name: "{{ item.name }}"
         gid: "{{ item.gid }}"
@@ -43,7 +43,7 @@
         label: "{{ item.name }} (GID {{ item.gid }})"
       tags: [docker, docker_users]
 
-    - name: Docker-Service-User anlegen
+    - name: Create Docker service accounts
       ansible.builtin.user:
         name: "{{ item.name }}"
         uid: "{{ item.uid }}"

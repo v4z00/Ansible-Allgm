@@ -1,3 +1,3 @@
 ---
-- name: Gemeinsamen Root-Zugangsbootstrap laden
+- name: Load the shared root access bootstrap
   ansible.builtin.import_playbook: bootstrap/root_access.yml

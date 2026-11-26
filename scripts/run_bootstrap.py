@@ -9,6 +9,8 @@ import subprocess
 import sys
 import tempfile
 
+from controller_i18n import cli_args, tr
+
 
 ROOT = Path(__file__).resolve().parents[1]
 LINUX_PATTERN = "all_linux_systems:!opnsense_firewall"
@@ -28,7 +30,7 @@ def split_options(args):
         if value in ("--limit", "-l", "--target"):
             index += 1
             if index >= len(args):
-                raise BootstrapError(f"Hinter {value} fehlt das Ziel.")
+                raise BootstrapError(tr('bootstrap.missing_target', value=value))
             target = args[index]
         elif value.startswith(("--limit=", "--target=")):
             target = value.split("=", 1)[1]
@@ -38,18 +40,18 @@ def split_options(args):
             if value in ("-i", "--inventory", "--inventory-file") or value.startswith(
                 ("--inventory=", "--inventory-file=")
             ) or (value.startswith("-i") and not value.startswith("--") and len(value) > 2):
-                raise BootstrapError("Bootstrap verwendet das Projekt-Inventory unter inventory/.")
+                raise BootstrapError(tr('bootstrap.inventory_option'))
             if value in ("--check", "-C"):
-                raise BootstrapError("Bootstrap unterstuetzt keinen Check-Mode; --list-hosts zeigt nur die Auswahl.")
+                raise BootstrapError(tr('bootstrap.check_mode'))
             if value == "--":
-                raise BootstrapError("Der Argumenttrenner -- wird hier nicht unterstuetzt.")
+                raise BootstrapError(tr('bootstrap.separator'))
             forwarded.append(value)
             index += 1
             continue
         if selection is not None:
-            raise BootstrapError("Bitte nur eine Zielauswahl angeben; mehrere Ziele mit Komma trennen.")
+            raise BootstrapError(tr('bootstrap.one_selection'))
         if not target.strip() or target.startswith("-"):
-            raise BootstrapError("Leere oder ungueltige Zielauswahl.")
+            raise BootstrapError(tr('bootstrap.invalid_selection'))
         selection = target.strip()
         index += 1
     return selection, forwarded
@@ -62,13 +64,13 @@ def inventory_data(root):
     )
     if result.returncode:
         # Never print captured inventory output: it can contain credentials.
-        raise BootstrapError("Inventory konnte nicht geladen werden. Zuerst bin/control doctor pruefen.")
+        raise BootstrapError(tr('bootstrap.inventory_error'))
     try:
         data = json.loads(result.stdout)
     except (ValueError, TypeError) as error:
-        raise BootstrapError("Inventory liefert keine gueltigen JSON-Daten.") from error
+        raise BootstrapError(tr('bootstrap.invalid_json')) from error
     if not isinstance(data, dict):
-        raise BootstrapError("Unerwartetes Inventoryformat.")
+        raise BootstrapError(tr('bootstrap.inventory_shape'))
     return data
 
 
@@ -91,11 +93,11 @@ def expand_selection(selection, candidates):
     for item in selection.split(","):
         item = item.strip()
         if not item:
-            raise BootstrapError("Leerer Eintrag in der Zielauswahl.")
+            raise BootstrapError(tr('bootstrap.empty_entry'))
         if item.isdecimal():
             number = int(item)
             if not 1 <= number <= len(candidates):
-                raise BootstrapError(f"Unbekannte Listennummer: {item}")
+                raise BootstrapError(tr('bootstrap.unknown_number', item=item))
             item = candidates[number - 1]
         parts.append(item)
     return ",".join(parts)
@@ -109,11 +111,11 @@ def resolve_targets(root, pattern, candidates):
     # Refuse partial matches as well: a misspelled name must not be ignored.
     warnings = result.stderr.lower()
     if result.returncode or "could not match supplied host pattern" in warnings:
-        raise BootstrapError("Auswahl passt nicht vollstaendig zum Inventory. Namen/Gruppen pruefen.")
+        raise BootstrapError(tr('bootstrap.unmatched'))
     expected = set(candidates)
     targets = sorted({line.strip() for line in result.stdout.splitlines() if line.strip() in expected})
     if not targets:
-        raise BootstrapError("Keine geeigneten Linux-Ziele in dieser Auswahl.")
+        raise BootstrapError(tr('bootstrap.no_targets'))
     return targets
 
 
@@ -128,31 +130,31 @@ def build_profiles(data, targets):
     for name in targets:
         values = hostvars.get(name, {})
         if not values.get("ansible_host"):
-            raise BootstrapError(f"{name}: ansible_host fehlt; zuerst das Inventory korrigieren.")
+            raise BootstrapError(tr('bootstrap.missing_address', name=name))
         existing = values.get("bootstrap_targets", []) or []
         configured = next((item for item in existing if item.get("name") == name), {})
         access = (values.get("managed_host_access", {}) or {}).get(name, {})
         default_user = configured.get("user") or access.get("user") or values.get("managed_access_default_user") or "root"
         default_port = configured.get("port") or access.get("port") or values.get("managed_access_default_port") or 22
-        print(f"\nErstzugang fuer {name} ({values['ansible_host']})")
-        user = ask("SSH-Benutzer (nur falls Root-Key noch nicht funktioniert)", default_user)
+        print(tr('bootstrap.first_access', name=name, address=values['ansible_host']))
+        user = ask(tr('bootstrap.user'), default_user)
         if not user or user.startswith("-") or any(char.isspace() for char in user):
-            raise BootstrapError(f"{name}: ungueltiger SSH-Benutzer.")
-        port_text = ask("SSH-Port", default_port)
+            raise BootstrapError(tr('bootstrap.invalid_user', name=name))
+        port_text = ask(tr('bootstrap.port'), default_port)
         try:
             port = int(port_text)
         except ValueError as error:
-            raise BootstrapError(f"{name}: SSH-Port muss eine Zahl sein.") from error
+            raise BootstrapError(tr('bootstrap.numeric_port', name=name)) from error
         if not 1 <= port <= 65535:
-            raise BootstrapError(f"{name}: SSH-Port ausserhalb 1-65535.")
+            raise BootstrapError(tr('bootstrap.port_range', name=name))
         method = "direct"
         if user != "root":
             default_method = configured.get("become_method") or access.get("become_method") or "auto"
             if default_method not in ("auto", "sudo", "su"):
                 default_method = "auto"
-            method = ask("Root-Aufstieg: auto, sudo oder su", default_method).lower()
+            method = ask(tr('bootstrap.escalation'), default_method).lower()
             if method not in ("auto", "sudo", "su"):
-                raise BootstrapError(f"{name}: ungueltige Become-Methode.")
+                raise BootstrapError(tr('bootstrap.invalid_escalation', name=name))
         profile = {"name": name, "user": user, "port": port, "become_method": method}
         for key in ("password_env", "become_password_env"):
             if configured.get(key):
@@ -166,7 +168,7 @@ def run_playbook(root, profiles, forwarded):
     log_dir.mkdir(exist_ok=True)
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     log = log_dir / f"bootstrap-{stamp}.log"
-    print(f"Log: {log}", flush=True)
+    print(tr('bootstrap.log', log=log), flush=True)
     payload = {"bootstrap_target": "all", "bootstrap_targets": profiles}
     # mkstemp creates mode 0600. Credentials remain in Ansible's original
     # resolver; this file contains only the selected, non-secret profiles.
@@ -186,13 +188,9 @@ def run_playbook(root, profiles, forwarded):
 
 
 def main(args=None, root=ROOT):
-    args = sys.argv[1:] if args is None else args
+    args = cli_args(sys.argv[1:] if args is None else args, root=root)
     if any(arg in ("--help", "-h") for arg in args):
-        print("Aufruf: control bootstrap [--target HOST_ODER_GRUPPE] [Ansible-Optionen]\n"
-              "Ohne Ziel: interaktive Auswahl nach Nummer, Inventoryname oder Gruppe.\n"
-              "Komma trennt mehrere Ziele; Ansible-Muster sind moeglich.\n"
-              "--limit/-l wird als Zielvorgabe uebernommen, nicht ans Playbook weitergegeben.\n"
-              "--list-hosts zeigt nur die ausgewaehlten Hosts und fuehrt nichts aus.")
+        print(tr('bootstrap.help'))
         return 0
     if "--syntax-check" in args:
         return subprocess.run(
@@ -201,34 +199,32 @@ def main(args=None, root=ROOT):
         ).returncode
     suggestion, forwarded = split_options(args)
     if not sys.stdin.isatty():
-        raise BootstrapError("Bootstrap benoetigt ein interaktives Terminal; keine automatische Alle-Auswahl.")
+        raise BootstrapError(tr('bootstrap.tty'))
     data = inventory_data(root)
     candidates = sorted(group_members(data, "all_linux_systems") - group_members(data, "opnsense_firewall") - {"localhost"})
     if not candidates:
-        raise BootstrapError("Keine geeigneten Hosts in all_linux_systems vorhanden.")
+        raise BootstrapError(tr('bootstrap.empty_group'))
     hostvars = data.get("_meta", {}).get("hostvars", {})
-    print("\nBootstrap: Was betrifft es?\n")
+    print(tr('bootstrap.select_hosts'))
     for number, name in enumerate(candidates, 1):
-        print(f"{number:3}) {name} ({hostvars.get(name, {}).get('ansible_host', 'Adresse fehlt')})")
-    print("\nNummern, Inventorynamen oder Gruppen, mit Komma getrennt.\n"
-          "Beispiele: 1,3 | beispiel-server | dmz_hosts | all_linux_systems\n"
-          "Leere Eingabe ohne Vorgabe oder q bricht ab.")
-    selection = input(f"Was betrifft es?{f' [{suggestion}]' if suggestion else ''}: ").strip() or suggestion
+        print(f"{number:3}) {name} ({hostvars.get(name, {}).get('ansible_host', tr('bootstrap.no_address'))})")
+    print(tr('bootstrap.selection_help'))
+    selection = input(f"{tr('bootstrap.prompt')}{f' [{suggestion}]' if suggestion else ''}: ").strip() or suggestion
     if not selection or selection.lower() in ("q", "quit", "abbruch"):
-        print("Abbruch. Es wurde nichts geaendert.")
+        print(tr('bootstrap.cancelled'))
         return 0
     targets = resolve_targets(root, expand_selection(selection, candidates), candidates)
-    print(f"\nAusgewaehlte Zielhosts ({len(targets)}):")
+    print(tr('bootstrap.selected', count=len(targets)))
     for name in targets:
-        print(f"  {name} ({hostvars.get(name, {}).get('ansible_host', 'Adresse fehlt')})")
+        print(f"  {name} ({hostvars.get(name, {}).get('ansible_host', tr('bootstrap.no_address'))})")
     if "--list-hosts" in forwarded:
-        print("Nur Anzeige; kein Bootstrap ausgefuehrt.")
+        print(tr('bootstrap.preview'))
         return 0
-    if input("Diese Ziele bearbeiten? Zur Bestaetigung YES eingeben: ").strip() != "YES":
-        print("Abbruch. Es wurde nichts geaendert.")
+    if input(tr('bootstrap.confirm')).strip() != "YES":
+        print(tr('bootstrap.cancelled'))
         return 0
     profiles = build_profiles(data, targets)
-    print("\nRoot-Key wird zuerst getestet. Fehlende Kennwoerter fragt Ansible verdeckt ab.")
+    print(tr('bootstrap.key_first'))
     return run_playbook(root, profiles, forwarded)
 
 
@@ -236,8 +232,8 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except (BootstrapError, FileNotFoundError) as error:
-        print(f"Fehler: {error}", file=sys.stderr)
+        print(tr('bootstrap.error', error=error), file=sys.stderr)
         raise SystemExit(2)
     except (EOFError, KeyboardInterrupt):
-        print("\nAbbruch.", file=sys.stderr)
+        print(tr('bootstrap.abort'), file=sys.stderr)
         raise SystemExit(130)

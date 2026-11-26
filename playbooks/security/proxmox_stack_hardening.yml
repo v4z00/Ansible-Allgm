@@ -1,10 +1,10 @@
 ---
-- name: Proxmox-Weboberflaeche an Management-IP binden
+- name: Bind the Proxmox web interface to the management IP
   hosts: proxmox_gui_hosts
   become: true
   gather_facts: false
   tasks:
-    - name: PVEProxy an die Inventory-Adresse binden
+    - name: Bind pveproxy to the inventory address
       ansible.builtin.lineinfile:
         path: /etc/default/pveproxy
         regexp: '^LISTEN_IP='
@@ -13,24 +13,25 @@
         owner: root
         group: root
         mode: '0644'
-      notify: PVEProxy neu starten
+      notify: Restart pveproxy
   handlers:
-    - name: PVEProxy neu starten
+    - name: Restart pveproxy
+      listen: PVEProxy neu starten
       ansible.builtin.service:
         name: pveproxy
         state: restarted
 
-- name: PBS-Port auf das Storage-Netz beschraenken
+- name: Restrict the PBS port to the storage network
   hosts: proxmox_backup_hosts
   become: true
   gather_facts: false
   tasks:
-    - name: Persistente iptables-Unterstuetzung installieren
+    - name: Install persistent iptables support
       ansible.builtin.apt:
         name: iptables-persistent
         state: present
 
-    - name: Erlaubte Quellen fuer PBS-Port eintragen
+    - name: Allow configured sources to reach the PBS port
       ansible.builtin.iptables:
         chain: INPUT
         protocol: tcp
@@ -40,7 +41,7 @@
         action: insert
       loop: "{{ pbs_allowed_sources }}"
 
-    - name: Andere Zugriffe auf PBS an der Storage-IP verwerfen
+    - name: Drop other requests to the PBS storage IP
       ansible.builtin.iptables:
         chain: INPUT
         protocol: tcp
@@ -48,6 +49,6 @@
         destination: "{{ pbs_storage_ip }}"
         jump: DROP
 
-    - name: Firewallregeln persistent speichern
+    - name: Persist firewall rules
       ansible.builtin.command: netfilter-persistent save
       changed_when: true

@@ -1,5 +1,5 @@
 ---
-- name: Root-Bootstrap vorbereiten
+- name: Prepare root access
   hosts: localhost
   connection: local
   gather_facts: false
@@ -8,31 +8,31 @@
     selected_target: "{{ bootstrap_target | default('all') }}"
 
   tasks:
-    - name: Bootstrap-Profile muessen konfiguriert sein
+    - name: Require configured bootstrap profiles
       ansible.builtin.assert:
         that: bootstrap_targets | default([]) | length > 0
         fail_msg: >-
           Keine bootstrap_targets konfiguriert. Erstzugangsprofile in
           group_vars/all/settings.yml hinterlegen.
 
-    - name: Gewaehltes Bootstrap-Profil muss vorhanden sein
+    - name: Require the selected bootstrap profile
       ansible.builtin.assert:
         that: >-
           selected_target == 'all'
           or selected_target in (bootstrap_targets | map(attribute='name') | list)
         fail_msg: "Unbekanntes Bootstrap-Ziel: {{ selected_target }}"
 
-    - name: Controller-Key pruefen
+    - name: Check the controller key
       ansible.builtin.stat:
         path: "{{ bootstrap_public_key_file }}"
       register: bootstrap_key
 
-    - name: Controller-Key muss vorhanden sein
+    - name: Require the controller key
       ansible.builtin.assert:
         that: bootstrap_key.stat.exists
         fail_msg: "Controller-Key fehlt: {{ bootstrap_public_key_file }}"
 
-    - name: Ausgewaehlte Bootstrap-Profile pruefen
+    - name: Validate selected bootstrap profiles
       ansible.builtin.assert:
         that:
           - hostvars[item.name] is defined
@@ -42,7 +42,7 @@
       loop: "{{ bootstrap_targets | default([]) }}"
       when: selected_target == 'all' or item.name == selected_target
 
-    - name: Root-Key oder individuellen Erstzugang vorbereiten
+    - name: Prepare root key access or individual bootstrap credentials
       ansible.builtin.include_tasks: tasks/prepare_target.yml
       loop: "{{ bootstrap_targets | default([]) }}"
       loop_control:
@@ -50,15 +50,15 @@
         label: "{{ bootstrap_entry.name }}"
       when: selected_target == 'all' or bootstrap_entry.name == selected_target
 
-- name: Root-Zugang ueber sudo oder su herstellen
+- name: Establish root access with sudo or su
   hosts: bootstrap_runtime
   gather_facts: false
 
   tasks:
-    - name: Verbindung mit dem Erstzugang pruefen
+    - name: Test the initial connection
       ansible.builtin.ping:
 
-    - name: sudo zu root testen
+    - name: Test sudo access to root
       ansible.builtin.command: whoami
       become: true
       become_method: sudo
@@ -71,7 +71,7 @@
         - ansible_user != 'root'
         - bootstrap_requested_become in ['auto', 'sudo']
 
-    - name: su zu root testen
+    - name: Test su access to root
       ansible.builtin.command: whoami
       become: true
       become_method: su
@@ -84,7 +84,7 @@
         - ansible_user != 'root'
         - bootstrap_requested_become in ['auto', 'su']
 
-    - name: Funktionierende Become-Methode bestimmen
+    - name: Select a working privilege escalation method
       ansible.builtin.set_fact:
         bootstrap_selected_become: >-
           {{
@@ -117,7 +117,7 @@
             )
           }}
 
-    - name: Ohne funktionierenden Root-Aufstieg abbrechen
+    - name: Stop if privilege escalation to root fails
       ansible.builtin.assert:
         that: bootstrap_selected_become != 'none'
         fail_msg: >-
@@ -126,12 +126,12 @@
           Angefordert war {{ bootstrap_requested_become }}. Bei abweichendem
           Root-Passwort become_password_env separat konfigurieren.
 
-    - name: Root-Key-Zugang einrichten
+    - name: Configure root key access
       become: "{{ bootstrap_selected_become != 'direct' }}"
       become_user: root
       become_method: "{{ bootstrap_selected_become if bootstrap_selected_become != 'direct' else 'sudo' }}"
       block:
-        - name: Root-SSH-Verzeichnis anlegen
+        - name: Create the root SSH directory
           ansible.builtin.file:
             path: /root/.ssh
             state: directory
@@ -139,7 +139,7 @@
             group: root
             mode: "0700"
 
-        - name: Controller-Key fuer root hinterlegen
+        - name: Install the controller key for root
           ansible.posix.authorized_key:
             user: root
             key: "{{ lookup('ansible.builtin.file', bootstrap_public_key_file) }}"
@@ -147,38 +147,38 @@
             manage_dir: false
           no_log: true
 
-        - name: Root-Key-Anmeldung freigeben
+        - name: Enable SSH key authentication for root
           ansible.builtin.copy:
             dest: /etc/ssh/sshd_config.d/00-managed-root-key-bootstrap.conf
             owner: root
             group: root
             mode: "0644"
             content: |
-              # Verwaltet durch Ansible
+              # Managed by Ansible
               PermitRootLogin prohibit-password
               PubkeyAuthentication yes
 
-        - name: SSH-Konfiguration validieren
+        - name: Validate the SSH configuration
           ansible.builtin.command: sshd -t
           changed_when: false
 
-        - name: SSH neu laden
+        - name: Reload SSH
           ansible.builtin.service:
             name: ssh
             state: reloaded
 
-    - name: Verwendete Become-Methode ausgeben
+    - name: Report the privilege escalation method
       ansible.builtin.debug:
         msg: "{{ bootstrap_inventory_name }}: Root-Key ueber {{ bootstrap_selected_become }} eingerichtet."
 
-- name: Bereits vorhandenen Root-Key bestaetigen
+- name: Confirm existing root key access
   hosts: bootstrap_key_ready
   gather_facts: false
 
   tasks:
-    - name: Root-Key-Verbindung mit Ansible pruefen
+    - name: Test the root key connection with Ansible
       ansible.builtin.ping:
 
-    - name: Vorhandenen Root-Key melden
+    - name: Report existing root key access
       ansible.builtin.debug:
         msg: "{{ bootstrap_inventory_name }}: Root-Key funktioniert bereits; kein Bootstrap notwendig."

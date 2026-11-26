@@ -364,13 +364,147 @@ Der Checker meldet den Zusatznamen und prüft die Dateien auch beim Cronlauf. Fe
   "source_hashes": {
     "bin/control.d/update-check.json": "adb0a79c424f87249ca66e73d2256bc2f477017e3ce4ebc906364678a95b3177",
     "bin/control.d/update-check.sh": "7cc1fc9287cff92e352ad038519366d7dfd04d4efe99d1c70d980de0c62ac807",
-    "update_check/check.py": "0081986f093b80ff3051e07ee8cf437124162704d58aa8210c2a585b2b448d01",
-    "update_check/configure.py": "c6c675198f99121dbd1d6f550481b2a9190bdb25a4c19d5ec45e7da4fb1340d3",
+    "update_check/check.py": "b0edbce28cf6caaa105967268a80796f7837181165a026bd9b356fc15b2fbaaa",
+    "update_check/configure.py": "990856b84af5b9a2efa230de321ef1a2a9e7813b948cfa336763c6e4dd77fdd3",
     "update_check/probes.py": "22dbb65098b7adfce12c0dc0a39df14440748bbf3926416c432f2a7fbf69c75a",
-    "update_check/cleanup.py": "b075547b1bfbfc3483563c2d3e79ff5ec2a5b9901a879b352ed45635228b2a36",
-    "update_check/rollout.py": "78dc8a3bc49c0880581424890649c43506339e349840509107277116d13e938f",
+    "update_check/cleanup.py": "88947b11d44dcc6af7bf07dfaab24865a85c6717c63b8d6545642a617b1d001e",
+    "update_check/rollout.py": "df1477addab3ceccb09c464c02b044e4abcd564daea3cabe2b7639b3f9356df5",
     "tools/github_https.py": "4939726758123ce18c3558bd22a668052a0bb028b62a1c71534b92ccb89e5bd5",
-    "tools/install_controller.py": "bd5054c2d0dd01364362366f8c3a2f76f8250ef83d37f044ca97ed44ee1ad89d"
+    "tools/install_controller.py": "82ebd7381a077dcfecb412db705106b17275d6ed02597a8738d21be29070f57c"
+  },
+  "i18n": {
+    "de": {
+      "title": "Versionen, Settings und Initialkonfiguration",
+      "description": "Controllerprüfung für Profile, Datei-SHA und optionale Bereinigung.\nMit `--remote` den freigegebenen Branch `main` über HTTPS prüfen, mit `--apply`\nübernehmen. `--auto` nutzt dieselben Zugangsdaten im Cronlauf. Die lokale\n`versions.txt` enthält pro Modul Version, HTTPS-Origin und optional den Pfad\nzur Token-Datei. Öffentliche Module verwenden anonymen Zugriff. Bei einem\nprivaten Modul muss die externe Token-Datei dem ausführenden Benutzer gehören\nund Modus `0600` haben.\n\n## Zwischen main und staging wechseln\n\n| Ziel | Vorschau | Übernehmen |\n| --- | --- | --- |\n| Freigabe (`main`) | `bin/control update-check --remote` | `bin/control update-check --apply` |\n| Teststand (`staging`) | `bin/control update-check --staging` | `bin/control update-check --apply --staging` |\n\nDie Auswahl gilt für diesen Aufruf und alle installierten Controller-Module. Der Cronlauf mit `--auto` verwendet immer `main`. Ein laufender Testcontroller kann dadurch beim nächsten automatischen Update auf die Freigabe zurückkehren. Beide Branches müssen den Schalter unterstützen, damit du beliebig hin- und herwechseln kannst.\n\nDie Ansible-CLI meldet ihre Version mit `ansible --version`. Mit `module-versions` siehst du die installierte Version jedes Moduls. Ist Ansible TUI für das aktuelle Konto installiert, wird auch ihre Version angezeigt. In einer neuen Controller-Shell steht der Alias bereit. Direkt geht es mit `bin/control module-versions`. In der lokalen `versions.txt` steht zum Beispiel `s1.2.3` für Staging und `1.2.3` für Main. Beide leiten sich aus derselben numerischen Basis in `VERSION.txt` ab. Die Vorschau zeigt die Zielversionen. Erst das Übernehmen ändert die installierten Versionen.\n\nBeim Wechsel werden verwaltete Dateien, die nur zum bisherigen Stand gehören, mitgesichert und entfernt. Eigene Änderungen an solchen Dateien blockieren den Wechsel. Über `--rollback SICHERUNGSKENNUNG` lässt sich der gesicherte Stand wiederherstellen.\n\n### Einen älteren Controller testen\n\nKennt der installierte Checker `--staging` noch nicht, kannst du den neuen Checker aus einem separaten Checkout starten. Als root auf dem Debian-Testcontroller:\n\n\u0060\u0060\u0060bash\n(\n  set -eu\n  testcode=$(mktemp -d)\n  trap 'rm -rf -- \"$testcode\"' EXIT\n  git clone --quiet --single-branch --branch staging https://github.com/v4z00/Ansible-Allgm.git \"$testcode/Allgm\"\n  cd \"$testcode/Allgm\"\n  /root/ansible/.venv/bin/python /root/ansible/update_check/staging_manifest.py verify Allgm HEAD\n  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --staging\n)\n\u0060\u0060\u0060\n\nDas zeigt die Vorschau. Für die Übernahme hänge beim letzten Python-Aufruf `--apply` an. Der Checker bezieht die registrierten Module aus ihren geprüften Quellen. Nach der Rückkehr zu einer älteren Freigabe funktioniert der separate Checkout auf dieselbe Weise.\n\n## Lokale SHA-Prüfung\n\n### SSS aus einem älteren Controller übernehmen\n\nVor dem ersten Wechsel die eigene `versions.txt` sichern. Wer SSS bereits\nnutzt, ergänzt den unten gezeigten Eintrag. Veränderte Dateien aus dem alten\nSSS-Verzeichnis werden als Konflikt gemeldet. Eigene Konfiguration zuerst nach\nder [SSS-Anleitung](https://github.com/v4z00/Ansible-SSS/blob/staging/README.de.md)\nprivat übernehmen. Den SHA-Konflikt vor dem Update einzeln prüfen.\n\nFür den einmaligen Übergang von einem älteren Checker gibt es den\nBrückenstand `c7d2d7cbd881a7387d2fa424c10dfabc48a3fd41`. Er enthält noch\ndie alten SSS-Dateien und kann das neue Add-on-Format prüfen. Auf einem\nController mit bestehender Python-Umgebung zeigt dieser Aufruf die Vorschau:\n\n\u0060\u0060\u0060bash\n(\n  set -eu\n  umask 077\n  work=$(mktemp -d)\n  trap 'rm -rf -- \"$work\"' EXIT\n  git clone --quiet --branch staging https://github.com/v4z00/Ansible-Allgm.git \"$work/base\"\n  cd \"$work/base\"\n  git checkout --quiet --detach c7d2d7cbd881a7387d2fa424c10dfabc48a3fd41\n  /root/ansible/.venv/bin/python /root/ansible/update_check/staging_manifest.py verify Allgm HEAD\n  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --staging\n)\n\u0060\u0060\u0060\n\nNach erfolgreicher Vorschau für die Übernahme beim letzten Aufruf `--apply`\nergänzen. Über die ausgegebene Sicherungskennung stellt `--rollback` auch\ndie vorherige Quittung und die zuvor vorhandene `versions.txt` wieder her.\n\n### Git-Add-ons\n\nEin Controller kann ein Standortprofil und mehrere Git-Add-ons verwenden. Die\nvier Felder jeder Zeile bleiben erhalten. Ein eigener Kommentar registriert\ndas jeweilige Add-on. Beispiel für die lokale `versions.txt`:\n\n\u0060\u0060\u0060text\n# addon=SSS\nSSS|0.0.0|https://github.com/v4z00/Ansible-SSS.git|\n\u0060\u0060\u0060\n\nBei der ersten Registrierung dient `0.0.0` als Startwert. Die Vorschau zeigt\ndie angebotene Version. Die Übernahme schreibt die installierte Version in\ndie Datei. Andere Modulzeilen ohne Registrierung bleiben passive Einträge.\nEin privates Git-Add-on verwendet das vierte Feld für den Pfad seiner\nToken-Datei. Für die Vorschau müssen alle registrierten Module den gewählten\nBranch anbieten.\n\nMit `bin/control update-check --staging` zuerst den Plan prüfen, danach\n`bin/control update-check --apply --staging` ausführen. Für die Rücknahme\ndie ausgegebene Sicherungskennung mit `bin/control update-check --rollback KENNUNG`\nangeben. Zu einem bereits installierten Add-on müssen Eintrag und Registrierung\nvorhanden bleiben. Der Checker bricht bei fehlenden Modulquellen, geänderten\nverwalteten Add-on-Dateien oder belegten Zielpfaden vor dem Austausch ab.\n\n`--only local` zeigt den getrennten Dateibericht. Der Cronlauf mit `--auto` meldet den Status vor dem Git-Abruf. Unbekannte, fehlende oder geänderte lokale Dateien sowie beschädigte Archive blockieren die Übernahme. Der Bericht nennt bei einzeln gelieferten Zusätzen den Paketnamen. Ein Namenskonflikt mit einem Basisplaybook oder einer Basisrolle wird als `BASIS_KONFLIKT` gemeldet.\n\n## Lokales Erweiterungspaket anlegen\n\n| Pfad | Zweck |\n|---|---|\n| `bin/control` | Einstieg für Betrieb und Update-Check |\n| `playbooks/`, `roles/` | Gemeinsame, über Git aktualisierte Abläufe |\n| `tools/local_extension.py` | Lokale Dateien freigeben, installieren, ausführen und archivieren |\n| `/root/ansible-local/code/` | Separat installierte Rollen, Playbooks, Skripte und lokale Variablendateien |\n| `/root/ansible-local/register.json` | Freigegebene Pfade und SHA-256 |\n| `/root/ansible-local/runs/`, `archiv/` | Lokale Ausführungs- und Archivbelege |\n\nNach der [Basisinstallation](../configurations/installation-allgm.md) kann ein eigenes Erweiterungspaket hinzukommen. Lege es außerhalb eines Git-Checkouts an. Für ein erstes Beispiel auf einem Debian-Controller als root:\n\n\u0060\u0060\u0060bash\nmkdir -p /root/mein-paket/code/scripts\ncat > /root/mein-paket/code/scripts/beispiel.sh <<'SH'\n#!/bin/bash\n# manuell-integriert: ja\n# bereinigung: nach-erfolg-archivieren\necho 'Lokale Beispielaufgabe abgeschlossen.'\nSH\ncd /root/ansible\ndatei=scripts/beispiel.sh\nsha=$(sha256sum \"/root/mein-paket/code/$datei\" | cut -d ' ' -f 1)\npython3 tools/local_extension.py approve /root/mein-paket \"$datei\" \"$sha\"\npython3 tools/local_extension.py install /root/mein-paket\nbin/control update-check --only local\npython3 tools/local_extension.py run \"$datei\"\npython3 tools/local_extension.py archive \"$datei\"\n\u0060\u0060\u0060\n\nDer letzte Befehl zeigt die Vorschau. Nach Prüfung der Aufrufer archiviert `python3 tools/local_extension.py archive \"$datei\" --confirm-sha \"$sha\"` diese Dateiversion. Im ausgegebenen Archivordner liegen die Datei, `BELEG.json` mit freigegebenem SHA-256, gemessenem Archiv-SHA und Laufnachweis sowie `SHA256SUMS`. Dort prüft `sha256sum -c SHA256SUMS` die archivierten Bytes.\n\nFür dauerhafte Dateien verwende `# bereinigung: behalten`. In YAML stehen beide Kommentarzeilen direkt unter `---`, in ausführbaren Skripten unter der Shebang. Lokale Playbooks liegen unter `code/playbooks/` und laufen mit `python3 tools/local_extension.py run playbooks/beispiel.yml --limit ZIELGRUPPE`. Jede Änderung zuerst in der privaten Pflegequelle prüfen, mit ihrer neuen SHA freigeben und das Paket erneut installieren. Eine unveränderte archivierte Revision bleibt archiviert.\n\n`bin/control update-check` meldet lokale Erweiterungen in einem eigenen Abschnitt. `--json` enthält dafür `local_extensions`. Der bestehende Cron-Aufruf mit `--auto` prüft die lokalen SHA-256 vor dem Git-Abruf. Fehlende, zusätzliche oder veränderte Dateien blockieren den Wechsel. Ein Controller ohne eingerichtete Erweiterungen arbeitet wie bisher. Cron führt lokale Aufgaben und Archivierungen niemals selbst aus.\n\n## Vorhandenes Standortpaket ergänzen\n\nDie gemeinsamen Playbooks und Rollen unter `/root/ansible` beziehen ihre Updates aus Git. Für eine standortspezifische Aufgabe ein eigenes Playbook mit eindeutigem Namen schreiben. Es darf die regulären Basisrollen aufrufen. Ein lokales Zusatzpaket trägt dieselbe Standortkennung wie das vorhandene Standortpaket und einen eigenen Namen. Beide können getrennt gepflegt werden.\n\nIm privaten Arbeitsverzeichnis das vorhandene Standortpaket als ersten Parameter angeben. Der zweite Parameter ist ein neuer Ordner. Beispiel für Debian:\n\n\u0060\u0060\u0060bash\nwerkzeug=/root/ansible/tools/local_extension.py\npython3 \"$werkzeug\" new-supplement ./standort ./zusatz dienstpruefung\nmkdir -p ./zusatz/code/playbooks\ncp ./local_dienst_pruefen.yml ./zusatz/code/playbooks/\ndatei=playbooks/local_dienst_pruefen.yml\nsha=$(sha256sum \"./zusatz/code/$datei\" | cut -d ' ' -f 1)\npython3 \"$werkzeug\" approve ./zusatz \"$datei\" \"$sha\"\n\u0060\u0060\u0060\n\nDas oben beschriebene Kommentarformat gilt auch für den Zusatz. Das Standortpaket muss auf dem Ziel bereits registriert sein. Den Ordner `zusatz` auf diesen Controller kopieren. Dort als root registrieren und überprüfen:\n\n\u0060\u0060\u0060bash\ncd /root/ansible\npython3 tools/local_extension.py install /root/eingang/zusatz\nbin/control update-check --only local\n\u0060\u0060\u0060\n\nDer Checker meldet den Zusatznamen und prüft die Dateien auch beim Cronlauf. Fehlt eine lokale Datei in einer späteren Standortlieferung, bleibt die registrierte Revision erhalten. Nur eine bewusste Lieferung desselben lokalen Pakets kann dessen Datei aktualisieren. Ein fremder Paketpfad oder eine gleichnamige Controllerrolle blockiert die Übernahme. Den fachlichen Lauf separat und mit konkreter Zielauswahl starten, etwa mit `python3 tools/local_extension.py run playbooks/local_dienst_pruefen.yml --limit ZIELHOST`.",
+      "fields": {
+        "check": {
+          "label": "check",
+          "description": "Erweiterte lokale Konfigurations-/GET-API-Pruefung, keine Schreib-API."
+        },
+        "offline": {
+          "label": "offline",
+          "description": "Mit --check keine Netzwerkaufrufe."
+        },
+        "configure": {
+          "label": "configure",
+          "description": "Interaktive Einrichtung mit Vorschau/YES; Terminal erforderlich, nicht mit --json."
+        },
+        "sort_settings": {
+          "label": "sort-settings",
+          "description": "Nur Settings ordnen mit Vorschau/YES; Terminal erforderlich."
+        },
+        "details": {
+          "label": "details",
+          "description": "Auch passende/optionale Feldbefunde anzeigen."
+        },
+        "json": {
+          "label": "json",
+          "description": "Strukturierter Nur-Lese-Bericht ohne Credentialwerte."
+        },
+        "only": {
+          "label": "only",
+          "description": "Eine Komponente, settings, registry oder eine installierte Erweiterung prüfen."
+        },
+        "field": {
+          "label": "field",
+          "description": "Mit --configure gezielt bekannten Schluessel abfragen; im Terminal wiederholbar."
+        },
+        "find_usage": {
+          "label": "find-usage",
+          "description": "Statische Fundstellen einer Variable, keine automatische Loeschung."
+        },
+        "timeout": {
+          "label": "timeout",
+          "description": "API-Timeout 1 bis 30 Sekunden, Standard 8."
+        },
+        "color": {
+          "label": "Farbausgabe",
+          "description": "auto: nur Terminal; always: erzwingen; never: ausschalten. JSON immer farbfrei."
+        },
+        "cleanup": {
+          "label": "cleanup",
+          "description": "Freigegebene Altdateien nach Projekt-/Cron-/Systemd-Pruefung, Vorschau und YES archivieren; keine aktiven Dateien loeschen."
+        },
+        "no-prompt": {
+          "label": "no-prompt",
+          "description": "Keine optionale Bereinigungsfrage im normalen Terminalprueflauf."
+        },
+        "remote": {
+          "label": "remote",
+          "description": "Änderungen aus main anzeigen (mit --staging aus staging)."
+        },
+        "staging": {
+          "label": "staging",
+          "description": "Staging für diesen manuellen Abruf wählen. Ohne --apply nur Vorschau."
+        }
+      }
+    },
+    "en": {
+      "title": "Check versions and settings or configure a new controller",
+      "description": "Check controller profiles, file hashes and optional cleanup. `--remote` previews the released main branch over HTTPS. `--apply` installs it. Cron uses the same credentials with `--auto`. Local `versions.txt` records version, HTTPS origin and an optional token-file path for each module. Public modules are anonymous. A private module’s external token file must be owned by the executing user and have mode `0600`.\n\n## Switch between main and staging\n\n| Branch | Preview | Apply |\n| --- | --- | --- |\n| Release (`main`) | `bin/control update-check --remote` | `bin/control update-check --apply` |\n| Test (`staging`) | `bin/control update-check --staging` | `bin/control update-check --apply --staging` |\n\nThe selection applies to this invocation and all installed controller modules. Cron always uses main with `--auto`, so the next scheduled update can return a test controller to the release. Both branches must support the flag for switching in both directions.\n\n`ansible --version` shows the Ansible CLI version. `module-versions`, or directly `bin/control module-versions`, lists installed module versions and the current user’s installed TUI. The alias is available in a new controller shell. Local `versions.txt` uses `s1.2.3` for staging and `1.2.3` for main, both derived from the numeric `VERSION.txt`. Preview shows target versions. Apply changes installed versions.\n\nA branch change backs up and removes managed files exclusive to the previous version. Local edits to those files block the change. Restore the saved state with `--rollback BACKUP_ID`.\n\n### Test an older controller\n\nIf the installed checker does not yet recognize `--staging`, invoke the new checker from a separate checkout. On a Debian test controller as root:\n\n\u0060\u0060\u0060bash\n(\n  set -eu\n  testcode=$(mktemp -d)\n  trap 'rm -rf -- \"$testcode\"' EXIT\n  git clone --quiet --single-branch --branch staging https://github.com/v4z00/Ansible-Allgm.git \"$testcode/Allgm\"\n  cd \"$testcode/Allgm\"\n  /root/ansible/.venv/bin/python /root/ansible/update_check/staging_manifest.py verify Allgm HEAD\n  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --staging\n)\n\u0060\u0060\u0060\n\nThis previews the update. To apply it, append `--apply` to the last Python invocation. The checker retrieves registered modules from their verified sources. You can also use a separate checkout after reverting to an older release.\n\n## Check local SHA-256 hashes\n\n### Migrate SSS from an older controller\n\nBack up the local `versions.txt` before switching. If SSS is in use, add the registration below. Modifications in the old SSS directory are reported as conflicts. Migrate personal settings privately as described in the [SSS guide](https://github.com/v4z00/Ansible-SSS/blob/staging/README.md) and review each hash conflict before updating.\n\nFor the one-time transition, bridge commit `c7d2d7cbd881a7387d2fa424c10dfabc48a3fd41` contains the old SSS files and can verify the new add-on format. To preview from a controller with an existing Python environment:\n\n\u0060\u0060\u0060bash\n(\n  set -eu\n  umask 077\n  work=$(mktemp -d)\n  trap 'rm -rf -- \"$work\"' EXIT\n  git clone --quiet --branch staging https://github.com/v4z00/Ansible-Allgm.git \"$work/base\"\n  cd \"$work/base\"\n  git checkout --quiet --detach c7d2d7cbd881a7387d2fa424c10dfabc48a3fd41\n  /root/ansible/.venv/bin/python /root/ansible/update_check/staging_manifest.py verify Allgm HEAD\n  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --staging\n)\n\u0060\u0060\u0060\n\nAfter a successful preview, append `--apply` to the last invocation. With the printed backup ID, `--rollback` also restores the previous receipt and `versions.txt`.\n\n### Git add-ons\n\nA controller can have one site profile and multiple Git add-ons. Keep all four fields in each module row. A separate comment registers each add-on. Example for the local `versions.txt`:\n\n\u0060\u0060\u0060text\n# addon=SSS\nSSS|0.0.0|https://github.com/v4z00/Ansible-SSS.git|\n\u0060\u0060\u0060\n\nUse `0.0.0` for initial registration. Preview shows the offered version, and apply records the installed version. Rows without registration remain passive. For a private add-on the fourth field holds the token-file path. All registered modules must offer the chosen branch.\n\nPreview the plan with `bin/control update-check --staging` before `bin/control update-check --apply --staging`. To revert, pass the printed backup ID to `bin/control update-check --rollback BACKUP_ID`. Keep both row and registration for installed add-ons. Missing sources, changed managed add-on files or occupied destinations stop the checker before replacement.\n\n`--only local` shows the separate file report. Cron reports this status before fetching from Git with `--auto`. Unknown, missing or modified local files and damaged archives block apply. Supplements are reported by package name. Conflicts with a base playbook or role are reported as `BASIS_KONFLIKT`.\n\n## Create a local extension package\n\n| Path | Purpose |\n|---|---|\n| `bin/control` | Controller commands and update checks |\n| `playbooks/`, `roles/` | Shared workflows managed through Git |\n| `tools/local_extension.py` | Approve, install, run and archive local files |\n| `/root/ansible-local/code/` | Separately installed roles, playbooks, scripts and local variables |\n| `/root/ansible-local/register.json` | Approved paths and SHA-256 values |\n| `/root/ansible-local/runs/`, `archiv/` | Local run and archive receipts |\n\nAfter [installing the base](../configurations/installation-allgm.md), create a local extension package outside any Git checkout. Example as root on a Debian controller:\n\n\u0060\u0060\u0060bash\nmkdir -p /root/mein-paket/code/scripts\ncat > /root/mein-paket/code/scripts/beispiel.sh <<'SH'\n#!/bin/bash\n# manuell-integriert: ja\n# bereinigung: nach-erfolg-archivieren\necho 'Lokale Beispielaufgabe abgeschlossen.'\nSH\ncd /root/ansible\ndatei=scripts/beispiel.sh\nsha=$(sha256sum \"/root/mein-paket/code/$datei\" | cut -d ' ' -f 1)\npython3 tools/local_extension.py approve /root/mein-paket \"$datei\" \"$sha\"\npython3 tools/local_extension.py install /root/mein-paket\nbin/control update-check --only local\npython3 tools/local_extension.py run \"$datei\"\npython3 tools/local_extension.py archive \"$datei\"\n\u0060\u0060\u0060\n\nThe last command previews the operation. Check callers, then archive this specific revision with `python3 tools/local_extension.py archive \"$datei\" --confirm-sha \"$sha\"`. The reported archive contains the file, `BELEG.json` with approved and measured hashes and the run receipt, and `SHA256SUMS`. Run `sha256sum -c SHA256SUMS` there to verify the archived bytes.\n\nFor permanent files, use `# bereinigung: behalten`. Place both marker comments directly under `---` in YAML or after the shebang in scripts. Put playbooks under `code/playbooks/` and run them with `python3 tools/local_extension.py run playbooks/beispiel.yml --limit TARGET_GROUP`. Verify each change in the private source, approve its new hash and reinstall the package. An unchanged archived revision stays archived.\n\n`bin/control update-check` reports extensions in a separate section. JSON reports use `local_extensions`. Cron with `--auto` verifies local SHA-256 before fetching from Git. Missing, extra or modified files block the switch. Controllers without local extensions continue to work as before. Cron does not run or archive local tasks.\n\n## Extend an existing site package\n\nShared playbooks and roles under `/root/ansible` receive updates from Git. Give site-specific playbooks unique names. They may call shared base roles. Give a supplement the same site ID as its parent package and a unique package name. Maintain them independently.\n\nIn the private workspace, pass the existing site package first, followed by a new directory. On Debian:\n\n\u0060\u0060\u0060bash\nwerkzeug=/root/ansible/tools/local_extension.py\npython3 \"$werkzeug\" new-supplement ./standort ./zusatz dienstpruefung\nmkdir -p ./zusatz/code/playbooks\ncp ./local_dienst_pruefen.yml ./zusatz/code/playbooks/\ndatei=playbooks/local_dienst_pruefen.yml\nsha=$(sha256sum \"./zusatz/code/$datei\" | cut -d ' ' -f 1)\npython3 \"$werkzeug\" approve ./zusatz \"$datei\" \"$sha\"\n\u0060\u0060\u0060\n\nUse the same marker comments for the supplement. The target must already have the site package registered. Copy the `zusatz` directory to the controller. Register and check it as root:\n\n\u0060\u0060\u0060bash\ncd /root/ansible\npython3 tools/local_extension.py install /root/eingang/zusatz\nbin/control update-check --only local\n\u0060\u0060\u0060\n\nThe checker reports the supplement by name and verifies its files during cron. A later site package that omits a registered file leaves that revision in place. Only a deliberate update from the same local package can replace it. Paths owned by another package or matching a controller role block installation. Run the operation separately with an explicit target, for example `python3 tools/local_extension.py run playbooks/local_dienst_pruefen.yml --limit TARGET_HOST`.",
+      "fields": {
+        "check": {
+          "label": "Check mode",
+          "description": "Run the extended local configuration and read-only GET API checks."
+        },
+        "offline": {
+          "label": "Offline",
+          "description": "With --check, skip network calls."
+        },
+        "configure": {
+          "label": "configure",
+          "description": "Configure interactively with a preview and YES confirmation. Requires a terminal and cannot be combined with --json."
+        },
+        "sort_settings": {
+          "label": "sort-settings",
+          "description": "Reorder settings only. Requires a terminal, a preview and YES confirmation."
+        },
+        "details": {
+          "label": "details",
+          "description": "Also show matching and optional field results."
+        },
+        "json": {
+          "label": "JSON output",
+          "description": "Produce a structured read-only report without credential values."
+        },
+        "only": {
+          "label": "Component",
+          "description": "Check one component, settings, the registry or an installed extension."
+        },
+        "field": {
+          "label": "field",
+          "description": "With --configure, prompt for a specific known key. Repeat this option for multiple keys."
+        },
+        "find_usage": {
+          "label": "find-usage",
+          "description": "List static references to a variable for review. No files are removed."
+        },
+        "timeout": {
+          "label": "Timeout",
+          "description": "API timeout in seconds, from 1 to 30. Defaults to 8."
+        },
+        "color": {
+          "label": "Color output",
+          "description": "auto: terminal only. always: force color. never: disable color. JSON is always plain text."
+        },
+        "cleanup": {
+          "label": "cleanup",
+          "description": "Preview and archive approved obsolete files after checking project, cron and systemd references. Type YES to confirm. Active files are preserved."
+        },
+        "no-prompt": {
+          "label": "Skip cleanup prompt",
+          "description": "Skip the optional cleanup prompt during a regular terminal check."
+        },
+        "remote": {
+          "label": "Preview remote changes",
+          "description": "Show changes from main, or from staging when --staging is set."
+        },
+        "staging": {
+          "label": "Staging branch",
+          "description": "Select staging for this manual fetch. Preview unless --apply is present."
+        }
+      }
+    }
   }
 }
 ```

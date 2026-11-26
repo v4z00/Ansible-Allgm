@@ -1,19 +1,19 @@
-- name: Chrony gezielt deinstallieren
+- name: Uninstall Chrony
   hosts: all_linux_systems
   gather_facts: true
   become: true
   pre_tasks:
-  - name: Ausdrueckliches Ziel pruefen
+  - name: Require an explicit target
     ansible.builtin.assert:
       that:
       - ansible_limit | default('') | length > 0
       fail_msg: Mit --limit HOST oder GRUPPE starten.
-  - name: Feature pruefen
+  - name: Check the feature flag
     ansible.builtin.assert:
       that:
       - features.chrony | default(false) | bool
   tasks:
-  - name: Nur Chrony entfernen
+  - name: Remove only Chrony
     ansible.builtin.apt:
       name: chrony
       state: absent

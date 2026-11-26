@@ -4,30 +4,29 @@ Vorhandener Einstieg: `playbooks/bootstrap/root_access.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
 
-- Root-Bootstrap vorbereiten
-- Bootstrap-Profile muessen konfiguriert sein
-- Gewaehltes Bootstrap-Profil muss vorhanden sein
-- Controller-Key pruefen
-- Controller-Key muss vorhanden sein
-- Ausgewaehlte Bootstrap-Profile pruefen
-- Root-Key oder individuellen Erstzugang vorbereiten
-- Root-Zugang ueber sudo oder su herstellen
-- Verbindung mit dem Erstzugang pruefen
-- sudo zu root testen
-- su zu root testen
-- Funktionierende Become-Methode bestimmen
-- Ohne funktionierenden Root-Aufstieg abbrechen
-- Root-Key-Zugang einrichten
-- Root-SSH-Verzeichnis anlegen
-- Controller-Key fuer root hinterlegen
-- Root-Key-Anmeldung freigeben
-- SSH-Konfiguration validieren
-- SSH neu laden
-- ssh
-- Verwendete Become-Methode ausgeben
-- Bereits vorhandenen Root-Key bestaetigen
-- Root-Key-Verbindung mit Ansible pruefen
-- Vorhandenen Root-Key melden
+- Prepare root access
+- Require configured bootstrap profiles
+- Require the selected bootstrap profile
+- Check the controller key
+- Require the controller key
+- Validate selected bootstrap profiles
+- Prepare root key access or individual bootstrap credentials
+- Establish root access with sudo or su
+- Test the initial connection
+- Test sudo access to root
+- Test su access to root
+- Select a working privilege escalation method
+- Stop if privilege escalation to root fails
+- Configure root key access
+- Create the root SSH directory
+- Install the controller key for root
+- Enable SSH key authentication for root
+- Validate the SSH configuration
+- Reload SSH
+- Report the privilege escalation method
+- Confirm existing root key access
+- Test the root key connection with Ansible
+- Report existing root key access
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 
@@ -51,7 +50,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/bootstrap/root_access.yml"
   ],
   "source_hashes": {
-    "playbooks/bootstrap/root_access.yml": "a581fbf803c90c5d99fb97474d678b1af32e5b21895ea0a86237f4ee1530d51a"
+    "playbooks/bootstrap/root_access.yml": "2849bfd465ea29572683a29bc70404d43f28ece511b70498de3cea98fdbe435a"
+  },
+  "i18n": {
+    "de": {
+      "title": "Playbook playbooks/bootstrap/root_access.yml",
+      "description": "# Playbook playbooks/bootstrap/root_access.yml\n\nVorhandener Einstieg: `playbooks/bootstrap/root_access.yml`.\n\nIm Quelltext benannte Plays/Aufgaben:\n\n- Prepare root access\n- Require configured bootstrap profiles\n- Require the selected bootstrap profile\n- Check the controller key\n- Require the controller key\n- Validate selected bootstrap profiles\n- Prepare root key access or individual bootstrap credentials\n- Establish root access with sudo or su\n- Test the initial connection\n- Test sudo access to root\n- Test su access to root\n- Select a working privilege escalation method\n- Stop if privilege escalation to root fails\n- Configure root key access\n- Create the root SSH directory\n- Install the controller key for root\n- Enable SSH key authentication for root\n- Validate the SSH configuration\n- Reload SSH\n- Report the privilege escalation method\n- Confirm existing root key access\n- Test the root key connection with Ansible\n- Report existing root key access\n\nAusfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `playbooks/bootstrap/root_access.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Playbook playbooks/bootstrap/root_access.yml",
+      "description": "# Playbook playbooks/bootstrap/root_access.yml\n\nPlaybook: `playbooks/bootstrap/root_access.yml`.\n\nPlay and task names as written in the playbook:\n\n- Prepare root access\n- Require configured bootstrap profiles\n- Require the selected bootstrap profile\n- Check the controller key\n- Require the controller key\n- Validate selected bootstrap profiles\n- Prepare root key access or individual bootstrap credentials\n- Establish root access with sudo or su\n- Test the initial connection\n- Test sudo access to root\n- Test su access to root\n- Select a working privilege escalation method\n- Stop if privilege escalation to root fails\n- Configure root key access\n- Create the root SSH directory\n- Install the controller key for root\n- Enable SSH key authentication for root\n- Validate the SSH configuration\n- Reload SSH\n- Report the privilege escalation method\n- Confirm existing root key access\n- Test the root key connection with Ansible\n- Report existing root key access\n\nRun the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `playbooks/bootstrap/root_access.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {}
+    }
   }
 }
 ```

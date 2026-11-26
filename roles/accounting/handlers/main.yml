@@ -1,5 +1,6 @@
 ---
-- name: Sysstat neu starten
+- name: Restart sysstat
+  listen: Sysstat neu starten
   ansible.builtin.systemd:
     name: sysstat
     state: restarted

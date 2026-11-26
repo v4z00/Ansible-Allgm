@@ -11,6 +11,10 @@ import stat
 import sys
 import tempfile
 
+if not getattr(globals().get("__loader__"), "archive", None):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from controller_i18n import cli_args, status_text, tr
+
 class CleanupError(Exception): pass
 PROTECTED={'group_vars','host_vars','inventory','artifacts','collections','x','_local','logs','reports','.git','.ssh','state'}
 CODE_DIRS=('bin','lib','scripts','roles','playbooks','templates','config','tools','filter_plugins','plugins','inventory','group_vars','host_vars')
@@ -26,21 +30,21 @@ def plan_digest(plan):return hashlib.sha256(json.dumps(plan,sort_keys=True,separ
 
 def safe_path(root,rel):
     p=Path(rel)
-    if not isinstance(rel,str) or not rel or p.is_absolute() or '..' in p.parts or '\\' in rel:raise CleanupError('Ungueltiger Planpfad.')
+    if not isinstance(rel,str) or not rel or p.is_absolute() or '..' in p.parts or '\\' in rel:raise CleanupError(tr("cleanup.invalid_path"))
     current=root
     for part in p.parts:
         current=current/part
-        if current.is_symlink():raise CleanupError('Symlink wird nicht bereinigt.')
-    if not current.resolve().is_relative_to(root):raise CleanupError('Pfad ausserhalb des Projekts.')
+        if current.is_symlink():raise CleanupError(tr("cleanup.symlink"))
+    if not current.resolve().is_relative_to(root):raise CleanupError(tr("cleanup.outside"))
     return current
 
 def validate_plan(plan):
-    if plan.get('schema')!=1 or not isinstance(plan.get('candidates'),list):raise CleanupError('Ungueltiger Bereinigungsplan.')
+    if plan.get('schema')!=1 or not isinstance(plan.get('candidates'),list):raise CleanupError(tr("cleanup.invalid_plan"))
     seen=set();active=set(plan.get('active_files',[]))
     for row in plan['candidates']:
         rel=row.get('path','');p=Path(rel)
-        if rel in seen or rel in active or any(x in PROTECTED for x in p.parts) or re.search(r'(?i)(secret|password|private[_-]?key|\.env$|\.pem$)',rel):raise CleanupError('Geschuetzter oder doppelter Planpfad.')
-        if not re.fullmatch('[a-f0-9]{64}',row.get('sha256','')):raise CleanupError('Datei-SHA fehlt.')
+        if rel in seen or rel in active or any(x in PROTECTED for x in p.parts) or re.search(r'(?i)(secret|password|private[_-]?key|\.env$|\.pem$)',rel):raise CleanupError(tr("cleanup.protected_path"))
+        if not re.fullmatch('[a-f0-9]{64}',row.get('sha256','')):raise CleanupError(tr("cleanup.missing_digest"))
         seen.add(rel)
 
 def scan_sources(root,exclude=None,external=True):
@@ -105,7 +109,7 @@ def dependencies(root,rel,sources):
 
 def preview(root,plan,exclude=None,external=True):
     root=root.resolve();validate_plan(plan)
-    if not (root/'ansible.cfg').is_file() or not (root/'bin/control').is_file():raise CleanupError('Controllerprojekt nicht erkannt.')
+    if not (root/'ansible.cfg').is_file() or not (root/'bin/control').is_file():raise CleanupError(tr("cleanup.invalid_project"))
     sources,errors=scan_sources(root,exclude,external)
     rows=[]
     for item in plan['candidates']:
@@ -127,36 +131,36 @@ def preview(root,plan,exclude=None,external=True):
     return {'schema':1,'profile':plan['profile'],'plan_sha256':plan_digest(plan),'status':'BEREINIGUNG_MOEGLICH' if candidates else 'BESTAND_ERHALTEN' if retained else 'SAUBER','candidates':candidates,'retained':retained,'files':rows,'scan_errors':errors,'scope':'Nur explizite Planpfade; Konfiguration, Runtime und unbekannte Dateien bleiben erhalten.'}
 
 def show(report,output=print):
-    output('BEREINIGUNG '+report['profile']+': '+report['status'])
+    output(tr("cleanup.summary", profile=report["profile"], status=status_text(report["status"])))
     absent=sum(r['status']=='BEREITS_ENTFERNT' for r in report['files'])
-    if absent:output('  Bereits abwesende Altdateien: '+str(absent))
+    if absent:output(tr("cleanup.absent")+str(absent))
     for row in report['files']:
         if row['status']=='BEREITS_ENTFERNT':continue
-        output('  '+row['status']+'  '+row['path'])
-        for ref in row.get('references',[]):output('    Abhaengigkeit/Verweis: '+ref)
-    for error in report['scan_errors']:output('  '+error)
-    output('Nur ARCHIVIEREN wird nach Bestaetigung verschoben. Keine Dienste/Hosts werden geaendert.')
+        output('  '+status_text(row['status'])+'  '+row['path'])
+        for ref in row.get('references',[]):output(tr("cleanup.reference")+ref)
+    for error in report['scan_errors']:output('  '+status_text(error))
+    output(tr("cleanup.confirmation_scope"))
 
 def apply(root,plan,report,exclude=None,external=True,root_required=True):
     root=root.resolve()
-    if root_required and os.geteuid()!=0:raise CleanupError('Bitte als root ausfuehren (bei Bedarf vorher su).')
+    if root_required and os.geteuid()!=0:raise CleanupError(tr("cleanup.root"))
     fresh=preview(root,plan,exclude,external)
-    if fresh!=report:raise CleanupError('Bestand/Abhaengigkeiten seit Vorschau geaendert; erneut pruefen.')
+    if fresh!=report:raise CleanupError(tr("cleanup.preview_changed"))
     stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     base=safe_path(root,'x/backups/controller_cleanup');base.mkdir(parents=True,exist_ok=True,mode=0o700)
     archive=base/stamp;archive.mkdir(mode=0o700)
     moved=[];items={x['path']:x for x in plan['candidates']}
     state_dir=safe_path(root,'update_check/state');state_dir.mkdir(mode=0o700,parents=True,exist_ok=True)
     receipt=state_dir/'cleanup.json'
-    if receipt.is_symlink():raise CleanupError('Bereinigungsnachweis ist ein Symlink.')
+    if receipt.is_symlink():raise CleanupError(tr("cleanup.receipt_link"))
     try:
         for row in fresh['files']:
             if row['status']!='ARCHIVIEREN':continue
             src=safe_path(root,row['path']);st=src.stat()
-            if not stat.S_ISREG(st.st_mode) or st.st_nlink!=1 or digest(src)!=items[row['path']]['sha256']:raise CleanupError('Datei seit Vorschau geaendert.')
+            if not stat.S_ISREG(st.st_mode) or st.st_nlink!=1 or digest(src)!=items[row['path']]['sha256']:raise CleanupError(tr("cleanup.changed"))
             dst=archive/'files'/row['path'];dst.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
             src.rename(dst);moved.append((src,dst,items[row['path']]['sha256']))
-            if digest(dst)!=items[row['path']]['sha256']:raise CleanupError('Archiv-SHA stimmt nicht.')
+            if digest(dst)!=items[row['path']]['sha256']:raise CleanupError(tr("cleanup.archive_hash"))
         proof={'schema':1,'profile':plan['profile'],'plan_sha256':plan_digest(plan),'completed_at':stamp,'archive':str(archive.relative_to(root)),'archived':[{'path':str(src.relative_to(root)),'sha256':h} for src,dst,h in moved],'retained':[r for r in fresh['files'] if r['status'].endswith('_ERHALTEN')],'scope':fresh['scope']}
         (archive/'BELEG.json').write_text(json.dumps(proof,indent=2)+'\n');os.chmod(archive/'BELEG.json',0o600)
         fd,tmp=tempfile.mkstemp(dir=state_dir,prefix='.cleanup-',text=True)
@@ -169,13 +173,13 @@ def apply(root,plan,report,exclude=None,external=True,root_required=True):
     except Exception:
         for src,dst,h in reversed(moved):
             if not src.exists() and dst.is_file() and digest(dst)==h:dst.rename(src)
-        raise CleanupError('Bereinigung abgebrochen; Verschiebungen soweit moeglich zurueckgesetzt. Archiv pruefen.') from None
+        raise CleanupError(tr("cleanup.aborted")) from None
 
 def interactive(root,plan,exclude=None,input_fn=input,output=print,external=True):
     report=preview(root,plan,exclude,external);show(report,output)
-    if input_fn('Diesen Umfang jetzt bereinigen? YES bestaetigt, sonst Abbruch: ').strip()!='YES':raise CleanupError('Abgebrochen; nichts veraendert.')
+    if input_fn(tr("cleanup.confirm")).strip()!='YES':raise CleanupError(tr("cleanup.cancelled"))
     proof=apply(root,plan,report,exclude,external)
-    output('Abgeschlossen. Rueckweg/Datei-SHA: '+proof['archive']+'/BELEG.json. Abhaengige/geaenderte Dateien bleiben erhalten.')
+    output(tr("cleanup.completed")+proof['archive']+tr("cleanup.receipt_location"))
     return proof
 
 def receipt_status(root,plan):
@@ -193,14 +197,16 @@ def receipt_status(root,plan):
     except (OSError,ValueError,KeyError,CleanupError):return 'NACHWEIS_UNGUELTIG'
 
 def standalone(plan):
-    parser=argparse.ArgumentParser(description='Einmalige Controllerbereinigung mit Vorschau, YES und Archiv; danach Selbstloeschung.')
+    argv = cli_args(sys.argv[1:], Path("/root/ansible"))
+    parser=argparse.ArgumentParser(description=tr("cleanup.description"))
+    parser.add_argument("--lang", choices=("de", "en"), help=tr("cli.lang"))
     parser.add_argument('--root',type=Path,default=Path('/root/ansible'))
     parser.add_argument('--preview',action='store_true')
-    args=parser.parse_args()
-    own=Path(__file__).absolute()
-    if own.is_symlink():raise CleanupError('Helfer ist ein Symlink; abgebrochen.')
+    args=parser.parse_args(argv)
+    own=Path(sys.argv[0]).absolute()
+    if own.is_symlink():raise CleanupError(tr("cleanup.helper_link"))
     own_hash=digest(own);own_stat=own.stat()
     if args.preview:show(preview(args.root,plan,own));return
     interactive(args.root,plan,own)
-    if own.is_symlink() or own.stat().st_ino!=own_stat.st_ino or digest(own)!=own_hash:raise CleanupError('Helfer wurde geaendert; keine Selbstloeschung.')
-    own.unlink();print('Einmalhelfer entfernt.')
+    if own.is_symlink() or own.stat().st_ino!=own_stat.st_ino or digest(own)!=own_hash:raise CleanupError(tr("cleanup.helper_changed"))
+    own.unlink();print(tr("cleanup.removed"))

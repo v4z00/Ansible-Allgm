@@ -1,9 +1,9 @@
-- name: DNS-Aufloesung pruefen
+- name: Check DNS resolution
   hosts: all_linux_systems
   gather_facts: false
   become: false
   tasks:
-  - name: Domains aufloesen
+  - name: Resolve the configured domains
     ansible.builtin.command:
       argv:
       - getent
@@ -13,6 +13,6 @@
     changed_when: false
     check_mode: false
     loop: '{{ dns_check_domains | default([''example.com'']) }}'
-  - name: Ergebnis anzeigen
+  - name: Show the result
     ansible.builtin.debug:
       var: dns_result.results

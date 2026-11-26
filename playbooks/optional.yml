@@ -1,7 +1,7 @@
 ---
-- name: Optionale zentrale Dienste
-  # Appliances wie OPNsense duerfen auch bei einem veralteten oder falsch
-  # klassifizierten dynamischen Inventory niemals Linux-Rollen erhalten.
+- name: Configure optional central services
+  # Appliances such as OPNsense must never receive Linux roles, even if the
+  # dynamic inventory is stale or classifies them incorrectly.
   hosts: all_linux_systems:!opnsense_firewall
   become: true
   gather_facts: true

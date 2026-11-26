@@ -4,11 +4,10 @@ Vorhandener Einstieg: `playbooks/maintenance/uninstall_chrony.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
 
-- Chrony gezielt deinstallieren
-- Ausdrueckliches Ziel pruefen
-- Feature pruefen
-- Nur Chrony entfernen
-- chrony
+- Uninstall Chrony
+- Require an explicit target
+- Check the feature flag
+- Remove only Chrony
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 
@@ -32,7 +31,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/uninstall_chrony.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/uninstall_chrony.yml": "f2d1f14d941dde660868947196f393346379af353bb508a146baed271c3d9791"
+    "playbooks/maintenance/uninstall_chrony.yml": "bd856d801653a8e4d77b440e81c01d4ab024628cb734642035b19e38f83e448a"
+  },
+  "i18n": {
+    "de": {
+      "title": "Playbook playbooks/maintenance/uninstall_chrony.yml",
+      "description": "# Playbook playbooks/maintenance/uninstall_chrony.yml\n\nVorhandener Einstieg: `playbooks/maintenance/uninstall_chrony.yml`.\n\nIm Quelltext benannte Plays/Aufgaben:\n\n- Uninstall Chrony\n- Require an explicit target\n- Check the feature flag\n- Remove only Chrony\n\nAusfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `playbooks/maintenance/uninstall_chrony.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Playbook playbooks/maintenance/uninstall_chrony.yml",
+      "description": "# Playbook playbooks/maintenance/uninstall_chrony.yml\n\nPlaybook: `playbooks/maintenance/uninstall_chrony.yml`.\n\nPlay and task names as written in the playbook:\n\n- Uninstall Chrony\n- Require an explicit target\n- Check the feature flag\n- Remove only Chrony\n\nRun the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `playbooks/maintenance/uninstall_chrony.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {}
+    }
   }
 }
 ```

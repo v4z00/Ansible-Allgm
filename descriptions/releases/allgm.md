@@ -1,5 +1,12 @@
 # Changelog
 
+## s0.6.0 – Deutsch und Englisch auf einem Controller
+
+`bin/control --lang en help` zeigt die englische Hilfe. Dauerhaft lässt sich
+die Sprache über `controller_lang` einstellen. Beschreibungen teilen sich in
+beiden Sprachen dieselben Quellen und SHA-Prüfsummen. Technische Tasknamen
+stehen auf Englisch. JSON-Berichte ergänzen maschinenlesbare Statuscodes.
+
 ## s0.5.0 – SSS als eigenes Git-Add-on
 
 Die Basis liefert den SSS-Notfallkoffer jetzt über das optionale Add-on.

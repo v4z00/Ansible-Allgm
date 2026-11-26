@@ -1,11 +1,11 @@
 ---
-- name: CheckMK-Ordnerstruktur sicherstellen
+- name: Ensure the Checkmk folder hierarchy exists
   hosts: localhost
   connection: local
   gather_facts: false
 
   tasks:
-    - name: CheckMK-API-Konfiguration fuer Ordner pruefen
+    - name: Validate the Checkmk API settings for folders
       ansible.builtin.assert:
         that:
           - checkmk_server_url | length > 0
@@ -16,7 +16,7 @@
       no_log: true
       tags: [monitoring, checkmk, folders]
 
-    - name: CheckMK-Ordner und Elternordner anlegen
+    - name: Create Checkmk folders and their parents
       checkmk.general.folder:
         validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_folders', tls_validate_certs_default | default(true)) | bool }}"
         server_url: "{{ checkmk_server_url }}"
@@ -32,7 +32,7 @@
       no_log: true
       tags: [monitoring, checkmk, folders]
 
-- name: CheckMK-Agent und Hostverwaltung
+- name: Manage Checkmk agents and hosts
   hosts: checkmk_managed_hosts
   become: true
   gather_facts: true
@@ -41,13 +41,13 @@
       when: features.checkmk | bool
       tags: [monitoring, checkmk]
 
-- name: Nicht-Linux-Hosts nur in CheckMK anlegen
+- name: Register non-Linux hosts in Checkmk
   hosts: checkmk_inventory_hosts:!checkmk_managed_hosts
   connection: local
   gather_facts: false
 
   pre_tasks:
-    - name: API-Konfiguration und Zielordner fuer manuelle Hosts pruefen
+    - name: Validate the API settings and target folder for manual hosts
       ansible.builtin.assert:
         that:
           - checkmk_server_url | length > 0
@@ -60,7 +60,7 @@
       tags: [monitoring, checkmk, manual_hosts]
 
   tasks:
-    - name: Nicht-Linux-Host ohne Attribute anlegen oder im Zielordner sicherstellen
+    - name: Create the non-Linux host without attributes or ensure it is in the target folder
       delegate_to: localhost
       checkmk.general.host:
         validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_manual_host', tls_validate_certs_default | default(true)) | bool }}"
@@ -74,7 +74,7 @@
       no_log: true
       tags: [monitoring, checkmk, manual_hosts]
 
-    - name: Manuell zu konfigurierenden CheckMK-Host ausgeben
+    - name: Report the Checkmk host requiring manual configuration
       ansible.builtin.debug:
         msg:
           - "Manuelle CheckMK-Konfiguration erforderlich"

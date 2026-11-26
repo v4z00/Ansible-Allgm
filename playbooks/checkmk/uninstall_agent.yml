@@ -1,24 +1,24 @@
 ---
-- name: Checkmk Agent entfernen
+- name: Remove the Checkmk agent
   hosts: all_linux_systems
   become: true
 
   tasks:
-    - name: Checkmk Agent Socket stoppen, falls vorhanden
+    - name: Stop the Checkmk agent socket if present
       ansible.builtin.systemd:
         name: check-mk-agent.socket
         state: stopped
         enabled: false
       failed_when: false
 
-    - name: Checkmk Agent Service stoppen, falls vorhanden
+    - name: Stop the Checkmk agent service if present
       ansible.builtin.systemd:
         name: check-mk-agent.service
         state: stopped
         enabled: false
       failed_when: false
 
-    - name: Checkmk Agent Pakete entfernen
+    - name: Remove Checkmk agent packages
       ansible.builtin.apt:
         name:
           - check-mk-agent
@@ -27,7 +27,7 @@
         purge: true
       failed_when: false
 
-    - name: Alte Checkmk Agent Verzeichnisse entfernen
+    - name: Remove obsolete Checkmk agent directories
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
@@ -39,15 +39,15 @@
         - /var/lib/checkmk-agent
         - /var/log/check_mk_agent.log
 
-    - name: Systemd neu laden
+    - name: Reload systemd
       ansible.builtin.systemd:
         daemon_reload: true
 
-    - name: Prüfen ob Checkmk Agent noch installiert ist
+    - name: Check whether the Checkmk agent is still installed
       ansible.builtin.shell: "dpkg -l | grep -Ei 'check-mk-agent|checkmk-agent' || true"
       register: checkmk_agent_packages
       changed_when: false
 
-    - name: Ergebnis anzeigen
+    - name: Show the result
       ansible.builtin.debug:
         var: checkmk_agent_packages.stdout_lines

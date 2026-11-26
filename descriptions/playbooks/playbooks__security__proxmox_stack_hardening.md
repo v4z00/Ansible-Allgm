@@ -4,16 +4,14 @@ Vorhandener Einstieg: `playbooks/security/proxmox_stack_hardening.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
 
-- Proxmox-Weboberflaeche an Management-IP binden
-- PVEProxy an die Inventory-Adresse binden
-- PVEProxy neu starten
-- pveproxy
-- PBS-Port auf das Storage-Netz beschraenken
-- Persistente iptables-Unterstuetzung installieren
-- iptables-persistent
-- Erlaubte Quellen fuer PBS-Port eintragen
-- Andere Zugriffe auf PBS an der Storage-IP verwerfen
-- Firewallregeln persistent speichern
+- Bind the Proxmox web interface to the management IP
+- Bind pveproxy to the inventory address
+- Restart pveproxy
+- Restrict the PBS port to the storage network
+- Install persistent iptables support
+- Allow configured sources to reach the PBS port
+- Drop other requests to the PBS storage IP
+- Persist firewall rules
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 
@@ -37,7 +35,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/security/proxmox_stack_hardening.yml"
   ],
   "source_hashes": {
-    "playbooks/security/proxmox_stack_hardening.yml": "ba2f8fd96c3ec230317e1050b869f96ccb493749dea544ceacdedcbb30a47ea3"
+    "playbooks/security/proxmox_stack_hardening.yml": "3c4aeefea67c66c75e7851284ab9bc048b727beb839b9e13e33cc306bd004284"
+  },
+  "i18n": {
+    "de": {
+      "title": "Playbook playbooks/security/proxmox_stack_hardening.yml",
+      "description": "# Playbook playbooks/security/proxmox_stack_hardening.yml\n\nVorhandener Einstieg: `playbooks/security/proxmox_stack_hardening.yml`.\n\nIm Quelltext benannte Plays/Aufgaben:\n\n- Bind the Proxmox web interface to the management IP\n- Bind pveproxy to the inventory address\n- Restart pveproxy\n- Restrict the PBS port to the storage network\n- Install persistent iptables support\n- Allow configured sources to reach the PBS port\n- Drop other requests to the PBS storage IP\n- Persist firewall rules\n\nAusfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `playbooks/security/proxmox_stack_hardening.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Playbook playbooks/security/proxmox_stack_hardening.yml",
+      "description": "# Playbook playbooks/security/proxmox_stack_hardening.yml\n\nPlaybook: `playbooks/security/proxmox_stack_hardening.yml`.\n\nPlay and task names as written in the playbook:\n\n- Bind the Proxmox web interface to the management IP\n- Bind pveproxy to the inventory address\n- Restart pveproxy\n- Restrict the PBS port to the storage network\n- Install persistent iptables support\n- Allow configured sources to reach the PBS port\n- Drop other requests to the PBS storage IP\n- Persist firewall rules\n\nRun the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `playbooks/security/proxmox_stack_hardening.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {}
+    }
   }
 }
 ```

@@ -4,13 +4,12 @@ Vorhandener Einstieg: `playbooks/maintenance/disable_syslog_forwarding.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
 
-- Verwaltete Rsyslog-Weiterleitung entfernen
-- Ausdrueckliches Ziel pruefen
-- Feature pruefen
-- Nur verwaltetes Drop-in entfernen
-- Rsyslog-Konfiguration pruefen
-- Rsyslog neu starten
-- rsyslog
+- Remove managed rsyslog forwarding
+- Require an explicit target
+- Check the feature flag
+- Remove the managed drop-in
+- Validate the rsyslog configuration
+- Restart rsyslog
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 
@@ -34,7 +33,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/disable_syslog_forwarding.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/disable_syslog_forwarding.yml": "d547d57cca67f34215e1cb1de3466027e9c4bdd4880a4ef4449cc8f8e997895e"
+    "playbooks/maintenance/disable_syslog_forwarding.yml": "f4f6f231b972bba3ab3c1a30177eab8c50c16712f315232ecdedc8aab3be5398"
+  },
+  "i18n": {
+    "de": {
+      "title": "Playbook playbooks/maintenance/disable_syslog_forwarding.yml",
+      "description": "# Playbook playbooks/maintenance/disable_syslog_forwarding.yml\n\nVorhandener Einstieg: `playbooks/maintenance/disable_syslog_forwarding.yml`.\n\nIm Quelltext benannte Plays/Aufgaben:\n\n- Remove managed rsyslog forwarding\n- Require an explicit target\n- Check the feature flag\n- Remove the managed drop-in\n- Validate the rsyslog configuration\n- Restart rsyslog\n\nAusfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `playbooks/maintenance/disable_syslog_forwarding.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Playbook playbooks/maintenance/disable_syslog_forwarding.yml",
+      "description": "# Playbook playbooks/maintenance/disable_syslog_forwarding.yml\n\nPlaybook: `playbooks/maintenance/disable_syslog_forwarding.yml`.\n\nPlay and task names as written in the playbook:\n\n- Remove managed rsyslog forwarding\n- Require an explicit target\n- Check the feature flag\n- Remove the managed drop-in\n- Validate the rsyslog configuration\n- Restart rsyslog\n\nRun the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `playbooks/maintenance/disable_syslog_forwarding.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {}
+    }
   }
 }
 ```

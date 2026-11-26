@@ -1,5 +1,6 @@
 ---
-- name: SSH fuer MOTD neu starten
+- name: Restart SSH for MOTD changes
+  listen: SSH fuer MOTD neu starten
   ansible.builtin.service:
     name: ssh
     state: restarted

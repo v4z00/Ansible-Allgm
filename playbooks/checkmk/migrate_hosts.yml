@@ -1,27 +1,27 @@
 ---
-- name: Checkmk-Site vor Hostmigration sichern
+- name: Back up the Checkmk site before host migration
   hosts: "{{ checkmk_backup_target_host | default(undef('Lokalen Sicherungshost angeben'), true) | mandatory }}"
   become: true
   gather_facts: false
   pre_tasks:
-    - name: Migrationsplan vor dem Backup pruefen
+    - name: Check the migration plan before backup
       ansible.builtin.stat:
         path: "{{ checkmk_migration_plan }}"
       delegate_to: localhost
       become: false
       register: migration_plan_preflight
 
-    - name: Ohne Migrationsplan vor jeder Aenderung abbrechen
+    - name: Stop before making changes if the migration plan is missing
       ansible.builtin.assert:
         that: migration_plan_preflight.stat.exists
         fail_msg: "Zuerst bin/control checkmk-migration-plan ausfuehren."
 
-    - name: Migrationsplan fuer Vorpruefung laden
+    - name: Load the migration plan for validation
       ansible.builtin.include_vars:
         file: "{{ checkmk_migration_plan }}"
         name: checkmk_migration_preflight
 
-    - name: Site und mindestens ein Ziel vorpruefen
+    - name: Validate the site and at least one migration target
       ansible.builtin.assert:
         that:
           - checkmk_migration_preflight.checkmk_site == checkmk_site
@@ -29,17 +29,17 @@
         fail_msg: "Migrationsplan passt nicht zur Site oder enthaelt keine Ziele."
 
   tasks:
-    - name: Backup-Datei festlegen
+    - name: Set the backup file path
       ansible.builtin.set_fact:
         checkmk_backup_file: >-
           {{ checkmk_backup_dir }}/{{ checkmk_site }}-pre-host-migration-{{ lookup('pipe', 'date -u +%Y%m%dT%H%M%SZ') }}.tar.gz
 
-    - name: Backup-Verzeichnis im Checkmk-Container anlegen
+    - name: Create the backup directory in the Checkmk container
       ansible.builtin.command:
         argv: [docker, exec, "{{ checkmk_container_name }}", mkdir, -p, "{{ checkmk_backup_dir }}"]
       changed_when: false
 
-    - name: Checkmk-Site in temporaeres Archiv sichern
+    - name: Back up the Checkmk site to a temporary archive
       ansible.builtin.command:
         argv:
           - docker
@@ -51,53 +51,53 @@
           - "{{ checkmk_backup_file }}.tmp"
       changed_when: true
 
-    - name: Backup-Archiv pruefen
+    - name: Verify the backup archive
       ansible.builtin.command:
         argv: [docker, exec, "{{ checkmk_container_name }}", tar, -tzf, "{{ checkmk_backup_file }}.tmp"]
       changed_when: false
 
-    - name: Geprueftes Backup finalisieren
+    - name: Finalize the verified backup
       ansible.builtin.command:
         argv: [docker, exec, "{{ checkmk_container_name }}", mv, "{{ checkmk_backup_file }}.tmp", "{{ checkmk_backup_file }}"]
       changed_when: true
 
-    - name: Backup-Pfad ausgeben
+    - name: Report the backup path
       ansible.builtin.debug:
         msg: "Checkmk-Sicherung erstellt: {{ checkmk_backup_file }}"
 
-    - name: Geprueftes Backup fuer diesen Lauf bestaetigen
+    - name: Record the verified backup for this run
       ansible.builtin.set_fact:
         checkmk_migration_backup_complete: true
 
-- name: Geplante Checkmk-Hostmigration anwenden
+- name: Apply the planned Checkmk host migration
   hosts: localhost
   connection: local
   become: false
   gather_facts: false
   pre_tasks:
-    - name: Bestaetigung des Sicherungshosts pruefen
+    - name: Check confirmation from the backup host
       ansible.builtin.assert:
         that:
           - checkmk_backup_target_host in hostvars
           - hostvars[checkmk_backup_target_host].checkmk_migration_backup_complete | default(false) | bool
         fail_msg: Der lokale Sicherungshost muss in diesem Lauf sein Backup erfolgreich abschliessen.
 
-    - name: Migrationsplan pruefen
+    - name: Check the migration plan
       ansible.builtin.stat:
         path: "{{ checkmk_migration_plan }}"
       register: migration_plan_file
 
-    - name: Ohne Migrationsplan abbrechen
+    - name: Stop if the migration plan is missing
       ansible.builtin.assert:
         that: migration_plan_file.stat.exists
         fail_msg: "Zuerst bin/control checkmk-migration-plan ausfuehren."
 
-    - name: Migrationsplan laden
+    - name: Load the migration plan
       ansible.builtin.include_vars:
         file: "{{ checkmk_migration_plan }}"
         name: checkmk_migration
 
-    - name: Site und Planinhalt validieren
+    - name: Validate the site and plan contents
       ansible.builtin.assert:
         that:
           - checkmk_migration.checkmk_site == checkmk_site
@@ -106,7 +106,7 @@
         fail_msg: "Migrationsplan passt nicht zur konfigurierten Checkmk-Site."
 
   tasks:
-    - name: Checkmk-Zielordner sicherstellen
+    - name: Ensure the target Checkmk folders exist
       checkmk.general.folder:
         validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_folders', tls_validate_certs_default | default(true)) | bool }}"
         server_url: "{{ checkmk_server_url }}"
@@ -121,9 +121,9 @@
         label: "{{ item.path }}"
       no_log: true
 
-    # Checkmk lehnt Host-Renames mit HTTP 409 ab, solange noch nicht
-    # aktivierte Aenderungen (beispielsweise neu angelegte Ordner) vorliegen.
-    - name: Ordneraenderungen vor der Hostmigration aktivieren
+    # Checkmk rejects host renames with HTTP 409 while changes such as new folders
+    # are still pending activation.
+    - name: Activate folder changes before migrating hosts
       checkmk.general.activation:
         validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_folders_activation', tls_validate_certs_default | default(true)) | bool }}"
         server_url: "{{ checkmk_server_url }}"
@@ -135,14 +135,14 @@
         force_foreign_changes: false
       no_log: true
 
-    - name: Checkmk-Hosts seriell migrieren
+    - name: Migrate Checkmk hosts one at a time
       ansible.builtin.include_tasks: tasks/rename_host.yml
       loop: "{{ checkmk_migration.mappings }}"
       loop_control:
         loop_var: migration
         label: "{{ migration.source }} -> {{ migration.target_checkmk_hostname }}"
 
-    - name: Alle Checkmk-Ziele auf Ordner, IP und Alias abgleichen
+    - name: Reconcile the folder, IP address and alias for all Checkmk targets
       checkmk.general.host:
         validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_attributes', tls_validate_certs_default | default(true)) | bool }}"
         server_url: "{{ checkmk_server_url }}"
@@ -160,7 +160,7 @@
         label: "{{ item.checkmk_hostname }}"
       no_log: true
 
-    - name: Checkmk-Aenderungen aktivieren
+    - name: Activate Checkmk changes
       checkmk.general.activation:
         validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_final_activation', tls_validate_certs_default | default(true)) | bool }}"
         server_url: "{{ checkmk_server_url }}"

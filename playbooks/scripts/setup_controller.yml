@@ -1,5 +1,5 @@
 ---
-- name: Lokale Ergebniskonsolidierung einrichten
+- name: Set up local result aggregation
   hosts: localhost
   connection: local
   gather_facts: false

@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "a0ad50640139a524f86591157145bf1d4674ea9c065bfea21558f0f7b04430c8",
+      "sha256": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -563,7 +563,7 @@
       "mode": "0755"
     },
     "configure_server_BASE.sh": {
-      "sha256": "56e511de0987d3d57b12617721b7d8e440749ca4a9e0afeb5a676c4618c77273",
+      "sha256": "8af8fbd9e3b7930bfae67de331def6614fca689f86c92494d4a6631e9848e1d0",
       "mode": "0755"
     },
     "controller-addons-v1.json": {
@@ -579,439 +579,439 @@
       "mode": "0644"
     },
     "descriptions/commands/apache-certificate.md": {
-      "sha256": "bb74c8dfe076cf1879c14728e10285a3082334c677e338207585042dfdb9948c",
+      "sha256": "9a493777bda80759f4e75c14fac4d58f3f0b3b6a0a4e2cbe29647cc28fece633",
       "mode": "0644"
     },
     "descriptions/commands/base.md": {
-      "sha256": "2075d04d40fa73e3dc03c3b7fa3619b0f13f3a1d346a9b43e919803a443b44b8",
+      "sha256": "d0fbfdaa3c519734f79c2b587d88b4b885e62b7910ff8bb071cf524d19cd11ab",
       "mode": "0644"
     },
     "descriptions/commands/bootstrap.md": {
-      "sha256": "e4297dfe560bd121038c9cb1f981eddec635b1477be6b7520d7611801a2cb613",
+      "sha256": "284d407beb16191dfecafd99fea2ccbe1df71140cb0765a051bc7a73a8383f0f",
       "mode": "0644"
     },
     "descriptions/commands/ca-distribute.md": {
-      "sha256": "6775ced99977676c610c411864656ad292762c2097f581180c1f17f2454618ad",
+      "sha256": "5568bc5e41037e3b545e673ac4fb591d19200ca5847b7ca39ccd4194fd18fe01",
       "mode": "0644"
     },
     "descriptions/commands/check.md": {
-      "sha256": "13158818470971be956cdeb574d13bc60230777025fc1474e14254702f7cba1f",
+      "sha256": "f1dec80bcfc5a74d1b804e13b524436758cd6c52177c820b3367fedcd69174c3",
       "mode": "0644"
     },
     "descriptions/commands/checkmk-download.md": {
-      "sha256": "7e30e9e84c2f6dbb5d0425ea2df204f3fe0d0ca7013abceca41d6c0ba0383874",
+      "sha256": "ad11341fb447d7a172236f4594fea11de422b2875ec8231008f57abb480ce61a",
       "mode": "0644"
     },
     "descriptions/commands/checkmk-migration-apply.md": {
-      "sha256": "0dab498f392571caece9e6b90f6be9d852e65f755f9253f9f71087f3d8ec2d84",
+      "sha256": "84ee70a72f99628d8dff375ba4604b58a2eaf3b8d40e56b59dd464550e4697f4",
       "mode": "0644"
     },
     "descriptions/commands/checkmk-migration-plan.md": {
-      "sha256": "b44fa3473ba811a76f15bf48b69c9b9b1ff26915154843fdac0e1119de308bc8",
+      "sha256": "8ede6a8fa87f8f9ef7acb0c19eff72fb5d6a0a67e58f55e4662bb561ffd87a84",
       "mode": "0644"
     },
     "descriptions/commands/checkmk-uninstall.md": {
-      "sha256": "a387b636a57b57e93c43505f76d83021ca95be25fec1efac9ad6e031c4fc5fd0",
+      "sha256": "114dcfc1aa98e9f06cbc234b054cbb5448a393464622416f6eb4d1a5824ac863",
       "mode": "0644"
     },
     "descriptions/commands/checkmk.md": {
-      "sha256": "537af2c005cfeb06be880d923f9e1cbb9b6327e5cb8a3088bb2d1aefb7ec752b",
+      "sha256": "8cbe14c18329026ea96695d18082e682ad8f8fac63acd676863d71e1617c816f",
       "mode": "0644"
     },
     "descriptions/commands/chrony-uninstall.md": {
-      "sha256": "2307312a124123640bfc1ce431fd331535ec41a819c71d2bef4a83e22f9be824",
+      "sha256": "65420a72c63fbe75c6314cb60fd4acdeb06d2d5e1c9cce8e875388dc369afbd8",
       "mode": "0644"
     },
     "descriptions/commands/crl-renew.md": {
-      "sha256": "a371b6005f99d9a767fd95d92c369b374e49726c79e508709a84e248f10bfc1a",
+      "sha256": "848bf6557590bc92621715cbaef81435a7c56baab2d0ed8dc221bb162929c7c4",
       "mode": "0644"
     },
     "descriptions/commands/dns-check.md": {
-      "sha256": "daf6bbab0ed89463873a1257cd4a54e5c01ffcab55a958e00c3de5fd9f182140",
+      "sha256": "a6bfeb24d738f24bd1c63ddfa6299b4250793aa07b99916f5f5d5716eb199f31",
       "mode": "0644"
     },
     "descriptions/commands/docker-auto-update-stop.md": {
-      "sha256": "dbae3e53f7b58c9516aaf6484326f6ab71a116c48a84d530a03665518c1371db",
+      "sha256": "ee6dbdd36fe05805419f6b8a35ccdd8ac29749853b986ca4ad0b9b0d8ca94a0b",
       "mode": "0644"
     },
     "descriptions/commands/docker-check.md": {
-      "sha256": "9cf8f2ba4deb9676dca7210b14e87ecb128c9b81d11f7a60bf007c594f0c4615",
+      "sha256": "568c3ae8f191e7e4a525306d89ceed8fa37af99d1ae167dfdc939739c093166f",
       "mode": "0644"
     },
     "descriptions/commands/docker-deploy-all.md": {
-      "sha256": "3eaaed0594158cc70fd7f3619efc1cb53e2da0b8796ca7fd441b1ade15246b5c",
+      "sha256": "e7bc4db7e8e37a4d83e831ff1b64087d3d46a3759671a0204b63c4bd8ee2e8ef",
       "mode": "0644"
     },
     "descriptions/commands/docker-deploy.md": {
-      "sha256": "e0b97bd49701f89ec8070c09e32074659edfed9246e448fcb150b14ef8acf8cc",
+      "sha256": "cd7e0cacf80dde9719814a4b96b893a575b5456b94e7bb0f729f3fdf2ef8bed8",
       "mode": "0644"
     },
     "descriptions/commands/docker-ips.md": {
-      "sha256": "6f524c3a18cc1765a2b74fb0df947443eee2e0816ef2991dda71b519408e27f9",
+      "sha256": "14594fbec9027428bcbe9dcace9765c01fbbfc6b75e833d5c6f7203155864a4c",
       "mode": "0644"
     },
     "descriptions/commands/docker-macvlan-prepare.md": {
-      "sha256": "0c72be787b550cfdfbe710e787632f405666b481b7a9f19472362ac3245b6f22",
+      "sha256": "5154ea8647b64da5fe495517ac5fda7ff126f588c1c13106660eb367c99d19a1",
       "mode": "0644"
     },
     "descriptions/commands/docker-stop.md": {
-      "sha256": "521a15da367f70c4a42dc888b463584f92ce0bc53e9772325850022abc6728b7",
+      "sha256": "26bc81cd2ca2efca7762fb709ede96de0dd521db6bed62074a764cb3b1e4980e",
       "mode": "0644"
     },
     "descriptions/commands/docker-update.md": {
-      "sha256": "4f10eb6288ab48ade153b5cf329f270bf16b00e4ffe1a1ad008ac5612286931c",
+      "sha256": "8f10a47704c6ca69a2cd17addb5c193f21710cb24811b8ade9de9cde0c34e024",
       "mode": "0644"
     },
     "descriptions/commands/docker-users-export.md": {
-      "sha256": "f11a2472c029b23ae30d4d78ef554bfeabaa07c40751da252df0fc0509fa83a5",
+      "sha256": "63579089b4903bf851dd357dca2a56b1ae8df33bceaf6161dad48a2a8c4a0873",
       "mode": "0644"
     },
     "descriptions/commands/doctor.md": {
-      "sha256": "9f77a1fbd1a0e9888bc1d938a73fdbe0a5d35b72162bac54865c26e88e643fdb",
+      "sha256": "c12ff281671fadd663f6c8198cba79aa85f8736a359eceaa21afbdfcfc7b616c",
       "mode": "0644"
     },
     "descriptions/commands/features-check.md": {
-      "sha256": "14c160f93b4c0adb77526d2ce9f82535bacfa086f92e7cf091507644d30326fa",
+      "sha256": "41c8d2c0e3527b00f9dcc9fe03472674b3d02f2b2aa58532aae8857779e8b15c",
       "mode": "0644"
     },
     "descriptions/commands/fstab-audit.md": {
-      "sha256": "4a75ba09702630d7d44b8c8ca037a602b7f9f7599e8e7c59363c24a4ba5486af",
+      "sha256": "1c52945532d260090b7eb08a37186388acdab9eb53f46916293dd4836dff9399",
       "mode": "0644"
     },
     "descriptions/commands/graph.md": {
-      "sha256": "ce25f4a069c98bbe6736ba1d5a30a21ad00bb4f7a54103a52c86d74b967428f0",
+      "sha256": "7fa8d81771497dea872e6eca54beb9eaaede0741f2a50da9948468852fa0658d",
       "mode": "0644"
     },
     "descriptions/commands/inventory-check.md": {
-      "sha256": "e63447c0af84d6409696617a245a9479805e3bd580264ecef416f15755b03122",
+      "sha256": "ba9558c8e048c6c7aa2cbb6d5b7f00ef1aaad6890706dc26a5867a61ebdeb762",
       "mode": "0644"
     },
     "descriptions/commands/inventory.md": {
-      "sha256": "d8d41d76b77713da770f6cfa90c3d728652a41f1b74c7ef503ce691dfa5f7e85",
+      "sha256": "7229eb2f20b9214f704c332c216a2445aa8de8f7f9359f301ceccbd3b46f26c2",
       "mode": "0644"
     },
     "descriptions/commands/jobs-last.md": {
-      "sha256": "f8aed49faa8ff4e4530f4f2288363cabc618f08996691bd9eee164e3b06b4abb",
+      "sha256": "4e61ec92e9d720073052eb97683cebf66a445d0799b04b63fc37cd4f5b1f39b7",
       "mode": "0644"
     },
     "descriptions/commands/jobs-summary.md": {
-      "sha256": "96bf0097add5c0cfda4ac16c0d2d0ace529e396b902651f8eb31cbae17f5cc8a",
+      "sha256": "15f15cc735ec4ba63723a45fc78700cc2a5db228841cf2edecd1d28773812f7b",
       "mode": "0644"
     },
     "descriptions/commands/jobs.md": {
-      "sha256": "caf4cc90425a0821e0abefa03b0a43161a981e2d78666eeaf9f86194b471e1e1",
+      "sha256": "5af2af0a2ab40c2789c8a7c89484be6bb96bdb3ca1436390ca9e11adde872317",
       "mode": "0644"
     },
     "descriptions/commands/keytabs.md": {
-      "sha256": "bf6d9784522db962d3e6b64f23252847118e1d1ac2af14a8163600f1281b1deb",
+      "sha256": "d064f6458a4abaa40a520696c4f6142b758da6295c3279eedb8e266d2245429e",
       "mode": "0644"
     },
     "descriptions/commands/last-log.md": {
-      "sha256": "95fe488f327a94a3747299d82eb6a8931d2b776bb159332491bfe62911790dcc",
+      "sha256": "568b56a1be0801fc05e675e04f5349f6a6fbff87d8b783905342ee4cb0db7ee7",
       "mode": "0644"
     },
     "descriptions/commands/lynis.md": {
-      "sha256": "c183d2d9f930ff873bd126d4748bf363343d5cc36e4d77488abf16ac2107f726",
+      "sha256": "27713135726908cc924cf20645286f49d0486409cf17a3d6f9d4c7a672ce4260",
       "mode": "0644"
     },
     "descriptions/commands/mail-test.md": {
-      "sha256": "e77ab89afa5f88e9bb17d21042b04ad0e80a37dc9ea4f5d1f1e184ad832dfb2b",
+      "sha256": "08c8d0514796157596e21a3fb35828e8007edef97ac75b69992567971fff0f62",
       "mode": "0644"
     },
     "descriptions/commands/mount-all.md": {
-      "sha256": "6fcb062bcde042bb510794e19f205313e04305496132a406c7ca34f1c1c94f81",
+      "sha256": "c44ed2c857e58cd7daec1106a817e1aed7df9a82b74581cff0f537ec7e5d9c3b",
       "mode": "0644"
     },
     "descriptions/commands/optional.md": {
-      "sha256": "b75e0f6d9e01a3e615d774fe4ca25cd140d9222d130c467bdd739e5fe3a3ccb9",
+      "sha256": "67e9cba111add33b81e1378e4c9ff1947ba1856e7c1c633abb8c99ec614e7679",
       "mode": "0644"
     },
     "descriptions/commands/ping.md": {
-      "sha256": "064543be807924d557d9dea4d8648935dbfaccc609be6bce0ef7c1bb337caa13",
+      "sha256": "33492a37ce623122fb1fa354c291e4d2598844a7a966357e909a2163d794ca2f",
       "mode": "0644"
     },
     "descriptions/commands/postfix-queue-clear.md": {
-      "sha256": "3308610a0012582cbcd7c5b1a23270c3efb3417dfb4cf9e3edea436205ff2929",
+      "sha256": "b866b137577ac27992917df65b9d0fa63e8ab70c26febbfd0831539ee0a5e756",
       "mode": "0644"
     },
     "descriptions/commands/prepare-paths.md": {
-      "sha256": "cefd9884c1130454e1119dc7d40f26d255780e6171ab63e291dea51101a2e3ba",
+      "sha256": "7abeb8caea52dd49c3ba631d027b4309af4855abbbd32517cb838af1f3cdb6e2",
       "mode": "0644"
     },
     "descriptions/commands/proxmox-hardening.md": {
-      "sha256": "36a6167356e956a0fa90a7967b66e17aa61f553e54be4b5e350a49632a0d5950",
+      "sha256": "5b5e94fa953c12ef4837502de39645481baf364ac6287e61085842dc964e55cf",
       "mode": "0644"
     },
     "descriptions/commands/resolv-show.md": {
-      "sha256": "c5996e2ed9ffdf3c1eef6dfaa2e3a2cf6ddd6571a98917fa5181041d62d7a50c",
+      "sha256": "e1b56670e533dfdaccb912d76c32d1045fdc7658a213b8fa8137ee3f85666ca8",
       "mode": "0644"
     },
     "descriptions/commands/rotate-service-passwords.md": {
-      "sha256": "1997b85aeab0dae3608a1e20057d7f7c596801678a16f6d4d731e68e7dea2316",
+      "sha256": "8ed4f6d5f35a7a20364c0f71fdfdae38c5b3a7768f98300865ee15d566ccd54e",
       "mode": "0644"
     },
     "descriptions/commands/rsyslog-disable.md": {
-      "sha256": "fc6d3c84b51ffbc05ec8651458a2464df087ee21d2f01fa180b17e5de75e9bac",
+      "sha256": "6a1e48964531ec779392254c7e27d6f3d10fac5498890eab815e305730f27d87",
       "mode": "0644"
     },
     "descriptions/commands/set-fstab.md": {
-      "sha256": "79237ed47f53e607eab697edd095132d0a6a89069346e48510bd87fcd1525d9f",
+      "sha256": "f90e6e61bf85831390f1cb6e1a93272847790ad24e0fab9c70ee3bba2976b821",
       "mode": "0644"
     },
     "descriptions/commands/site.md": {
-      "sha256": "2e067057e89a319a2c150e35251dc3079b2b61667b0dd144f69d83b91540ff3b",
+      "sha256": "87b4e0a8fcead6260611403127f0fbcd7d1a392e1e6899b6da9cc7315a9100a4",
       "mode": "0644"
     },
     "descriptions/commands/snmp-check.md": {
-      "sha256": "0dd35cdad70f7e007a003beae449eaae57f7d815034a7d0db3ebb2dda16a0dba",
+      "sha256": "c1e1f40df06ee34cd8835a22339d8c48b97ccef9abb5fd85fd27b9348748b185",
       "mode": "0644"
     },
     "descriptions/commands/syntax.md": {
-      "sha256": "c56c58765d13ecbf7fdacf9e3fc34c27c56286075040001907507471123526ab",
+      "sha256": "5fdfee7a012e8a75f53edd61dd6cb91191377a85b565ec1188004a120d46543a",
       "mode": "0644"
     },
     "descriptions/commands/telegraf.md": {
-      "sha256": "5c3ce15c8d943624b43e8864fe90b997d4f2fbf68e6faab70ee7c5f52a546306",
+      "sha256": "8811299b63857a8798c94f2c7597b1ca47a33f62a066fa7724fc8cc22c621e03",
       "mode": "0644"
     },
     "descriptions/commands/uid-audit.md": {
-      "sha256": "43aa3db3e1831b0bff06a8629842b38c88a9b64c92ca87f931985ac7f27c0310",
+      "sha256": "a84c3f51c1b8c1a4c8b53cb65d25ea120a86532f0ec3b365d38ed92094ae125c",
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "bba19fdfbf335528df60c5b8302b7e9be51a899c1b1fb02c764918be0d32d5d5",
+      "sha256": "22277c50677573c7b5691d2395b30459a94407261eb9f5577c31ea7c3d43c258",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
-      "sha256": "a9655f1a4c4ff0d335d5514b2715636c25916856bdd5b4bec070741b4e5adf9f",
+      "sha256": "3fa4ba48bf7cce02f3936a662506ee86ef223e4efec1a5454e52a772551358f2",
       "mode": "0644"
     },
     "descriptions/commands/wan-check.md": {
-      "sha256": "68eb66fe8b80235b394aa5d0f32e032438de6993dbd410aebeaa107a5df56fc9",
+      "sha256": "39499356f80b9df4495a8de24e365844b76df0740397b00fe4ec1fde1956fd56",
       "mode": "0644"
     },
     "descriptions/configurations/group_vars__all__host_credentials.example.md": {
-      "sha256": "2b2da529e5c034ff03a2cb636fb24dce90d986fbe178cb0ede3ca588c9fc73f9",
+      "sha256": "758cee6d529ac6db4be6c4486d4667035343af69c3ec0dc5f3d2cf4ebef30bbe",
       "mode": "0644"
     },
     "descriptions/configurations/group_vars__all__settings.md": {
-      "sha256": "db4e6899bf495bde0c767cdddd899bddc71f6e3af7fbffc6e968ee3a2ce1c21e",
+      "sha256": "883235caad8643a85baed9db6e176651db695fe66173948e3310d928fc33db8b",
       "mode": "0644"
     },
     "descriptions/configurations/installation-allgm.md": {
-      "sha256": "e51f85983923d6e221abfdfe4ce5d1356da51832c45946293ba1c7c822176545",
+      "sha256": "bef87593b032d42ae1a70e67a72a820f8fd31987ae54ca48c515cea3eca9d7d4",
       "mode": "0644"
     },
     "descriptions/configurations/script-library.md": {
-      "sha256": "6a59ba744b6f7cea083c014a97f8e078e88733b873b4f0968ad2d95d21a32f99",
+      "sha256": "93a2a3de789cc5872c7800f90ef30b228bb3d6609b4278d687edf6fce54f1818",
       "mode": "0644"
     },
     "descriptions/configurations/script_jobs.md": {
-      "sha256": "34972c36463418b3cd1bb994dac63b3550a751c5d80c14d88a1eb86b24b78c5d",
+      "sha256": "a15655f62016b1aaa597aea245637842f74f43605444754f536c7f4a7c5ade91",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__base.md": {
-      "sha256": "b3b0b7b392ef731b31f3c45c97bc310257306c5f948ff294767418f3122575d9",
+      "sha256": "851988b76bec89a1639f86193f0b2716c9e48b9af42c2e55e027e8c60f9dfece",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__bootstrap.md": {
-      "sha256": "8264a4e5792f5de1b3d403ce6c13af767636d794e329b5049c45c94f63ce3c49",
+      "sha256": "aead818f2e540608418d8cec033ce7c68f1da52acaa62b2fab9e1c17f1c70fd7",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__bootstrap__root_access.md": {
-      "sha256": "73e5b309f63ab3358d816a3d772bf3896e717ef67852faec8fa99bfff8dd90c1",
+      "sha256": "2f42dd27f6efef99c55fafdc4556caf3fd982b7f5b9f366b73fd3514430cde30",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__checkmk.md": {
-      "sha256": "168b4844ca5a83ad76bb6cd7450e67efa245a8ec042c3fe9acbc0f34467a74d0",
+      "sha256": "51b7e1d8b43a59e8056cf6367fb870858ef0464295ff387476a9364f17cb3c60",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__checkmk__migrate_hosts.md": {
-      "sha256": "2e4c2b3d17d1b1bc00002d8f76b0b8b74fb9357ab16a6b263c32ab2a08770725",
+      "sha256": "893d8f4ac438d8416faf931d4de1f097c515ac9c1795107ed00a301f58fa1556",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__checkmk__uninstall_agent.md": {
-      "sha256": "209aa0641c21e59b027488f28509da5cb27bf65bbf86ac2ba0ffdf859f598b74",
+      "sha256": "41254a606ae1b1475c52e22f140fc5380645f46f7508f6ccb5fc28e956dd30af",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__check_docker.md": {
-      "sha256": "7bfc8052df975e22171ac676c3987695a3afe005d4000010e0ba71c8328f8df2",
+      "sha256": "7b7678cb6449a442874836ba2a753b825fe30188537abffccdf5723a09cc4871",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__check_portainer.md": {
-      "sha256": "df280d37769c3b9e98e2ca2129d93429aa2a0bfd17d2b90d6e48245a788f77b7",
+      "sha256": "5bdc7c8cbc49e77c3cd22b465da824f41a840e20e4145117920ff9e13a321908",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__deploy.md": {
-      "sha256": "a5e95cca4b3945bb30ca9bf67bbecd0a5b3fd4209f9409eadcd1d8c387a90be7",
+      "sha256": "bcb7c685e93dd64746103f258bcf47169ac1ab755f86ffa151b078da9d9a8d62",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__deploy_docker_networks.md": {
-      "sha256": "fe7f22824044c73f7d7f0b7a3223e70f755e65dd286d81f582458399fe82bf61",
+      "sha256": "8be7373d12f3a915d3087562ca258b7107fb16fb4b22f982fc3741abd0324d22",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__deploy_docker_stacks.md": {
-      "sha256": "7525280be9f710ec27b8a5e068ec81c0b931c69e12d54b6ea92237aebb74bc66",
+      "sha256": "36354533ca63ce405d7d2d90ddc7dd444999fa9facae0149595b0d47f8f2c68d",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__deploy_docker_users.md": {
-      "sha256": "9b363efb172e322ed0a8b2b230ad5cffa1a0c2cddc2b51856e690f4d677a32ca",
+      "sha256": "1f95d2f1950564085c707ce1137a2e8ca4ac15261616ba2e03efe889d90b632d",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__get_docker_ips.md": {
-      "sha256": "7093d5f7e435d2c7aa930335c40624ca7215c9f60c63a2a3aadad6354fe45ec3",
+      "sha256": "898165736755ae4b00380cfdc369c477b761a3adf484c76c5cd4d321d62ce7c6",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__prepare_deployment.md": {
-      "sha256": "8cd5a1c376ab24b08ffcb2b4546a2a2397b84f8c32f1dc25da5ce593a4a9eaae",
+      "sha256": "6b13f3de2d23fb170e8a7fc21a929988491599aecbf34ddd16562fec0627f6c0",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__prepare_macvlan_parents.md": {
-      "sha256": "56a7c9bed0a2bbebd827bed63b25995ddc9a4de64e78a20e770be9b343e2a398",
+      "sha256": "22dfecc668c07baac391a2f993faee056d6ebdb635b3c44a4aebbe1ba8f33937",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__stop_all_docker.md": {
-      "sha256": "eef0ee9eeb072bfb4191ef586047b741d06099588c7f7b829f265a992737e8da",
+      "sha256": "be19aafe329954e55727b3ab77280e1388601a2ab9c33f4f53462194e8e2b78c",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__stop_auto_upgrade_docker.md": {
-      "sha256": "ef2d60f3008e5324308016066fcba7309295ef41b21dac9ac496be02c0e74892",
+      "sha256": "21bac0dd584acd5c264f869b4e0233b290d2253c97fb23aa044d7424ca91549c",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__update_containers.md": {
-      "sha256": "35b2605c9e40594097c5f8f5780656ede768e00b67a9ce4c348006f13f04c9b1",
+      "sha256": "0f454663941d555fca51e6ec40e5cefd4f6ce7c293dafb78b7dc83c7baf066b7",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__identity__configure_kerberos.md": {
-      "sha256": "d94da300560b369e1fe0212001ee67a9795d2e2bdff89c2473f1fead023df64b",
+      "sha256": "49684a4638fa18e8044ef5ce004964ab3f3ff9eae5d09f43d7d22972c5c8ef6e",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__identity__generate_keytabs.md": {
-      "sha256": "9336de3dbcc977ae5436f89a583f926f8434d37b466bde52d5b0971c7f036e54",
+      "sha256": "2b517cec6582ed0e3e37c2031b4d488fd848c8fc8cabc91cb571b433ea97a0a2",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__lynis.md": {
-      "sha256": "f18848ac93cc9c8ee82a55b2abee4496b30b3f348bada41d918ee9f10c34ac07",
+      "sha256": "c8a2bfa53cfae2e40e096b38d1c0146b29fd11d9a9a5f127292d5490fcd01a0a",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__audit_fstab.md": {
-      "sha256": "cb6eb4463c7f752f969b3b4a28f01df03874a49421c44da2005801ef1982fab1",
+      "sha256": "09041e502d127ae7de2a1674f20bfef4f57a97903a0377abf50842ede1dcefb5",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__audit_uid_1000.md": {
-      "sha256": "eac22a5adea60e1e7824315e2a789ca2752b81cbadb5dcf18b82147b86075796",
+      "sha256": "d0c2abe1ab86c62f3ccecf9cc3aae4dcfacd98cb3d527f4cd7de3cd643982b6d",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__check-dns.md": {
-      "sha256": "5a96e0e4d81165de5a4955938cea94d81d6b7d18b5af671ed4b799b4a8389ddb",
+      "sha256": "981062c89f802c8f92dd935c984f6c885cf7ad1f021c509d4a2b47a55cff7072",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__clear_postfix_que.md": {
-      "sha256": "b3adc94fe6ba8fa1dc0d7480d02fecf17ee0703cc74deacd0c0a8273fab7f20f",
+      "sha256": "217e816a1af70d51c61cd368e07bd285319ee0d7efb94f230153088d458b7203",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__disable_syslog_forwarding.md": {
-      "sha256": "bff01e0034b0e4cb160bae1164f9118b25d251ff48c400c89789088c4c04256e",
+      "sha256": "4d1c536fde8819e15902eacdb6c38070f224205642de062c6732eb42987a1734",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__get_resolv.md": {
-      "sha256": "63440b4f714bb062d722bacf3a9d8a2e21b827e53fc86a07b83fbd6f252b5543",
+      "sha256": "e5fe60fb2878a9b109e3ff8f4ef889f0db1bd4b26c312bedfead9e4ba49141be",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__mount_all.md": {
-      "sha256": "9e34a4521fe6ff574b9f88662155260f22a6b4927cbed341aa02a02bd65b2a6e",
+      "sha256": "cc575d70c03683c0b9e961917a91c78ff4844f623ad8bcf8e97f3e1d9814c782",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__notify.md": {
-      "sha256": "4cab406939e8f02079d6f056dc2e256ce6113c4045493a3d80bcb00fb3ede4d7",
+      "sha256": "eec51f980cfdbb17deaafb3494a35bd96751e9008d09d3ecbb6370d3544a7d37",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__prepare_paths.md": {
-      "sha256": "6ec19e60e58bff6f40e6b1ff8e9d62ae677e326464b0f6ad6761e889baa9021a",
+      "sha256": "ff07ade85e9372636e89669b1ed6fddcc9b8c4f761daa52fba0c1816bcaec280",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__rotate_service_user_passwords.md": {
-      "sha256": "b8333c473e9b37de9a8ce751aa3fb38ec2ea3a0676e12bb327b7b721515c3080",
+      "sha256": "935c509e9c4b69b85ccd608eee62062c1e32c4fd3133080b05b8ef872b4660d4",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__set_fstab.md": {
-      "sha256": "ecf4b9745c523b3125c615095b914603a21a1c585477a91852940999d1677ddd",
+      "sha256": "691df1a5d312e58db45e799d0b1dd77e97665cfd01b0e7b6211c6c1b66661c59",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__test_mail.md": {
-      "sha256": "5eb59f0c443bfa22073b8d55268e951a9a3ea484a532d88b95cd5441f4652ce8",
+      "sha256": "2f89000363b2092ef87f4a9cbc968681afebbc7459052da09cb13a8e35b799ee",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__uninstall_chrony.md": {
-      "sha256": "a22076632b4c70bb3e323c724a1ef20b23b369e45ca92927bfcf2f8773876e7e",
+      "sha256": "01b77d3ae792ba4ef281f21ab7f594f5a64db0418c11b0fb19b2b948c1395346",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__update_hosts.md": {
-      "sha256": "bc36cb2ec79ef6c6ef8de38b241d705a4e2328a9dd235397d27edb0e61ab7fe4",
+      "sha256": "6bf8fa0c0094d42ba374aded006e05304a115328c75c720d40e1cc765d5881d9",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__maintenance__wan_check.md": {
-      "sha256": "c1dacbc344d34214bccaec841b0ca64bcc8b475b55b5dc0c5e28bde027394292",
+      "sha256": "478fe45b67fc07451ba5f2a301ec7757dd8f07ceddaaf69c027a5220368c1a2f",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__monitoring__deploy_telegraf.md": {
-      "sha256": "96568e81a11b99b3d6d073099a916bcc4d319bb329297722982b709708b33e7d",
+      "sha256": "54f388dfcd4cde69dc5a1ba7e2d7e1ff7bc8b67cdf60aec85835c32eb6b48e56",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__network__snmp_check.md": {
-      "sha256": "c803ff7b3d8a3a1b359e72c247fd0e5ccaca0d636e02dd65ef9a8a28ab83aded",
+      "sha256": "35deb7f7d88da52a48c2d934a0bba48d11ceacd3c0358cc46af6fad9d729b1be",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__optional.md": {
-      "sha256": "edbb25becba0fc6cf6e06ae5f07abf0be34b30d6b7ba2b6ab1fbc2b8e371c7e2",
+      "sha256": "29ab93616f1a4a49b38593729bd6e96d0f347c957c572cf0fba0b99d94e646e1",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__pki__deploy_apache_certificate.md": {
-      "sha256": "dd8347248be9518a42715804ef7760121e5e4d62d43af4e04cfd61ff6b04c5c9",
+      "sha256": "d96ff4a416860395d88d0e43545a79d137670db8424feb79ed3538ca233e8a2d",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__pki__distribute_root_ca.md": {
-      "sha256": "f011dac8003df5381f1fbc3dfc072c9497b3917ec97ac2e560eb3ebef7bf6c42",
+      "sha256": "612e2996ba4c08de94caef1899a42224123339bcd790ffbba87ae98ffff07737",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__pki__renew_crl.md": {
-      "sha256": "c8e70a62a766819415944405364944dd26803266ad1cbf1d8ff09ec61d63a816",
+      "sha256": "38cd3b032a9c7824fe52eb8f805ed59d84bc93b323ff19a1165cd4a875185157",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__reporting__lynis_summary.md": {
-      "sha256": "14313c748f98931b9d5d107f6f70a9f3a69586c3786046f4302c0b1d401433e4",
+      "sha256": "4ae326d247adedd53da14d3a2b59beb4dce69a6bb691b96d8b6782cc553c86a3",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__deploy_jobs.md": {
-      "sha256": "b3687302f3bc5b0446c714fcffa861c210b9017c788da58572f886cd4d673b65",
+      "sha256": "406f87920c78d66e41b0509173c2624f5aaca10a8b9f996217a1ef3d2c86c515",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__setup_controller.md": {
-      "sha256": "38fc49080fe1b78bfd95eded5c5690025094e746899b02b3dccb517b39ee1020",
+      "sha256": "e4a734adc5baa9a72abc8df4f5a24ae2c30251a385651e41fb1b557eae37836b",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__show_status.md": {
-      "sha256": "cb21ae2f2fcbcd9999337d6c83f5405032510012e687061cc773dfb2869ff3bb",
+      "sha256": "9638a323ec6aa31c76855943bc4bcf5d51382fac8a49cab772d5bf9091676e68",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__stage_library.md": {
-      "sha256": "24025a37b74d77a846c2bc7cbd1c3ba3f787f84a5830c01dc05b1e02983182ce",
+      "sha256": "f8ed38b4eb890244e7019f6d9152899512228c757f0e74477b47f762715d76d2",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__summary_jobs.md": {
-      "sha256": "8248325715e8fc1b3c2538aaf65f42a4a0b8da62e33a2e86a8ef955c3a0a54ab",
+      "sha256": "008f966a028674e487613c314cc742b8ae75121439a9594abc8ccda81f33ea4a",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__security__proxmox_stack_hardening.md": {
-      "sha256": "2b725d76cfbfc3b5beb14fe95db5f4f296ed2d8e9cbaff7339d00830f8382e30",
+      "sha256": "adb8ddce54543b64c14975ed70de7001b59f661c89a3bdf52615354fa6985142",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__site.md": {
-      "sha256": "bc8a42249c4c37a111f7974043e2c1acf58b5b49c7b9f5341187f1592213621b",
+      "sha256": "f0ba2486cdd3c72aa2a2f48b62c76578f2b751c7cf466de0ab8ba20f2d707ce7",
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "55192fcc298f680412d1b7d583b5cdd7c245bcad7714f8c2f3c7972d5832c434",
+      "sha256": "fd724c10b780b2330ff617e442e1d0948449b15ca6876a3f448fb269e0e507de",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1019,71 +1019,71 @@
       "mode": "0644"
     },
     "descriptions/roles/roles__accounting.md": {
-      "sha256": "8704dc0d816c91ef4e492673c3730bd06ec3751927b57ba108a3eb90c17c0ae9",
+      "sha256": "1472b30e05a850b2baf27f29041193cf3f01dc06e3f10461eff477a7ab874ed9",
       "mode": "0644"
     },
     "descriptions/roles/roles__baseline.md": {
-      "sha256": "3991f6d1257090a274e99ccef10b759fc9701d76911cd1ebf3b48bde76e744cc",
+      "sha256": "dfb7f53e29b83f705325783b673e9a7edf1e21937949834154690571ab395229",
       "mode": "0644"
     },
     "descriptions/roles/roles__bootstrap_ssh.md": {
-      "sha256": "f3ed9fd6e1095bf2b01304ed99bdacdcf49be96d37ecab82d561c74e5708192a",
+      "sha256": "787e3b5c299b384fa965a4884121e4efb853ac1f90977daf8e9817c2fd131f4e",
       "mode": "0644"
     },
     "descriptions/roles/roles__checkmk_agent.md": {
-      "sha256": "9ed09ba2ac7db624f55b9e59c216fb283bf0436373856ec9d29b45e926d31b8a",
+      "sha256": "e5786e16cb1a3f83372ffb7c46df538bd524cb8beed9bbd8796a4c6cce2d30aa",
       "mode": "0644"
     },
     "descriptions/roles/roles__fail2ban.md": {
-      "sha256": "fe6a6d6faa7e838e0eeb26b6047556b83096f4d0cce7a2a4f7bae0d67ff02e14",
+      "sha256": "e1510610e66f4fc08467297be76ac60c57af701c8d324fa27458e8b1ab1bd03b",
       "mode": "0644"
     },
     "descriptions/roles/roles__kerberos.md": {
-      "sha256": "de77daee0f60d07592ae7489cf0463e494339112e6d62ae28bf9d4ca870550a6",
+      "sha256": "de2c16d8c4566da6af04daf4454c6943762d18cab7df31e0ac2bd36978ad3930",
       "mode": "0644"
     },
     "descriptions/roles/roles__lynis.md": {
-      "sha256": "00945cb2a2c216a2241fbc0eb2a96ddad03c74bb1df6416193b58a88f542c4bd",
+      "sha256": "95679aa70ea4ff8180a92bc55ad9b97193a1075f30892bdbf2274ab92e7a37d8",
       "mode": "0644"
     },
     "descriptions/roles/roles__motd.md": {
-      "sha256": "504ca5745bb503a858fff16f4a576167a84b7c969ec010a425b6f3f0b3d9bb2b",
+      "sha256": "c6c10d4bb08df7bd94a708537adc8f4bdef8a96d568177cb3dbbba6652b500d3",
       "mode": "0644"
     },
     "descriptions/roles/roles__postfix.md": {
-      "sha256": "706505ca755f88afbb565e84be7bc569cae119dcec64f43610fc38cbe2cfb269",
+      "sha256": "96307074cd9a71ada431868e1b728860206fe3df94184f81ece4e0a27bb5e5b9",
       "mode": "0644"
     },
     "descriptions/roles/roles__rsyslog.md": {
-      "sha256": "dec7527c6e8be31eb6d05b5f7b231b61e50d149758baedb1b5518816f2669c0b",
+      "sha256": "c81445e33053ced1d26ccb5494db8f03bcef1dfc619106436697cf273912ec24",
       "mode": "0644"
     },
     "descriptions/roles/roles__security_base.md": {
-      "sha256": "ba16d5c91170f7f77455dc7e8cdbfe25797b9fa6755cd4cf5cc915e93ec513f0",
+      "sha256": "c75759f6af6fea0710cd4483e1f60958edeec59aac1fbebeb5acdcd5a134d157",
       "mode": "0644"
     },
     "descriptions/roles/roles__security_ssh.md": {
-      "sha256": "c02efd21cfa914b04516b4465cdfba30cba769cba66c8426c5d748a526853a45",
+      "sha256": "45373515eb78d55cd64f6e8124c1c62f768ea1061467cfa739a72391ffa97729",
       "mode": "0644"
     },
     "descriptions/roles/roles__security_tools.md": {
-      "sha256": "e81d5b4630e2124026c76827905d497638b4cf6570245dd8b04b3dcd7eae634c",
+      "sha256": "c215c4a78e58a8b68a527ae0d525f3e1f230725345def3035a2d9c02b46319f6",
       "mode": "0644"
     },
     "descriptions/roles/roles__timezone_chrony.md": {
-      "sha256": "1cbf42d9aefa073f48c90d92bdc2f76249953ad2076e3b1179cb08bd13f9e674",
+      "sha256": "6ae95653d1bc2eeb8946783346e38ae752a42ea25bddfb20236ae5504fdb8f27",
       "mode": "0644"
     },
     "descriptions/roles/script_jobs.md": {
-      "sha256": "ed3e4b0c9d184b89f72f1a34fa9769d061c17964567cc33911a2ce25b4c8770c",
+      "sha256": "dad87aff6ed36eeb9f71293ab1502e985487af2c25ab767b5d36f01ec63efaa7",
       "mode": "0644"
     },
     "descriptions/roles/script_jobs_controller.md": {
-      "sha256": "ca0ae2662f10f9b969c39d2d0531fe5426d839ff42d56aff3a88f437714a61a4",
+      "sha256": "23c84ee74e716f582c2e3aef09725fae10b374305c5f9458e09a73a53ba27c7d",
       "mode": "0644"
     },
     "descriptions/roles/script_library.md": {
-      "sha256": "8f02538bbf362951e0e7a6c9290651ed5f1befbfae74d2f6780ea5cf9f3cca1e",
+      "sha256": "6441d0fe0803a6d18882c10cb2238975d986fb136e1f066123d40fe64040089f",
       "mode": "0644"
     },
     "install.sh": {
@@ -1094,56 +1094,88 @@
       "sha256": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e",
       "mode": "0644"
     },
+    "lib/control/i18n.sh": {
+      "sha256": "920fb9fde9ec3fcde1c86bc1578d6cf5aef3520491d50ea5b02db7a0c5727a53",
+      "mode": "0644"
+    },
     "lib/controller_environment.sh": {
       "sha256": "9d98781433bb2330912f12525aca553b833761803006434d06a934c987be18e6",
       "mode": "0644"
     },
+    "lib/i18n/de.json": {
+      "sha256": "f74f2a68485b7783244d7ca94c489163691b57fae50558b9d2adac5c6bd88fa6",
+      "mode": "0644"
+    },
+    "lib/i18n/de/entrypoints.json": {
+      "sha256": "e24d6570da39b1eb158d67788c24e9c13afd2863d9db1fe0da62d00aace9b300",
+      "mode": "0644"
+    },
+    "lib/i18n/de/errors.json": {
+      "sha256": "847015aa6dafe1ad7d2af606cccde362ed0b96b8154dd01eb4ac9a8a0b90495b",
+      "mode": "0644"
+    },
+    "lib/i18n/en.json": {
+      "sha256": "de76abbe8984b42e54a5a191b7be899d451543a62c40169711e36ed6aa1d01f1",
+      "mode": "0644"
+    },
+    "lib/i18n/en/entrypoints.json": {
+      "sha256": "c146732baa03a88f00ada884e25879f8d0e99995120cbbfe1a7623ac0e36370e",
+      "mode": "0644"
+    },
+    "lib/i18n/en/errors.json": {
+      "sha256": "d9b38b1f039dcc0feefc6d6f2e89c1ca14c597bb56d4b04e1a3f270fd9a1daa7",
+      "mode": "0644"
+    },
+    "lib/i18n/status_codes.json": {
+      "sha256": "5792f64c958fd1f7739e936a0a019285c16ca38ec963ef546cd3a01a54b027b5",
+      "mode": "0644"
+    },
     "playbooks/base.yml": {
-      "sha256": "cc3a40a6d53006ed02c6b668ee00dfc8fcb5851fdb4224079213836a8a8f7114",
+      "sha256": "c212a7d14461f1d1a95fb9c1869f7a0a50fbf348c0515cbad3d352e2fdba9ac4",
       "mode": "0644"
     },
     "playbooks/bootstrap.yml": {
-      "sha256": "2b6d94e35d327ec6851ba33d9f4f2050b106ae133431028d77f2506969570851",
+      "sha256": "871d520b4dd81e93c450714e99afaaa48b1a7d1d4f53f3b418820d807372cbf7",
       "mode": "0644"
     },
     "playbooks/bootstrap/root_access.yml": {
-      "sha256": "a581fbf803c90c5d99fb97474d678b1af32e5b21895ea0a86237f4ee1530d51a",
+      "sha256": "2849bfd465ea29572683a29bc70404d43f28ece511b70498de3cea98fdbe435a",
       "mode": "0644"
     },
     "playbooks/bootstrap/tasks/prepare_target.yml": {
-      "sha256": "496418cf05d6b304b76fd48a0befd07ecf1a4ae6c83f9f4993c005f6d575e013",
+      "sha256": "2aa203c91abf438d5db671e64b39c6f9b2b8887e2c927c4d2a22bcad7ccb420e",
       "mode": "0644"
     },
     "playbooks/checkmk.yml": {
-      "sha256": "302abd08cb511631a0e8efdc87986ccb9ddb9d5ca91b9edf9b57c2a0f21e8058",
+      "sha256": "0c256095a4982713aea2890075150b26a794f19416612115aebd847f495300a1",
       "mode": "0644"
     },
     "playbooks/checkmk/migrate_hosts.yml": {
-      "sha256": "af5bb115f7151904689af456c5fa0137c433e6a92f80f79b5ee8f9955580fdb5",
+      "sha256": "b611cda4de73246ce8cd36c7047a33649c3cb146e48c1e889adcb12a0e823e40",
       "mode": "0644"
     },
     "playbooks/checkmk/tasks/reconcile_host.yml": {
-      "sha256": "3ed963988183c619c9269430d41f19025d4e8ee4467bc138af16b9da54edf7d7",
+      "sha256": "a305df48db7746910d0469ed6acb7ddf10585380ee8114a46c3c3c3acc6e20e6",
       "mode": "0644"
     },
     "playbooks/checkmk/tasks/rename_host.yml": {
-      "sha256": "34002de5d1417b08677d5a2038dd4f334bab9e789e58945f03299255dcd5ddbb",
+      "sha256": "e7a9daded429fb90d6f023be8ae7deaf6e8545bd1477c32c748b3dff39eab04e",
       "mode": "0644"
     },
     "playbooks/checkmk/uninstall_agent.yml": {
-      "sha256": "197d5c7b1bacb2feb264f483cb6cffa3acc81d996ad9895646c332d720b382fe",
+      "sha256": "c32400ee3e86948724b83cd313584f91cfd36f82cd3b2322b5bb513861fc6d2c",
       "mode": "0644"
     },
     "playbooks/controller_smoke.yml": {
-      "sha256": "dd8f0294944bea99e3c2381c7d714dd2e0db13610fa9a7e3c019004bc16f2e37",
+      "sha256": "3efd8059b239450a32a79bfd14d9794e31f97243b0d2ebb83f7936a596c6e948",
       "mode": "0644"
     },
     "playbooks/docker/check_docker.yml": {
-      "sha256": "c7984855179dc0e6ab62908b3261b02f1dfd63f506eb1582905d2fc2bd9fa915",
+      "sha256": "536aee9cb37c8181b0782f4ea0ce5b35ffada00edb79f456ca28cbfcdea58f87",
       "mode": "0644"
     },
     "playbooks/docker/check_portainer.yml": {
-      "sha256": "83d9f3270f694e70adf9982c2ce92988aa7f389224026d5fc6de666d6f4247d1",
+      "sha256": "b1476bf04dd3f367adaf3bc73d7bbef5b60615766e944ad003780f69a649b5ee",
       "mode": "0644"
     },
     "playbooks/docker/deploy.yml": {
@@ -1151,15 +1183,15 @@
       "mode": "0644"
     },
     "playbooks/docker/deploy_docker_networks.yaml": {
-      "sha256": "8f6244906342b88ce6f6c548d93df2908590a038cd6dc10a1f4c662b535e4020",
+      "sha256": "ebe9ddafad81dced99a8f25c46792db1cef90e828fd55b54864f11cc3d164e0f",
       "mode": "0644"
     },
     "playbooks/docker/deploy_docker_stacks.yml": {
-      "sha256": "ca74ef6d5d83e9d2c87a8014a3e275d7f0db3e9fe61c90075d67f2a9d1ec29f4",
+      "sha256": "a578cd0d88885ac0d4415a1fd14f3dbdebc64396354bc228331f2488f78bbf6c",
       "mode": "0644"
     },
     "playbooks/docker/deploy_docker_users.yml": {
-      "sha256": "868e212e6db7f4deb3c8f20835e1ab9c8b9f2d2c632e9db0116f394d2cafac79",
+      "sha256": "5e1b7f71434e57d1645d093540753a0ae406f63afcb3396102bd41998599229d",
       "mode": "0644"
     },
     "playbooks/docker/filter_plugins/docker_network_ipam.py": {
@@ -1167,43 +1199,43 @@
       "mode": "0644"
     },
     "playbooks/docker/get_docker_ips.yaml": {
-      "sha256": "817c3dce8d875fb24ab47364e7d050629933f8c28932a9edbd06e61c73d2e695",
+      "sha256": "166494d251bbbb73fdc8f4f1c35cf40b651f600247b033ee8ba5de735ac64cde",
       "mode": "0644"
     },
     "playbooks/docker/prepare_deployment.yml": {
-      "sha256": "4f822703e1407cf4e5b82517ba55d9b0e1160db7a5bd4c46b9a0a0cae2bc5c84",
+      "sha256": "f32d982edda310d8f0fdfa1f62e58e21bed5fd127a597633b59bfff09605968c",
       "mode": "0644"
     },
     "playbooks/docker/prepare_macvlan_parents.yml": {
-      "sha256": "b9733dabc973c20f8889f43bcb8591bb5e11bb152832d311e55f62ef675421f0",
+      "sha256": "75ab4b436c1b008aa0afa793181cddc66c142f3014618cdf16bf3255af768d51",
       "mode": "0644"
     },
     "playbooks/docker/stop_all_docker.yaml": {
-      "sha256": "07b0711efd8127c234ba8eb790f52f548681a06f1a353a6a809c8faa4c5ef869",
+      "sha256": "19bcb6e4617108c304aa3534404c2b2677d59f89a785412fc5eaf690fa60c603",
       "mode": "0644"
     },
     "playbooks/docker/stop_auto_upgrade_docker.yaml": {
-      "sha256": "088802adc2904b31970d8e555c94e2d417aa398dd37d583c0d263c0073e17409",
+      "sha256": "f52779a36c1891fa0d65b6bad59952741b53ed1e021555a82cf7df8f3ea793fe",
       "mode": "0644"
     },
     "playbooks/docker/tasks/check_network.yml": {
-      "sha256": "246222067325b3192b71d881897ea65a70492f0228891ef16e96616b18a25b52",
+      "sha256": "68eb8d2c5c579099bb03ec506ffa0ef3ddcb0c4eed0aead5760f4a40a02c7cba",
       "mode": "0644"
     },
     "playbooks/docker/tasks/validate_networks.yml": {
-      "sha256": "988929fcf7b9ce546f3b6f3b0152980058a6ba5e3b16d7afbbad3ea2bddc5515",
+      "sha256": "9523fac9bdc7e489c09ccd9f9a6d204deb8d2b5f52748bac25de3b6b028024cd",
       "mode": "0644"
     },
     "playbooks/docker/update_containers.yml": {
-      "sha256": "513144530ef76378ae40c8757d9375546bab2e3350989650bc620b6859e7b309",
+      "sha256": "5032c4ae4bded8b5fd8aeae85ee0bc473993ed5727d20c2870c0a12f22ba5c61",
       "mode": "0644"
     },
     "playbooks/identity/configure_kerberos.yml": {
-      "sha256": "456d44fe33043a503558ae76bb48cf363dea074837b8694b51cc5cbb9c1fc787",
+      "sha256": "4d577e9c577cd46526e464aadd15e5286bb3120b0f6363cb069a0989ae99b0aa",
       "mode": "0644"
     },
     "playbooks/identity/generate_keytabs.yml": {
-      "sha256": "84d8a3604125e6a9b6faaffa273237bbe7a2be790ce5d26cbca42e5738ea6416",
+      "sha256": "b15f5bba4b775a3b94baff2b16d1064c43624b1bcd246e5f5f6313abc9b2b2f1",
       "mode": "0644"
     },
     "playbooks/lynis.yml": {
@@ -1211,27 +1243,27 @@
       "mode": "0644"
     },
     "playbooks/maintenance/audit_fstab.yml": {
-      "sha256": "c3019678df30343f53efdee7dd6d6988344620da730dbc17475496ce5439e8d4",
+      "sha256": "b1e1f301e2f690b333ea38e0f23e2e6cf02d88cc241afcd0f59dbae6907a0fde",
       "mode": "0644"
     },
     "playbooks/maintenance/audit_uid_1000.yaml": {
-      "sha256": "2adb968f7029b66c0c3bae48c202d595c8a1037be9e4b43bde687f9b4a7baae3",
+      "sha256": "d008e45609e3d5db22c327b18219302af969902f3c4e5d775379d9e542c7706b",
       "mode": "0644"
     },
     "playbooks/maintenance/check-dns.yml": {
-      "sha256": "a37175b0984ee88c470ff086e1a3569b2e23ae7b875ab938cbdad25f0341641a",
+      "sha256": "b65a0634e730a8ad300af56389814e4a133a57cfb07d667e2aabc01b8ce24e25",
       "mode": "0644"
     },
     "playbooks/maintenance/clear_postfix_que.yaml": {
-      "sha256": "b992efd3ad8bc95b80b7e14958f520837aff7fe7a65a294fe37e532c0a7fced4",
+      "sha256": "1b46b6b0dfdd8c40c65f81f44f9446236e710a326afc668e05d1e71ae71318c7",
       "mode": "0644"
     },
     "playbooks/maintenance/disable_syslog_forwarding.yml": {
-      "sha256": "d547d57cca67f34215e1cb1de3466027e9c4bdd4880a4ef4449cc8f8e997895e",
+      "sha256": "f4f6f231b972bba3ab3c1a30177eab8c50c16712f315232ecdedc8aab3be5398",
       "mode": "0644"
     },
     "playbooks/maintenance/get_resolv.yml": {
-      "sha256": "446a07009858504cc0235469896ef2d2550ce5780606f4f8ca03641e9a131fb5",
+      "sha256": "1dd6894d84cc9b7225c50a7cf7fa5c86da409397a0007602be408f48aa130074",
       "mode": "0644"
     },
     "playbooks/maintenance/mount_all.yaml": {
@@ -1239,87 +1271,87 @@
       "mode": "0644"
     },
     "playbooks/maintenance/notify.yml": {
-      "sha256": "af8c4189415c7c8371dfcfbbda26c59fbea75be3101f6012315e08b1784c3dc0",
+      "sha256": "f595650ca46703dd8d40a8970f474e0cad3a40686c95ecea5506b582c5bf938b",
       "mode": "0644"
     },
     "playbooks/maintenance/prepare_paths.yml": {
-      "sha256": "016129444b45fe81222626465482c8b9d1622f48cb62e2046902b431f83d7a95",
+      "sha256": "2b2cfe18e53d953fa09c1479997ebbbf219799384702b448411523d5979cebfc",
       "mode": "0644"
     },
     "playbooks/maintenance/rotate_service_user_passwords.yml": {
-      "sha256": "352f18b4af697e7cd121de1638cfffcca08f362cc64240590c8de5e89458b6f6",
+      "sha256": "b0ba5462d63a5c2befd36ef6cd4f4a78cf05c47025216237fca2262d1bdfdb89",
       "mode": "0644"
     },
     "playbooks/maintenance/set_fstab.yaml": {
-      "sha256": "2470aacd1df703250783e699ea025e25154cee355568039691e460f1a147c2c1",
+      "sha256": "51479cf10e35e639396518456487e04b15f41e01ee9b1e19b3b032dc0eab6bf1",
       "mode": "0644"
     },
     "playbooks/maintenance/test_mail.yaml": {
-      "sha256": "84d58fc4c883d2b02ce9d339995d4133147bdea0183c3a83bcc22bbaa0e2abed",
+      "sha256": "da672f005c45830fcdfa8376f8928bb9a21f83dcb05003dbbf949b1aac41bd0d",
       "mode": "0644"
     },
     "playbooks/maintenance/uninstall_chrony.yml": {
-      "sha256": "f2d1f14d941dde660868947196f393346379af353bb508a146baed271c3d9791",
+      "sha256": "bd856d801653a8e4d77b440e81c01d4ab024628cb734642035b19e38f83e448a",
       "mode": "0644"
     },
     "playbooks/maintenance/update_hosts.yaml": {
-      "sha256": "e561e6ed2d1122f45a3807ab4e3aa518c1cb703c32370022904e9d0866562b36",
+      "sha256": "16c0376541ddf0882f68ed062119c7f89b22827d7154b94b6c17f8f6d213ea0d",
       "mode": "0644"
     },
     "playbooks/maintenance/wan_check.yaml": {
-      "sha256": "6f0447b10a53a1e0034309699904952cc044fe2023a2979018a8467a58588223",
+      "sha256": "55f93f1f3805e8fb384510967e8d5ccfa9084b02bc5bdfa23fba739f1cf21ad2",
       "mode": "0644"
     },
     "playbooks/monitoring/deploy_telegraf.yml": {
-      "sha256": "1083b693d95153cab46e7dc29f616023f4ab30b86bd092402b879eb32c776bb0",
+      "sha256": "1464f13d88625f105416f05c21b67ce1aa34d1ae30c067d91e374582be4c356c",
       "mode": "0644"
     },
     "playbooks/network/snmp_check.yml": {
-      "sha256": "74f48869885be82c55e045078b28f910a8dee92206ef578082845416a0e11c69",
+      "sha256": "ce6e38e4323e7c947302e6253a60d67861c6e4eafb60a5d3d81b4dcdb60ad507",
       "mode": "0644"
     },
     "playbooks/optional.yml": {
-      "sha256": "f07d79d7af5eea9e50d70d8ad1d3baab4d7757c11d9d35c3069006edd3136753",
+      "sha256": "3a7f8887a29da7a5623cfbd43263c8b158e7589553646652eedc6814556bac80",
       "mode": "0644"
     },
     "playbooks/pki/deploy_apache_certificate.yml": {
-      "sha256": "1554b6670bba4baf512de2ec5191ae1a01d23d784eef0a9ea3d767ebd172f468",
+      "sha256": "7939189a6bc84990841c6daac805dbb9e4ffa6f3b9cf297e92a2b7103222272b",
       "mode": "0644"
     },
     "playbooks/pki/distribute_root_ca.yml": {
-      "sha256": "cc023d03ab603feae4cd2d59e9634e0a7a5cb306e58d65f92ec1a286cdabbcbf",
+      "sha256": "debe0193430719d2b622e0eaedda0935de2699030f3f2ebe3b40989fd835d00e",
       "mode": "0644"
     },
     "playbooks/pki/renew_crl.yml": {
-      "sha256": "c95c2b9349f67c35b9e89224ed9054f304b325e5d6d75e0256ae06ba25e5461b",
+      "sha256": "8a6c90060a7f40717a71af79c7e89805fca2d59400cc6bddcc76bd02173d34fa",
       "mode": "0644"
     },
     "playbooks/reporting/lynis_summary.yml": {
-      "sha256": "e25b8ca86a25a895d213bfda2d132d99977e01319cf155e87dcef94a83b90af1",
+      "sha256": "7a7011c25897687e6a72d9f568065d524180c612050bd9a595629430fba4cff0",
       "mode": "0644"
     },
     "playbooks/scripts/deploy_jobs.yml": {
-      "sha256": "b6aac9b54600df070051e9f904867f01aad28425d57027922759b517585794cc",
+      "sha256": "63bf749c89e095234580eb665d29d690b6a4a46da4d64316670ef0c4d640864c",
       "mode": "0644"
     },
     "playbooks/scripts/setup_controller.yml": {
-      "sha256": "66fe2f01eba964e2bb392ed9b8344d565cd3e8cb623065de635e3f727232a701",
+      "sha256": "7d6e336721b80f30686c4eb87e412a7343142edf2ade81182471c68d275d66c8",
       "mode": "0644"
     },
     "playbooks/scripts/show_status.yml": {
-      "sha256": "9802fcab327927b0459a04a49b3463b63ecceea9fc5853f7a4136bc7ded5f1dd",
+      "sha256": "095511f8fbdfa648be533dd9541079d839ca6972cc0cf4fdb2f16597ab1e777f",
       "mode": "0644"
     },
     "playbooks/scripts/stage_library.yml": {
-      "sha256": "f981967c97e6c2d4f19154d7693b21b02ac2700779876605dea82f7038700db8",
+      "sha256": "cee843513e8779c47c3121a540bb03702cb2a66336d4e75316cb02ffbee25a39",
       "mode": "0644"
     },
     "playbooks/scripts/summary_jobs.yml": {
-      "sha256": "d2b50212e653414f5d3feb028083114ed650d53ee3e855c8503b8659148e7063",
+      "sha256": "ac6fbab4e7add7ba5625df407c92492db49d0e068359539fb34ba8f7eba4ab7f",
       "mode": "0644"
     },
     "playbooks/security/proxmox_stack_hardening.yml": {
-      "sha256": "ba2f8fd96c3ec230317e1050b869f96ccb493749dea544ceacdedcbb30a47ea3",
+      "sha256": "3c4aeefea67c66c75e7851284ab9bc048b727beb839b9e13e33cc306bd004284",
       "mode": "0644"
     },
     "playbooks/site.yml": {
@@ -1339,15 +1371,15 @@
       "mode": "0644"
     },
     "roles/accounting/handlers/main.yml": {
-      "sha256": "d619513b404b71338ef918026e3b8f03107f3122781875e2bca2efaf2a70c47c",
+      "sha256": "615787310ab413af2c2c658d7ca9386426f18af805f868e55fbb8231fe3ef000",
       "mode": "0644"
     },
     "roles/accounting/tasks/main.yml": {
-      "sha256": "f4b5f53a6c763381adb97790326b498d3717636b019e2aac32408b0962166f7e",
+      "sha256": "f1d2532253fd7f44363734bd14316605371e8458c0a1a21dba82a6aefe026a3c",
       "mode": "0644"
     },
     "roles/baseline/tasks/main.yml": {
-      "sha256": "87a7219760f84883a88c9fc8adfe9ec78bd8fec3601b022a0717dbf812c161b1",
+      "sha256": "d122b75c8a034516cbdc680d4fdf49525442e31ee47710d696b3e8243f9cf689",
       "mode": "0644"
     },
     "roles/bootstrap_ssh/defaults/main.yml": {
@@ -1355,11 +1387,11 @@
       "mode": "0644"
     },
     "roles/bootstrap_ssh/handlers/main.yml": {
-      "sha256": "47b649e417080fe52e689d372116a4caecc68db824175576999350d9117cf2c7",
+      "sha256": "873766115e1175bc4a93a7a6af88803d4998e945417b008921b5f4af57bca85a",
       "mode": "0644"
     },
     "roles/bootstrap_ssh/tasks/main.yml": {
-      "sha256": "3641ade83ffefabdf568f3a4a2b2e67183fc7a6c17cee0c44e9dea8361dfbc4c",
+      "sha256": "d168265533ba97af5f81e007f50a154e4a788f74ba9543ade1cf100e19df228d",
       "mode": "0644"
     },
     "roles/checkmk_agent/defaults/main.yml": {
@@ -1367,7 +1399,7 @@
       "mode": "0644"
     },
     "roles/checkmk_agent/tasks/main.yml": {
-      "sha256": "6c78d0c143ac37cfd2a9e01840dbfb5eb20f669dc471ff0b3ceada35da065392",
+      "sha256": "2d0e3ec06ab7581d66810710deca8c77ec835322d9e38278801fab785f33ea0f",
       "mode": "0644"
     },
     "roles/fail2ban/defaults/main.yml": {
@@ -1375,11 +1407,11 @@
       "mode": "0644"
     },
     "roles/fail2ban/handlers/main.yml": {
-      "sha256": "53ada0da742407a6a6ec10d7ce0cf3fb76f9ef0dcfd1e1acf6173101fe569fee",
+      "sha256": "638c92a6402a5b41a51b37fd6c70eca5649dbc40afaaf02cda89285caa7913c4",
       "mode": "0644"
     },
     "roles/fail2ban/tasks/main.yml": {
-      "sha256": "6e0fe6271ca3ee60fefe88b201facbab079ef460193497baaa9f943ba98491e0",
+      "sha256": "ff45239963d759b07c1870a9a4e1188093cb96e7ef2f8d6fcd191dcc8e82e137",
       "mode": "0644"
     },
     "roles/fail2ban/templates/jail.local.j2": {
@@ -1391,7 +1423,7 @@
       "mode": "0644"
     },
     "roles/kerberos/tasks/main.yml": {
-      "sha256": "99359d4ce364030c1eb27dccb193f3a708abcdf5bd110d71a556ff625f9bd487",
+      "sha256": "e9a255d89d5acfdd0f0518d9012d4bce91713593c3076f1048a43e4f2158b79c",
       "mode": "0644"
     },
     "roles/kerberos/templates/krb5.conf.j2": {
@@ -1399,15 +1431,15 @@
       "mode": "0644"
     },
     "roles/lynis/tasks/main.yml": {
-      "sha256": "9333ec3ddfaf508a9235a5f34f551a3ea251673925e3d77d070bfa3f8144da9d",
+      "sha256": "be2dc31e41468774497e3161e75b651e6171d03665b12fd29285b59195424185",
       "mode": "0644"
     },
     "roles/motd/handlers/main.yml": {
-      "sha256": "2acdf7a492d63aa060e1bcd4efda6e52075521b94d3affb445225443e9da421b",
+      "sha256": "f80c879a5ac05140470e80ff725d02773f40cb8f1ed7926edcd4470382eb50b0",
       "mode": "0644"
     },
     "roles/motd/tasks/main.yml": {
-      "sha256": "77a6b0770712e7cd3cfc6650921a9782bbbfbf5deaee62eebc0b4526bc76be0f",
+      "sha256": "b801a3e8ae9175c29d6b7ff806f20a870b682a8d6bf01ba4d223ea1f80b6058e",
       "mode": "0644"
     },
     "roles/motd/templates/00-header.j2": {
@@ -1423,11 +1455,11 @@
       "mode": "0644"
     },
     "roles/postfix/handlers/main.yml": {
-      "sha256": "8049e36b086cb29149f1adaa2ca9b06ed64412746f9a44dd85c6bb871109264d",
+      "sha256": "649e1b7741e057efbc927315a10b7174c60ba064e1fc05cad70919fc03ac2064",
       "mode": "0644"
     },
     "roles/postfix/tasks/main.yml": {
-      "sha256": "f22d64fd1eb91a845d293b76ad166d54a0bad82773a6c1e7205dd642525a0ea7",
+      "sha256": "bb1c1de37bdda95c5fe7a89bc437f5d7beb2253e4741bdb09b9094515d47d06e",
       "mode": "0644"
     },
     "roles/postfix/templates/main.cf.j2": {
@@ -1443,11 +1475,11 @@
       "mode": "0644"
     },
     "roles/rsyslog/handlers/main.yml": {
-      "sha256": "8a4037da639a25ea0513c4f08eb78f578bfbe78f60b8377a3d726f2bc7faf70c",
+      "sha256": "b5c001d8abbf9cf8f120f2b9680dc3c7c7c369332fcdf6af3c574e1c332a7d30",
       "mode": "0644"
     },
     "roles/rsyslog/tasks/main.yml": {
-      "sha256": "870bef1a818ecd78d13da0bb88ddd5bdfea01dcda2a30fc251d84d20e9d0045e",
+      "sha256": "f4b6e1a301065377e24cbd7ffacf989fa399d79ec2b648a141750f83bf4c5019",
       "mode": "0644"
     },
     "roles/script_jobs/defaults/main.yml": {
@@ -1459,7 +1491,7 @@
       "mode": "0644"
     },
     "roles/script_jobs/tasks/main.yml": {
-      "sha256": "9877c12026e2a4f4920e8c176b3717163678e50c8d8296aa34da36b59826dbdd",
+      "sha256": "c36a0de2528b0bb4ecdaadd8853c73ce722fc794886295545feabb9aad375513",
       "mode": "0644"
     },
     "roles/script_jobs/templates/expectations.json.j2": {
@@ -1471,7 +1503,7 @@
       "mode": "0644"
     },
     "roles/script_jobs_controller/tasks/main.yml": {
-      "sha256": "83ce948b66200e7a329a47a4cd8cb7f7109b860eeb9b45d483070094f89566e5",
+      "sha256": "72f1e99feb83af463a9515a92c6eccba4452395d5dcf9ffc5e0e047e6c5cbe67",
       "mode": "0644"
     },
     "roles/script_library/defaults/main.yml": {
@@ -1479,11 +1511,11 @@
       "mode": "0644"
     },
     "roles/script_library/tasks/main.yml": {
-      "sha256": "c32ac6d967b9fd076aa802a95a13e52016cfa7674df6a41335fda8871f9a68a8",
+      "sha256": "5c8ea369955cff8e1b6be81a22a7a581ed0b791c029929149c0fb9ad206cc357",
       "mode": "0644"
     },
     "roles/security_base/tasks/main.yml": {
-      "sha256": "0a5a737f5a3fc60f8474dc88cf2107dde6f70f4887b9da51c2d141d39134b691",
+      "sha256": "b4cf8a30674dedbdde7d208939dedecd3f9dd866659d795fc74e3debb4ae33c4",
       "mode": "0644"
     },
     "roles/security_ssh/defaults/main.yml": {
@@ -1491,11 +1523,11 @@
       "mode": "0644"
     },
     "roles/security_ssh/handlers/main.yml": {
-      "sha256": "cb7c8b71e8c66e339d9ff62e23630fbefadb56fa063624dd0c8eb3ae1533af9d",
+      "sha256": "7788258a2e5940cb511d82e578bbce1db87bb77411fc7934a07b16d3b0721a49",
       "mode": "0644"
     },
     "roles/security_ssh/tasks/main.yml": {
-      "sha256": "6ba94983454841184a5090e36e822e68f25d73df6388200a0df22c4f8baa7c0a",
+      "sha256": "67f933c96bf495917007e45de03628af5a81bb0b0aeea294e7cb9eee1d4c11c5",
       "mode": "0644"
     },
     "roles/security_ssh/templates/00-managed-hardening.conf.j2": {
@@ -1503,15 +1535,15 @@
       "mode": "0644"
     },
     "roles/security_tools/tasks/main.yml": {
-      "sha256": "1e85044f692d043623e2d4559636c56fd86dcc5886d5ececd897cabdd510aafc",
+      "sha256": "a2fae472c5679d34d994d935463f13ab67668fa573251cd26e9b6797f5eaafda",
       "mode": "0644"
     },
     "roles/timezone_chrony/handlers/main.yml": {
-      "sha256": "9142135adc212900e25ed123110e56c256ce6329c2cf1cd23e9f0a6b8629782c",
+      "sha256": "ca522a5d77a9a101ebb806144b7a9ad768ad34a4b9671f0d2068c614197d5ee1",
       "mode": "0644"
     },
     "roles/timezone_chrony/tasks/main.yml": {
-      "sha256": "4ac0e7e107245b6c86f78138a39b2c9f4a68c558ac4d0387c970356a6ba239c1",
+      "sha256": "dbd1c42b998f076d5f4a7bf7560943a609c5049d5b92a5ca88abfd027379a377",
       "mode": "0644"
     },
     "roles/timezone_chrony/templates/chrony.conf.j2": {
@@ -1527,7 +1559,11 @@
       "mode": "0644"
     },
     "scripts/control_runtime.py": {
-      "sha256": "ea5f1b91e97d111bcd5bb2d5c1c3133db32366d4ea70132e1aed6138ef3a90e4",
+      "sha256": "adc561bb65066e10fc5e63fbb4d0aa51ffa9e9a658d8b0992cf1fbc4a7a06194",
+      "mode": "0644"
+    },
+    "scripts/controller_i18n.py": {
+      "sha256": "d1d286cd603f4986ce326531d646ba65966d723a2e61888f2f6848d15c337e3e",
       "mode": "0644"
     },
     "scripts/deploy_apache_certificate.sh": {
@@ -1547,7 +1583,7 @@
       "mode": "0644"
     },
     "scripts/feature_audit.py": {
-      "sha256": "09d354c24b29ecfcbdcd52808bd6699e61bc8712e51b1de08d384facbeda49fe",
+      "sha256": "ab6d679664182f5d1387b5b7740612e8afe3efbc328891f662d8c3d951e841b8",
       "mode": "0644"
     },
     "scripts/feature_catalog.json": {
@@ -1559,7 +1595,7 @@
       "mode": "0644"
     },
     "scripts/job_console.py": {
-      "sha256": "e4f31a820b92cc918e5c2b0d5bd91a3c4da97bcfbaa58169a48b628bb1becdfe",
+      "sha256": "3135b2dd5b3e44da8210192464efb0e0d09d360445e49b96628a514c91497bec",
       "mode": "0644"
     },
     "scripts/job_cron_guard.py": {
@@ -1575,7 +1611,7 @@
       "mode": "0644"
     },
     "scripts/run_bootstrap.py": {
-      "sha256": "8458baf711fdcd1bb9dc504d02112e46d8e1eb3b3b200723f9111c9b5e69d808",
+      "sha256": "f3d018a7e0487ded4bd39135cae7d315102befb6721bca68f72c59b95454a85f",
       "mode": "0644"
     },
     "scripts/run_docker_update.sh": {
@@ -1599,7 +1635,7 @@
       "mode": "0644"
     },
     "templates/summary_templates.j2": {
-      "sha256": "e033fa7bd0684d25350540cc645b8773efdf29bdcc9bea76c395860270d836f6",
+      "sha256": "c73458f405fa8f3fbbe1f76510db39c87929e9f5c5ef76f0481815136de563f4",
       "mode": "0644"
     },
     "tools/callbacks/script_job_results.py": {
@@ -1619,7 +1655,7 @@
       "mode": "0644"
     },
     "tools/install_controller.py": {
-      "sha256": "bd5054c2d0dd01364362366f8c3a2f76f8250ef83d37f044ca97ed44ee1ad89d",
+      "sha256": "82ebd7381a077dcfecb412db705106b17275d6ed02597a8738d21be29070f57c",
       "mode": "0644"
     },
     "tools/job_tests/test_ansible_jobs.py": {
@@ -1647,7 +1683,7 @@
       "mode": "0644"
     },
     "tools/local_extension.py": {
-      "sha256": "16d454435214f47ef3c43b6d256e090e9055d07c6015d201125d17692f5838a5",
+      "sha256": "cc7150738e5915769e213e1f6200c5976460907ca6db2337e2b7d7b96c3662c6",
       "mode": "0644"
     },
     "tools/pipe_install.py": {
@@ -1659,15 +1695,15 @@
       "mode": "0644"
     },
     "tools/update_check/build_release.py": {
-      "sha256": "3d8d9ce4cf12c1219a03e15306d612e7c6eb41bcb65289c21badecc9d0f4318e",
+      "sha256": "94961ac4af3ef743c3f08054672ca5b93fe396b1c734b5180cba1676ff8b643d",
       "mode": "0644"
     },
     "update_check/VERSION.txt": {
-      "sha256": "64d23f858ef51b0f996e4966d4e27c0371b437e2d2787890b1f7ad22d4ec5663",
+      "sha256": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
       "mode": "0644"
     },
     "update_check/check.py": {
-      "sha256": "0081986f093b80ff3051e07ee8cf437124162704d58aa8210c2a585b2b448d01",
+      "sha256": "b0edbce28cf6caaa105967268a80796f7837181165a026bd9b356fc15b2fbaaa",
       "mode": "0644"
     },
     "update_check/check.sh": {
@@ -1675,7 +1711,7 @@
       "mode": "0755"
     },
     "update_check/cleanup.py": {
-      "sha256": "b075547b1bfbfc3483563c2d3e79ff5ec2a5b9901a879b352ed45635228b2a36",
+      "sha256": "88947b11d44dcc6af7bf07dfaab24865a85c6717c63b8d6545642a617b1d001e",
       "mode": "0644"
     },
     "update_check/cleanup_plan.json": {
@@ -1683,11 +1719,11 @@
       "mode": "0644"
     },
     "update_check/configure.py": {
-      "sha256": "c6c675198f99121dbd1d6f550481b2a9190bdb25a4c19d5ec45e7da4fb1340d3",
+      "sha256": "990856b84af5b9a2efa230de321ef1a2a9e7813b948cfa336763c6e4dd77fdd3",
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "b03a5660756a13879a6207bbfa0bb1c47dbc76de6876ac84f7b785aea3087937",
+      "sha256": "a578c852d07db3383a2eab55a23a50c004bb69df0ef5bcd7bfe6717275028b2b",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1695,31 +1731,31 @@
       "mode": "0644"
     },
     "update_check/local_extensions.py": {
-      "sha256": "72d966ea3ee878d778dc397b28d2f3ff2273fb28b34e47ca8e6230824b6751d3",
+      "sha256": "30317d047cb692189d07ac6f85e031b353ee6f889860416c7b45800682ea0fe2",
       "mode": "0644"
     },
     "update_check/manifests/bootstrap.json": {
-      "sha256": "9508caa12d375180587dd4022fc92c1d968dc3e86129bc02975ca0ab0d30dfdd",
+      "sha256": "97bd4601f582b8656e50720730c2217283942992ae94383803eff58b4d8c59c5",
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "3bb0672ed9f18947b9b2612f5f6fa02df22625f210d66b77808ad6689c187aab",
+      "sha256": "991379a194b5c9ba60901c3b114c93cfe015f96e5e4f64d719b8bdeff333a9e8",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
-      "sha256": "9aba1d687ebe776a365f22ab260d9bd3f29dfe493af64963f5b11a9c94453b48",
+      "sha256": "5d0661b9ab84017e75d06e43eea8af5036ca1b3eec729d9e05428c32af318eea",
       "mode": "0644"
     },
     "update_check/manifests/script_jobs.json": {
-      "sha256": "64bf6340aaf6317d1242053c4019facde7b267ecc91b5b2a2e5c858e5e593ded",
+      "sha256": "756a36793ea1258243e9729b00f25af3e7e61cbb0295b930f17a9fcad6d12609",
       "mode": "0644"
     },
     "update_check/manifests/tls_tasks.json": {
-      "sha256": "6aadc2a806fad83648de795b261749e856481447e4db783b70b0f9ed25faff22",
+      "sha256": "67e0a6999d35558cf277f00853800327b45108b433de9a71699b8f23448dc4d9",
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "798de03f85d46e7df9ab1ac533bf773b158566008f0868c5b7f9b4494b30d413",
+      "sha256": "5a3a06a95847b8e55586be87c7cbb425a845268ec5a7e0afebae13025c071dcd",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1731,47 +1767,63 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "089b4f91dd29a97d568022c842651a274297f5febe411536380e6a7497ef8186",
+      "sha256": "891bf2ff872c80f7c2d2897eaa9f8cae0de1f5a0395b9f9bed039c8af539c114",
       "mode": "0644"
     },
     "update_check/rollout.py": {
-      "sha256": "78dc8a3bc49c0880581424890649c43506339e349840509107277116d13e938f",
+      "sha256": "df1477addab3ceccb09c464c02b044e4abcd564daea3cabe2b7639b3f9356df5",
       "mode": "0644"
     },
     "update_check/settings_catalog.json": {
-      "sha256": "879a45d50e4e1e4cbeafaac5e65b6a5a7b1ad5cc5fb0ba7f4c5a786ef2d9e4e0",
+      "sha256": "62066965dad0cbfa3676b16b428177b61554519b638624aafdae860e043cc3f3",
       "mode": "0644"
     },
     "update_check/settings_contract.json": {
-      "sha256": "f050f5eeae4f33ff4a387e102e1d40771d79fc6e41645a558ee729f0635bc5b1",
+      "sha256": "9c74aa6d74ec65377f93170331a5640d7f76b62de620c84d61f5291c1e7205de",
       "mode": "0644"
     },
     "update_check/staging_manifest.py": {
-      "sha256": "c3fc2cbbb4ed497927445c87a6f99c2fc0389fa152f52c95c450904d91e1b2bf",
+      "sha256": "9a95424571ba8a9e239b4cdf830f81680c448fea0753041f02adc5e8b360de3e",
       "mode": "0644"
     },
     "update_check/tests/test_addons.py": {
-      "sha256": "171e0fb15e19f670544be4f9a29703a937e206fc146cae417a1e37a0e594234b",
+      "sha256": "aa825327d15331a04be64269ee0c9a238ee4952758b5d455b5cd561c1cd07538",
       "mode": "0644"
     },
     "update_check/tests/test_branches.py": {
-      "sha256": "f3562010870e150584013b6e2e4350f1d6b3dfaf490c975f7389d53efad9dc6b",
+      "sha256": "381f52127176cf9fa4a1342ecabccc850b569902435a1aff91cdb02bcc053372",
       "mode": "0644"
     },
     "update_check/tests/test_check.py": {
       "sha256": "0acd1d021c3fde1f64e782f565b9897a74bc6d34702bdbb650d52d28b05dea03",
       "mode": "0644"
     },
+    "update_check/tests/test_cli_languages.py": {
+      "sha256": "2c25dba23b3eb76e0655e78632e2199ec143e46f29f37650829c637df9d54c40",
+      "mode": "0644"
+    },
     "update_check/tests/test_controller_transaction.py": {
       "sha256": "680c0d16c79110cdacc1118d6834f72149d400e58623690a459c51cc4787d6c0",
+      "mode": "0644"
+    },
+    "update_check/tests/test_description_languages.py": {
+      "sha256": "ace9ee5781af3448793e956dbf4131c89a79080612b74efbd75bd5cd98f81fd4",
       "mode": "0644"
     },
     "update_check/tests/test_docker_update.py": {
       "sha256": "62d9d451034e60dee0d1cdc7faeff8ab2a852234497cacb60093005048892f7c",
       "mode": "0644"
     },
+    "update_check/tests/test_handler_aliases.py": {
+      "sha256": "94ea75c34a5df889f39e92e42a3c52bc2205c408ceba4d3ba090870c1d98b06b",
+      "mode": "0644"
+    },
     "update_check/tests/test_https.py": {
       "sha256": "996b53f79720569b55c903feee7a827151509fe8d6bbcfcf6f349437866052fd",
+      "mode": "0644"
+    },
+    "update_check/tests/test_i18n.py": {
+      "sha256": "7ec4cb338d24e2a902b46d1784ef758d864ca5ce0ba90864aee2ed242df5c4a2",
       "mode": "0644"
     },
     "update_check/tests/test_local_extensions.py": {

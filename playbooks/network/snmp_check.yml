@@ -1,5 +1,5 @@
 ---
-- name: SNMP-Zugaenge der Netzwerkgeraete pruefen
+- name: Check SNMP access to network devices
   hosts: snmp_devices
   connection: local
   gather_facts: false
@@ -10,13 +10,13 @@
       {{ network_monitoring_type | default(network_access_type) }}
 
   pre_tasks:
-    - name: SNMP-Client auf dem Controller pruefen
+    - name: Check the SNMP client on the controller
       ansible.builtin.command: /usr/bin/snmpget --version
       changed_when: false
       run_once: true
       delegate_to: localhost
 
-    - name: Fehlende SNMPv2-Community verdeckt abfragen
+    - name: Prompt privately for the missing SNMPv2 community
       ansible.builtin.pause:
         prompt: "SNMPv2-Community fuer {{ inventory_hostname }} eingeben"
         echo: false
@@ -26,7 +26,7 @@
       register: snmp_v2_prompt
       no_log: true
 
-    - name: SNMPv2-Community fuer den Test festlegen
+    - name: Set the SNMPv2 community for this test
       ansible.builtin.set_fact:
         snmp_v2_community: >-
           {{ snmp_credentials.snmp_community
@@ -34,7 +34,7 @@
       when: snmp_mode == 'snmp_v2'
       no_log: true
 
-    - name: SNMP-Konfiguration validieren
+    - name: Validate SNMP settings
       ansible.builtin.assert:
         that:
           - snmp_mode in ['snmp_v2', 'snmp_v3']
@@ -48,7 +48,7 @@
       no_log: true
 
   tasks:
-    - name: SNMPv2-Verbindung pruefen
+    - name: Test the SNMPv2 connection
       ansible.builtin.command:
         argv:
           - /usr/bin/snmpget
@@ -68,7 +68,7 @@
       register: snmp_v2_result
       failed_when: false
 
-    - name: Fehlgeschlagenen SNMPv2-Zugriff einordnen
+    - name: Classify the SNMPv2 access failure
       ansible.builtin.fail:
         msg: >-
           SNMPv2-Zugriff auf {{ inventory_hostname }} fehlgeschlagen:
@@ -80,7 +80,7 @@
         - snmp_mode == 'snmp_v2'
         - snmp_v2_result.rc | default(0) != 0
 
-    - name: SNMPv3-Verbindung pruefen
+    - name: Test the SNMPv3 connection
       ansible.builtin.command:
         argv:
           - /usr/bin/snmpget
@@ -110,7 +110,7 @@
       register: snmp_v3_result
       failed_when: false
 
-    - name: Fehlgeschlagenen SNMPv3-Zugriff einordnen
+    - name: Classify the SNMPv3 access failure
       ansible.builtin.fail:
         msg: >-
           SNMPv3-Zugriff auf {{ inventory_hostname }} fehlgeschlagen:
@@ -128,6 +128,6 @@
         - snmp_mode == 'snmp_v3'
         - snmp_v3_result.rc | default(0) != 0
 
-    - name: Erfolgreichen SNMP-Zugriff melden
+    - name: Report successful SNMP access
       ansible.builtin.debug:
         msg: "SNMP-Zugriff auf {{ inventory_hostname }} erfolgreich."

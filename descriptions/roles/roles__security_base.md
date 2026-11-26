@@ -4,9 +4,9 @@ Rolle: `roles/security_base`.
 
 Im Bestand definierte Aufgaben:
 
-- Rechtlichen Login-Banner setzen
-- login.defs haerten
-- Verwaiste Pakete optional entfernen
+- Set the legal login banner
+- Harden login.defs
+- Optionally remove orphaned packages
 
 Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fakten, Registerwerte und Hostsecrets werden nicht in Eingabeparameter umgedeutet.
 
@@ -30,7 +30,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "roles/security_base/tasks/main.yml"
   ],
   "source_hashes": {
-    "roles/security_base/tasks/main.yml": "0a5a737f5a3fc60f8474dc88cf2107dde6f70f4887b9da51c2d141d39134b691"
+    "roles/security_base/tasks/main.yml": "b4cf8a30674dedbdde7d208939dedecd3f9dd866659d795fc74e3debb4ae33c4"
+  },
+  "i18n": {
+    "de": {
+      "title": "Rolle security_base",
+      "description": "# Rolle security_base\n\nRolle: `roles/security_base`.\n\nIm Bestand definierte Aufgaben:\n\n- Set the legal login banner\n- Harden login.defs\n- Optionally remove orphaned packages\n\nDie Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fakten, Registerwerte und Hostsecrets werden nicht in Eingabeparameter umgedeutet.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `roles/security_base/tasks/main.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Role security_base",
+      "description": "# Role security_base\n\nRole: `roles/security_base`.\n\nTask names as written in the role:\n\n- Set the legal login banner\n- Harden login.defs\n- Optionally remove orphaned packages\n\nThe parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `roles/security_base/tasks/main.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {}
+    }
   }
 }
 ```

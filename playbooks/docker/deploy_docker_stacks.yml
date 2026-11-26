@@ -1,13 +1,13 @@
 # ==============================================================================
-# PLAY 1: Vorbereitung
+# PLAY 1: Prepare the deployment
 # ==============================================================================
-- name: "PLAY 1: Vorbereitung"
+- name: "PLAY 1: Prepare the deployment"
   hosts: docker_deployment_hosts
   become: yes
   gather_facts: no
 
   tasks:
-    - name: "TASK 1.1: Ergebnislisten initialisieren"
+    - name: "TASK 1.1: Initialize deployment results"
       ansible.builtin.set_fact:
         deployment_results: []
         pruned_stacks: []
@@ -16,26 +16,26 @@
         expected_container_names: []
         final_running_containers: []
 
-    - name: "TASK 1.2: Basisvariablen prüfen"
+    - name: "TASK 1.2: Validate base variables"
       ansible.builtin.assert:
         that:
           - local_base_dir is defined
           - remote_base_dir is defined
           - compose_file_patterns is defined
-        fail_msg: "local_base_dir, remote_base_dir oder compose_file_patterns nicht definiert!"
-        success_msg: "Basisvariablen sind korrekt definiert."
+        fail_msg: "Define local_base_dir, remote_base_dir and compose_file_patterns."
+        success_msg: "Base variables are set."
 
 
 # ==============================================================================
-# PLAY 2: Waisen-Stacks erkennen
+# PLAY 2: Detect orphan stacks
 # ==============================================================================
-- name: "PLAY 2: Nicht mehr verwaltete Docker Stacks erkennen"
+- name: "PLAY 2: Find unmanaged Docker stacks"
   hosts: docker_deployment_hosts
   become: yes
   gather_facts: no
 
   tasks:
-    - name: "TASK 2.1: Verwaltete Compose-Dateien für diesen Host auf Management-Host finden"
+    - name: "TASK 2.1: Find managed Compose files for this host on the controller"
       delegate_to: localhost
       ansible.builtin.find:
         paths: "{{ local_base_dir }}/{{ inventory_hostname }}"
@@ -44,7 +44,7 @@
       register: local_compose_projects
       failed_when: false
 
-    - name: "TASK 2.2: Liste verwalteter Compose-Projektnamen erstellen"
+    - name: "TASK 2.2: Collect managed Compose project names"
       ansible.builtin.set_fact:
         managed_project_names: >-
           {{
@@ -57,13 +57,13 @@
             | unique
           }}
 
-    - name: "TASK 2.3: Laufende Compose-Projekte auf Host abrufen"
+    - name: "TASK 2.3: List running Compose projects on the host"
       ansible.builtin.command: "docker compose ls --format json"
       register: running_projects_raw
       changed_when: false
       failed_when: false
 
-    - name: "TASK 2.4: Laufende Compose-Projekte parsen"
+    - name: "TASK 2.4: Parse running Compose projects"
       ansible.builtin.set_fact:
         running_projects: >-
           {{
@@ -72,11 +72,11 @@
             else []
           }}
 
-    - name: "TASK 2.5: Waisen-Stack-Kandidatenliste initialisieren"
+    - name: "TASK 2.5: Initialize orphan stack candidates"
       ansible.builtin.set_fact:
         prune_candidates: []
 
-    - name: "TASK 2.6: Waisen-Stacks per Projektname sammeln"
+    - name: "TASK 2.6: Collect orphan stacks by project name"
       ansible.builtin.set_fact:
         prune_candidates: "{{ prune_candidates + [item] }}"
       loop: "{{ running_projects }}"
@@ -86,34 +86,34 @@
         - item.ConfigFiles | string | trim | length > 0
         - item.Name not in managed_project_names
 
-    - name: "TASK 2.7: Gefundene Waisen-Stacks anzeigen"
+    - name: "TASK 2.7: Show orphan stack candidates"
       ansible.builtin.debug:
         msg: |
           {% if prune_candidates | length > 0 %}
-          Auf Host {{ inventory_hostname }} wurden folgende nicht mehr verwaltete Docker-Compose-Projekte gefunden:
+          Unmanaged Compose projects on {{ inventory_hostname }}:
 
           {% for item in prune_candidates %}
           - {{ item.Name }}
             Compose: {{ (item.ConfigFiles | string).split(',')[0] }}
-            Pfad:    {{ ((item.ConfigFiles | string).split(',')[0]) | dirname }}
-            Status:  {{ item.Status | default('unbekannt') }}
+            Path:    {{ ((item.ConfigFiles | string).split(',')[0]) | dirname }}
+            Status:  {{ item.Status | default('unknown') }}
 
           {% endfor %}
           {% else %}
-          Auf Host {{ inventory_hostname }} wurden keine Waisen-Stacks gefunden.
+          No orphan stacks on {{ inventory_hostname }}.
           {% endif %}
 
 
 # ==============================================================================
-# PLAY 2.5: Lokale Sicherheitsabfrage für Waisen-Stacks
+# PLAY 2.5: Confirm orphan stack removal on the controller
 # ==============================================================================
-- name: "PLAY 2.5: Lokale Bestätigung für Waisen-Stack-Bereinigung"
+- name: "PLAY 2.5: Confirm orphan stack removal on the controller"
   hosts: localhost
   gather_facts: no
   connection: local
 
   tasks:
-    - name: "TASK 2.5.1: Globale Waisen-Stack-Anzahl berechnen"
+    - name: "TASK 2.5.1: Count orphan stack candidates across hosts"
       ansible.builtin.set_fact:
         global_prune_candidate_count: >-
           {{
@@ -124,15 +124,15 @@
             | length
           }}
 
-    - name: "TASK 2.5.2: Waisen-Stacks lokal auf Management-Host bestätigen"
+    - name: "TASK 2.5.2: Ask for confirmation before removing orphan stacks"
       ansible.builtin.pause:
         prompt: |
 
           ==============================================================
-          ACHTUNG: Waisen-Stacks gefunden
+          Warning: orphan stacks found
           ==============================================================
 
-          Folgende Docker-Compose-Projekte werden nicht mehr lokal verwaltet:
+          The following Compose projects are no longer managed locally:
 
           {% for target_host in groups['docker_deployment_hosts'] %}
           {% set items = hostvars[target_host].prune_candidates | default([]) %}
@@ -142,43 +142,43 @@
           {% for item in items %}
           - {{ item.Name }}
             Compose: {{ (item.ConfigFiles | string).split(',')[0] }}
-            Pfad:    {{ ((item.ConfigFiles | string).split(',')[0]) | dirname }}
-            Status:  {{ item.Status | default('unbekannt') }}
+            Path:    {{ ((item.ConfigFiles | string).split(',')[0]) | dirname }}
+            Status:  {{ item.Status | default('unknown') }}
 
           {% endfor %}
           {% endif %}
           {% endfor %}
 
-          Insgesamt: {{ global_prune_candidate_count }} Waisen-Stack(s)
+          Total orphan stacks: {{ global_prune_candidate_count }}
 
-          Das führt pro Stack aus:
+          The following command will run for each stack:
             docker compose down --remove-orphans
 
-          Falls die alte Compose-Datei remote bereits fehlt, wird per Docker-Compose-Labels aufgeräumt:
-            - Container mit Label com.docker.compose.project
-            - Netzwerke mit Label com.docker.compose.project
+          If the Compose file is missing on the remote host, these Docker Compose labels are used for cleanup:
+            - Containers labelled com.docker.compose.project
+            - Networks labelled com.docker.compose.project
 
-          Tippe exakt "yes", um die Bereinigung auszuführen.
-          Alles andere überspringt die Bereinigung.
+          Type exactly "yes" to remove these stacks.
+          Any other answer skips removal.
           ==============================================================
       register: global_prune_confirmation
       when: global_prune_candidate_count | int > 0
 
-    - name: "TASK 2.5.3: Globale Prune-Bestätigung speichern"
+    - name: "TASK 2.5.3: Record the global prune decision"
       ansible.builtin.set_fact:
         global_prune_confirmed: "{{ global_prune_confirmation.user_input | default('') == 'yes' }}"
 
 
 # ==============================================================================
-# PLAY 2.6: Bestätigte Waisen-Stacks entfernen
+# PLAY 2.6: Remove confirmed orphan stacks
 # ==============================================================================
-- name: "PLAY 2.6: Bestätigte Waisen-Stacks entfernen"
+- name: "PLAY 2.6: Remove confirmed orphan stacks"
   hosts: docker_deployment_hosts
   become: yes
   gather_facts: no
 
   tasks:
-    - name: "TASK 2.6.1: Waisen-Stacks entfernen"
+    - name: "TASK 2.6.1: Remove orphan stacks"
       ansible.builtin.shell: |
         set -e
 
@@ -186,34 +186,34 @@
         COMPOSE_FILE="{{ (item.ConfigFiles | string).split(',')[0] }}"
         PROJECT_DIR="$(dirname "$COMPOSE_FILE")"
 
-        echo "Entferne Waisen-Stack: $PROJECT_NAME"
-        echo "Compose-Datei: $COMPOSE_FILE"
-        echo "Projektpfad:   $PROJECT_DIR"
+        echo "Removing orphan stack: $PROJECT_NAME"
+        echo "Compose file: $COMPOSE_FILE"
+        echo "Project path:   $PROJECT_DIR"
 
         if [ -f "$COMPOSE_FILE" ]; then
-          echo "Compose-Datei existiert. Nutze docker compose down."
+          echo "Compose file found. Running docker compose down."
           cd "$PROJECT_DIR"
           docker compose -f "$COMPOSE_FILE" down --remove-orphans
         else
-          echo "Compose-Datei fehlt. Räume anhand Docker-Compose-Labels auf."
+          echo "Compose file missing. Cleaning up by Docker Compose labels."
 
           CONTAINERS="$(docker ps -aq --filter "label=com.docker.compose.project=$PROJECT_NAME" || true)"
           NETWORKS="$(docker network ls -q --filter "label=com.docker.compose.project=$PROJECT_NAME" || true)"
 
           if [ -n "$CONTAINERS" ]; then
-            echo "Entferne Container:"
+            echo "Removing containers:"
             echo "$CONTAINERS"
             docker rm -f $CONTAINERS
           else
-            echo "Keine Container für Projekt $PROJECT_NAME gefunden."
+            echo "No containers found for project $PROJECT_NAME."
           fi
 
           if [ -n "$NETWORKS" ]; then
-            echo "Entferne Netzwerke:"
+            echo "Removing networks:"
             echo "$NETWORKS"
             docker network rm $NETWORKS || true
           else
-            echo "Keine Netzwerke für Projekt $PROJECT_NAME gefunden."
+            echo "No networks found for project $PROJECT_NAME."
           fi
         fi
       loop: "{{ prune_candidates | default([]) }}"
@@ -224,7 +224,7 @@
       failed_when: prune_result.rc != 0
       changed_when: true
 
-    - name: "TASK 2.6.2: Bereinigungsergebnis speichern"
+    - name: "TASK 2.6.2: Record the cleanup result"
       ansible.builtin.set_fact:
         pruned_stacks: >-
           {{
@@ -239,33 +239,33 @@
             | list
           }}
 
-    - name: "TASK 2.6.3: Bereinigte Stacks anzeigen"
+    - name: "TASK 2.6.3: Show the stacks removed"
       ansible.builtin.debug:
         msg: |
           {% if pruned_stacks | default([]) | length > 0 %}
-          Bereinigte Waisen-Stacks auf {{ inventory_hostname }}:
+          Orphan stacks removed from {{ inventory_hostname }}:
           {% for stack in pruned_stacks %}
           - {{ stack }}
           {% endfor %}
           {% elif prune_candidates | default([]) | length > 0 and not hostvars['localhost'].global_prune_confirmed | default(false) %}
-          Waisen-Stacks gefunden, aber Bereinigung wurde lokal nicht bestätigt.
+          Orphan stacks found. Removal was not confirmed.
           {% elif prune_candidates | default([]) | length > 0 %}
-          Waisen-Stacks gefunden, aber auf {{ inventory_hostname }} wurde nichts entfernt.
+          Orphan stacks found. No stacks were removed from {{ inventory_hostname }}.
           {% else %}
-          Keine Waisen-Stacks auf {{ inventory_hostname }} gefunden.
+          No orphan stacks on {{ inventory_hostname }}.
           {% endif %}
 
 
 # ==============================================================================
-# PLAY 3: Konfiguration synchronisieren
+# PLAY 3: Synchronize configuration
 # ==============================================================================
-- name: "PLAY 3: Konfiguration synchronisieren"
+- name: "PLAY 3: Synchronize configuration"
   hosts: docker_deployment_hosts
   become: yes
   gather_facts: no
 
   tasks:
-    - name: "TASK 3.1: Sicherstellen, dass das Zielverzeichnis existiert"
+    - name: "TASK 3.1: Create the target directory"
       ansible.builtin.file:
         path: "{{ remote_base_dir }}/{{ inventory_hostname }}"
         state: directory
@@ -273,7 +273,7 @@
         owner: root
         group: root
 
-    - name: "TASK 3.2: Projektverzeichnisse synchronisieren"
+    - name: "TASK 3.2: Synchronize project directories"
       ansible.posix.synchronize:
         src: "{{ local_base_dir }}/{{ inventory_hostname }}/"
         dest: "{{ remote_base_dir }}/{{ inventory_hostname }}/"
@@ -282,25 +282,25 @@
         archive: yes
       delegate_to: localhost
 
-    - name: "TASK 3.3: Compose-Projekte auf Zielsystem finden"
+    - name: "TASK 3.3: Find Compose projects on the target host"
       ansible.builtin.find:
         paths: "{{ remote_base_dir }}/{{ inventory_hostname }}"
         patterns: "{{ compose_file_patterns }}"
         recurse: yes
       register: all_compose_projects
 
-    - name: "TASK 3.4: Prüfen, ob Compose-Projekte gefunden wurden"
+    - name: "TASK 3.4: Check whether any Compose projects were found"
       ansible.builtin.assert:
         that:
           - all_compose_projects.files | default([]) | length > 0
-        fail_msg: "Keine Compose-Dateien auf {{ inventory_hostname }} gefunden!"
-        success_msg: "Compose-Dateien auf {{ inventory_hostname }} gefunden."
+        fail_msg: "No Compose files found on {{ inventory_hostname }}."
+        success_msg: "Compose files found on {{ inventory_hostname }}."
 
 
 # ==============================================================================
-# PLAY 4: Nachbereitungs-Tasks VOR Deployment
+# PLAY 4: Apply file permissions before deployment
 # ==============================================================================
-- name: "PLAY 4: Dateirechte aus host_vars vor Deployment setzen"
+- name: "PLAY 4: Set file permissions from host_vars before deployment"
   hosts: docker_deployment_hosts
   become: true
   gather_facts: false
@@ -309,7 +309,7 @@
     host_docker_file_permissions: "{{ docker_file_permissions | default([]) }}"
 
   tasks:
-    - name: "TASK 4.1: Dateiregeln validieren"
+    - name: "TASK 4.1: Validate file rules"
       ansible.builtin.assert:
         that:
           - item.path is defined
@@ -317,12 +317,12 @@
           - (item.absolute | default(false) | bool and item.path | string is match('^/')) or (not (item.absolute | default(false) | bool) and not (item.path | string is match('^/')))
           - "'..' not in item.path.split('/')"
           - item.mode is defined
-        fail_msg: "Ungueltige docker_file_permissions-Regel auf {{ inventory_hostname }}: {{ item }}"
+        fail_msg: "Invalid docker_file_permissions rule on {{ inventory_hostname }}: {{ item }}"
       loop: "{{ host_docker_file_permissions }}"
       loop_control:
-        label: "{{ item.path | default('unbenannt') }}"
+        label: "{{ item.path | default('unnamed') }}"
 
-    - name: "TASK 4.2: Zielpfade pruefen"
+    - name: "TASK 4.2: Check target paths"
       ansible.builtin.stat:
         path: "{{ item.path if item.absolute | default(false) | bool else remote_base_dir ~ '/' ~ inventory_hostname ~ '/' ~ item.path }}"
       loop: "{{ host_docker_file_permissions }}"
@@ -330,7 +330,7 @@
         label: "{{ item.path }}"
       register: docker_permission_paths
 
-    - name: "TASK 4.3: Konfigurierte Dateirechte anwenden"
+    - name: "TASK 4.3: Apply configured file permissions"
       ansible.builtin.file:
         path: "{{ item.item.path if item.item.absolute | default(false) | bool else remote_base_dir ~ '/' ~ inventory_hostname ~ '/' ~ item.item.path }}"
         state: "{{ 'directory' if item.item.create | default(false) | bool else omit }}"
@@ -346,9 +346,9 @@
 
 
 # ==============================================================================
-# PLAY 6: Stacks deployen
+# PLAY 6: Deploy stacks
 # ==============================================================================
-- name: "PLAY 6: Docker Stacks deployen"
+- name: "PLAY 6: Deploy Docker stacks"
   hosts: docker_deployment_hosts
   become: yes
   gather_facts: no
@@ -357,7 +357,7 @@
     critical_stacks: "{{ docker_critical_stacks | default([]) }}"
 
   tasks:
-    - name: "TASK 6.1: Kritische Compose-Projekte bestimmen"
+    - name: "TASK 6.1: Select critical Compose projects"
       ansible.builtin.set_fact:
         critical_compose_projects: >-
           {{
@@ -368,7 +368,7 @@
             | list
           }}
 
-    - name: "TASK 6.2: Standard Compose-Projekte bestimmen"
+    - name: "TASK 6.2: Select standard Compose projects"
       ansible.builtin.set_fact:
         standard_compose_projects: >-
           {{
@@ -379,10 +379,10 @@
             | list
           }}
 
-    - name: "TASK 6.3: Kritische Stacks deployen"
+    - name: "TASK 6.3: Deploy critical stacks"
       ansible.builtin.shell: |
         set -e
-        echo "Starte kritischen Stack: {{ item.path | dirname }}"
+        echo "Starting critical stack: {{ item.path | dirname }}"
         cd "{{ item.path | dirname }}"
         docker compose up -d --remove-orphans
       args:
@@ -393,18 +393,18 @@
       failed_when: critical_deploy.rc != 0
       changed_when: true
 
-    - name: "TASK 6.4: Warte kurz auf Basisdienste"
+    - name: "TASK 6.4: Wait for base services"
       ansible.builtin.pause:
         seconds: 15
-        prompt: "Kurze Pause, damit kritische Basisdienste sauber starten können :)"
+        prompt: "Waiting for critical services to start."
       when:
         - critical_deploy is defined
         - critical_deploy.results | default([]) | length > 0
 
-    - name: "TASK 6.5: Standard-Stacks deployen"
+    - name: "TASK 6.5: Deploy standard stacks"
       ansible.builtin.shell: |
         set -e
-        echo "Starte Standard-Stack: {{ item.path | dirname }}"
+        echo "Starting standard stack: {{ item.path | dirname }}"
         cd "{{ item.path | dirname }}"
         docker compose up -d --remove-orphans
       args:
@@ -415,7 +415,7 @@
       failed_when: standard_deploy.rc != 0
       changed_when: true
 
-    - name: "TASK 6.6: Deployment-Ergebnisse zusammenführen"
+    - name: "TASK 6.6: Combine deployment results"
       ansible.builtin.set_fact:
         deployment_results: >-
           {{
@@ -426,22 +426,22 @@
 
 
 # ==============================================================================
-# PLAY 7: Intelligenter Health Check
+# PLAY 7: Check container health
 # ==============================================================================
-- name: "PLAY 7: Intelligenter Health Check"
+- name: "PLAY 7: Check container health"
   hosts: docker_deployment_hosts
   become: yes
   gather_facts: no
 
   tasks:
-    - name: "TASK 7.1: Compose-Dateien einlesen"
+    - name: "TASK 7.1: Read Compose files"
       ansible.builtin.slurp:
         src: "{{ item.path }}"
       loop: "{{ hostvars[inventory_hostname].all_compose_projects.files | default([]) }}"
       register: slurped_compose_files
       failed_when: false
 
-    - name: "TASK 7.2: Erwartete Container-Namen ermitteln"
+    - name: "TASK 7.2: Determine expected container names"
       ansible.builtin.set_fact:
         expected_container_names: >-
           {{
@@ -464,14 +464,14 @@
             | unique
           }}
 
-    - name: "TASK 7.3: Hinweis, falls keine container_name-Werte gefunden wurden"
+    - name: "TASK 7.3: Report when no explicit container names are configured"
       ansible.builtin.debug:
         msg: |
-          Hinweis: Auf {{ inventory_hostname }} wurden keine expliziten container_name-Werte gefunden.
-          Der Health Check kann dann nur eingeschränkt prüfen.
+          No explicit container_name values on {{ inventory_hostname }}.
+          Only explicitly named containers can be checked individually.
       when: expected_container_names | length == 0
 
-    - name: "TASK 7.4: Auf Start aller explizit benannten Container warten"
+    - name: "TASK 7.4: Wait for all explicitly named containers to start"
       ansible.builtin.shell: "docker ps --format '{{ '{{' }}.Names{{ '}}' }}'"
       register: running_containers_raw
       until: expected_container_names | difference(running_containers_raw.stdout_lines | default([])) | length == 0
@@ -481,33 +481,33 @@
       failed_when: false
       when: expected_container_names | length > 0
 
-    - name: "TASK 7.5: Containerstatus speichern"
+    - name: "TASK 7.5: Record container status"
       ansible.builtin.set_fact:
         final_running_containers: "{{ running_containers_raw.stdout_lines | default([]) }}"
         problem_containers: "{{ expected_container_names | difference(running_containers_raw.stdout_lines | default([])) }}"
 
-    - name: "TASK 7.6: Problematische Container anzeigen"
+    - name: "TASK 7.6: Show unhealthy or missing containers"
       ansible.builtin.debug:
         msg: |
           {% if problem_containers | length > 0 %}
-          Auf {{ inventory_hostname }} fehlen folgende erwartete Container:
+          Expected containers missing from {{ inventory_hostname }}:
           {% for container in problem_containers %}
           - {{ container }}
           {% endfor %}
           {% else %}
-          Alle erwarteten explizit benannten Container laufen auf {{ inventory_hostname }}.
+          All expected named containers are running on {{ inventory_hostname }}.
           {% endif %}
 
 # ==============================================================================
-# PLAY 8: Globale Ergebnisse aggregieren
+# PLAY 8: Aggregate results across hosts
 # ==============================================================================
-- name: "PLAY 8: Globale Ergebnisse aggregieren"
+- name: "PLAY 8: Aggregate results across hosts"
   hosts: localhost
   gather_facts: no
   connection: local
 
   tasks:
-    - name: "TASK 8.1: Deployment-Ergebnisse von allen Hosts sammeln"
+    - name: "TASK 8.1: Collect deployment results from all hosts"
       ansible.builtin.set_fact:
         global_deployment_results: >-
           {{
@@ -538,9 +538,9 @@
             | flatten
           }}
 # ==============================================================================
-# PLAY 9: Zusammenfassung & Log-Datei erstellen
+# PLAY 9: Write the deployment summary and log
 # ==============================================================================
-- name: "PLAY 9: Zusammenfassung & Log-Datei erstellen"
+- name: "PLAY 9: Write the deployment summary and log"
   hosts: localhost
   connection: local
   gather_facts: yes
@@ -550,23 +550,22 @@
     log_file: "{{ log_dir }}/deployment-{{ ansible_date_time.iso8601_basic_short }}.log"
 
   tasks:
-    - name: "TASK 9.1: Log-Verzeichnis anlegen"
+    - name: "TASK 9.1: Create the log directory"
       ansible.builtin.file:
         path: "{{ log_dir }}"
         state: directory
         mode: '0755'
 
-    - name: "TASK 9.2: Zusammenfassung generieren"
+    - name: "TASK 9.2: Generate the deployment summary"
       ansible.builtin.template:
         src: "{{ playbook_dir }}/../../templates/summary_templates.j2"
         dest: "{{ log_file }}"
         mode: '0644'
 
-    - name: "TASK 9.3: Zusammenfassung im Terminal anzeigen und auf Bestätigung warten"
+    - name: "TASK 9.3: Display the deployment summary and wait for acknowledgement"
+      tags: [controller_docker_summary_ack]
       ansible.builtin.pause:
         prompt: |
-
-          ======================================================================
-          Deployment Zusammenfassung (Logfile-Inhalt):
+          Deployment summary (log contents):
           {{ lookup('file', log_file) }}
-          Drücken Sie Enter, um fortzufahren.
+          Press Enter to continue.

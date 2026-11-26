@@ -4,17 +4,13 @@ Rolle: `roles/accounting`.
 
 Im Bestand definierte Aufgaben:
 
-- LXC-Umgebung fuer Accounting erkennen
-- Passende Accounting-Pakete installieren
-- {{ ['sysstat'] if accounting_is_lxc | bool else ['auditd', 'acct', 'sysstat'] }}
-- Sysstat-Datensammlung aktivieren
-- Sysstat aktivieren
-- sysstat
-- Prozess-Accounting nur ausserhalb von LXC aktivieren
-- acct
-- Auditd nur ausserhalb von LXC aktivieren
-- auditd
-- Accounting-Einschraenkung fuer LXC dokumentieren
+- Detect LXC for process accounting
+- Install applicable accounting packages
+- Enable sysstat data collection
+- Enable sysstat
+- Enable process accounting outside LXC
+- Enable auditd outside LXC
+- Report the accounting limitation on LXC
 
 Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fakten, Registerwerte und Hostsecrets werden nicht in Eingabeparameter umgedeutet.
 
@@ -38,7 +34,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "roles/accounting/tasks/main.yml"
   ],
   "source_hashes": {
-    "roles/accounting/tasks/main.yml": "f4b5f53a6c763381adb97790326b498d3717636b019e2aac32408b0962166f7e"
+    "roles/accounting/tasks/main.yml": "f1d2532253fd7f44363734bd14316605371e8458c0a1a21dba82a6aefe026a3c"
+  },
+  "i18n": {
+    "de": {
+      "title": "Rolle accounting",
+      "description": "# Rolle accounting\n\nRolle: `roles/accounting`.\n\nIm Bestand definierte Aufgaben:\n\n- Detect LXC for process accounting\n- Install applicable accounting packages\n- Enable sysstat data collection\n- Enable sysstat\n- Enable process accounting outside LXC\n- Enable auditd outside LXC\n- Report the accounting limitation on LXC\n\nDie Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fakten, Registerwerte und Hostsecrets werden nicht in Eingabeparameter umgedeutet.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `roles/accounting/tasks/main.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Role accounting",
+      "description": "# Role accounting\n\nRole: `roles/accounting`.\n\nTask names as written in the role:\n\n- Detect LXC for process accounting\n- Install applicable accounting packages\n- Enable sysstat data collection\n- Enable sysstat\n- Enable process accounting outside LXC\n- Enable auditd outside LXC\n- Report the accounting limitation on LXC\n\nThe parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `roles/accounting/tasks/main.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {}
+    }
   }
 }
 ```

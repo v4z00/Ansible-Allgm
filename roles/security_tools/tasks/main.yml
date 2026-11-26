@@ -1,5 +1,5 @@
 ---
-- name: PAM- und Security-Werkzeuge installieren
+- name: Install PAM and security utilities
   ansible.builtin.apt:
     name:
       - libpam-tmpdir
@@ -10,7 +10,7 @@
       - rkhunter
     state: present
 
-- name: Needrestart non-interaktiv konfigurieren
+- name: Configure needrestart for unattended use
   ansible.builtin.copy:
     dest: /etc/needrestart/conf.d/ansible.conf
     content: |

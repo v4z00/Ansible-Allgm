@@ -1,5 +1,5 @@
 ---
-- name: APT-Cache aktualisieren und Basispakete installieren
+- name: Refresh the APT cache and install base packages
   ansible.builtin.apt:
     name: "{{ base_packages }}"
     state: present

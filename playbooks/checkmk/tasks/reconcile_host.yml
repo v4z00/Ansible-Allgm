@@ -1,7 +1,7 @@
 ---
-# Checkmk erlaubt bestimmte Hostaenderungen nicht gemeinsam und erwartet vor
-# dem Folgeschritt jeweils eine Aktivierung. Daher bewusst keine Parallelitaet.
-- name: "Ist-Zustand von {{ checkmk_reconcile_hostname }} pruefen"
+# Checkmk requires separate host changes and an activation between steps.
+# Process the changes in sequence.
+- name: "Inspect the current state of {{ checkmk_reconcile_hostname }}"
   ansible.builtin.uri:
     validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_read', tls_validate_certs_default | default(true)) | bool }}"
     url: >-
@@ -15,7 +15,7 @@
   register: checkmk_reconcile_current
   no_log: true
 
-- name: "Fehlenden Host {{ checkmk_reconcile_hostname }} vollstaendig anlegen"
+- name: "Create the missing host {{ checkmk_reconcile_hostname }} with all attributes"
   checkmk.general.host:
     validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_create', tls_validate_certs_default | default(true)) | bool }}"
     server_url: "{{ checkmk_server_url }}"
@@ -32,7 +32,7 @@
   no_log: true
   when: checkmk_reconcile_current.status == 404
 
-- name: "Neuanlage von {{ checkmk_reconcile_hostname }} aktivieren"
+- name: "Activate the new host {{ checkmk_reconcile_hostname }}"
   checkmk.general.activation:
     validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_create_activation', tls_validate_certs_default | default(true)) | bool }}"
     server_url: "{{ checkmk_server_url }}"
@@ -45,7 +45,7 @@
   no_log: true
   when: checkmk_reconcile_create is changed
 
-- name: "Host {{ checkmk_reconcile_hostname }} allein in den Zielordner verschieben"
+- name: "Move {{ checkmk_reconcile_hostname }} to its target folder in a separate step"
   checkmk.general.host:
     validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_move', tls_validate_certs_default | default(true)) | bool }}"
     server_url: "{{ checkmk_server_url }}"
@@ -59,7 +59,7 @@
   no_log: true
   when: checkmk_reconcile_current.status == 200
 
-- name: "Ordnerwechsel von {{ checkmk_reconcile_hostname }} aktivieren"
+- name: "Activate the folder change for {{ checkmk_reconcile_hostname }}"
   checkmk.general.activation:
     validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_move_activation', tls_validate_certs_default | default(true)) | bool }}"
     server_url: "{{ checkmk_server_url }}"
@@ -72,7 +72,7 @@
   no_log: true
   when: checkmk_reconcile_move is changed
 
-- name: "Attribute von {{ checkmk_reconcile_hostname }} allein abgleichen"
+- name: "Reconcile attributes for {{ checkmk_reconcile_hostname }} in a separate step"
   checkmk.general.host:
     validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_attributes', tls_validate_certs_default | default(true)) | bool }}"
     server_url: "{{ checkmk_server_url }}"
@@ -88,7 +88,7 @@
   no_log: true
   when: checkmk_reconcile_current.status == 200
 
-- name: "Attributaenderungen von {{ checkmk_reconcile_hostname }} aktivieren"
+- name: "Activate attribute changes for {{ checkmk_reconcile_hostname }}"
   checkmk.general.activation:
     validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_reconcile_attributes_activation', tls_validate_certs_default | default(true)) | bool }}"
     server_url: "{{ checkmk_server_url }}"

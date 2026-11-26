@@ -5,7 +5,7 @@
   become: true
 
   tasks:
-    - name: CA-Kennwort muss lokal hinterlegt sein
+    - name: Require a locally configured CA password
       ansible.builtin.assert:
         that: ca_password | default('') | length > 0
         fail_msg: "ca_password fehlt in group_vars/all/secrets.yml."

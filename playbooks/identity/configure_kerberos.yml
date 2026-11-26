@@ -1,5 +1,5 @@
 ---
-- name: Kerberos-Client konfigurieren
+- name: Configure the Kerberos client
   hosts: all_linux_systems
   become: true
   gather_facts: true

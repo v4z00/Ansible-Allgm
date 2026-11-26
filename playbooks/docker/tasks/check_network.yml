@@ -1,17 +1,17 @@
 ---
-- name: Netzwerk nur auslesen
+- name: Inspect the network
   community.docker.docker_network_info:
     name: "{{ network_definition.name }}"
   register: observed_network
   no_log: true
 
-- name: Gewuenschte Existenz pruefen
+- name: Check whether the network should exist
   ansible.builtin.assert:
     that:
       - observed_network.exists == (network_definition.state | default('present') == 'present')
     fail_msg: "{{ network_definition.name }}: Existenz weicht vom Soll ab. Es wurde nichts geaendert."
 
-- name: Treiber und IPv6-Schalter pruefen
+- name: Validate the driver and IPv6 setting
   ansible.builtin.assert:
     that:
       - observed_network.network.Driver == network_definition.driver | default('bridge')
@@ -20,7 +20,7 @@
     fail_msg: "{{ network_definition.name }}: Treiber/Internal/IPv6 weicht vom Soll ab."
   when: observed_network.exists
 
-- name: IPv4- und IPv6-Subnetze samt Gateway pruefen
+- name: Check IPv4 and IPv6 subnets and gateways
   ansible.builtin.assert:
     that:
       - observed_network.network.IPAM.Config | selectattr('Subnet', 'defined') | selectattr('Subnet', 'equalto', expected_ipam.subnet) | selectattr('Gateway', 'defined') | selectattr('Gateway', 'equalto', expected_ipam.gateway) | list | length == 1

@@ -1,5 +1,5 @@
 ---
-- name: Allgemeine Bash-Bibliothek auf ausgewählten Hosts bereitstellen
+- name: Deploy the shared Bash library to the selected hosts
   hosts: all
   become: true
   gather_facts: false

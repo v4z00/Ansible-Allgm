@@ -1,5 +1,5 @@
 ---
-- name: LXC-Umgebung fuer Accounting erkennen
+- name: Detect LXC for process accounting
   ansible.builtin.set_fact:
     accounting_is_lxc: >-
       {{
@@ -9,39 +9,39 @@
         or ansible_virtualization_type | default('') in ['lxc', 'openvz']
       }}
 
-- name: Passende Accounting-Pakete installieren
+- name: Install applicable accounting packages
   ansible.builtin.apt:
     name: "{{ ['sysstat'] if accounting_is_lxc | bool else ['auditd', 'acct', 'sysstat'] }}"
     state: present
 
-- name: Sysstat-Datensammlung aktivieren
+- name: Enable sysstat data collection
   ansible.builtin.lineinfile:
     path: /etc/default/sysstat
     regexp: '^ENABLED='
     line: 'ENABLED="true"'
-  notify: Sysstat neu starten
+  notify: Restart sysstat
 
-- name: Sysstat aktivieren
+- name: Enable sysstat
   ansible.builtin.systemd:
     name: sysstat
     state: started
     enabled: true
 
-- name: Prozess-Accounting nur ausserhalb von LXC aktivieren
+- name: Enable process accounting outside LXC
   ansible.builtin.systemd:
     name: acct
     state: started
     enabled: true
   when: not accounting_is_lxc | bool
 
-- name: Auditd nur ausserhalb von LXC aktivieren
+- name: Enable auditd outside LXC
   ansible.builtin.systemd:
     name: auditd
     state: started
     enabled: true
   when: not accounting_is_lxc | bool
 
-- name: Accounting-Einschraenkung fuer LXC dokumentieren
+- name: Report the accounting limitation on LXC
   ansible.builtin.debug:
     msg: "LXC erkannt: sysstat wird aktiviert; acct und auditd werden uebersprungen."
   when: accounting_is_lxc | bool

@@ -1,5 +1,5 @@
 ---
-- name: Lokale Skripte und Cron mit gemeinsamer Git-Library bereitstellen
+- name: Deploy local scripts and cron jobs with the shared Git library
   hosts: all_linux_systems
   gather_facts: false
   become: true

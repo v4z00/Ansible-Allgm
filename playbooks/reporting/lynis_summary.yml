@@ -25,7 +25,7 @@
       set_fact:
         summary_report: "{{ lookup('template', playbook_dir ~ '/../../templates/lynis_summary.j2') }}"
 
-    - name: "SECURITY AUDIT ZUSAMMENFASSUNG"
+    - name: "Show the security audit summary"
       pause:
         prompt: |
           {{ summary_report }}

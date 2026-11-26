@@ -1,10 +1,10 @@
 ---
-- name: "Kerberos: Keytabs, Cron-Einträge & Sofort-Check (Ohne Hetzner)"
+- name: "Manage Kerberos keytabs, schedule renewal and check tickets"
   hosts: all_linux_systems
   become: true
 
   pre_tasks:
-    - name: Kerberos-Keytab-Funktion muss aktiviert sein
+    - name: Require the Kerberos keytab feature
       ansible.builtin.assert:
         that:
           - features.kerberos | bool
@@ -12,7 +12,7 @@
         fail_msg: "Kerberos oder die Keytab-Erzeugung ist in settings.yml deaktiviert."
 
   tasks:
-    - name: "Suchpfad festlegen"
+    - name: "Set the search path"
       ansible.builtin.set_fact:
         current_search_path: >-
           {{ kerberos_credential_search_paths.get(
@@ -20,7 +20,7 @@
                kerberos_credential_search_paths.default
              ) }}
 
-    - name: "Nach Credential-Dateien suchen (Hetzner wird ignoriert)"
+    - name: "Find eligible credential files"
       ansible.builtin.find:
         paths: "{{ current_search_path | trim }}"
         patterns:
@@ -30,7 +30,7 @@
         recurse: false
       register: found_creds
 
-    - name: "Prüfen, ob ktutil installiert ist"
+    - name: "Check whether ktutil is installed"
       ansible.builtin.shell: |
         command -v ktutil
       args:
@@ -40,7 +40,7 @@
       failed_when: false
       when: found_creds.matched > 0
 
-    - name: "Abbrechen, wenn ktutil nicht installiert ist"
+    - name: "Stop if ktutil is missing"
       ansible.builtin.fail:
         msg: >-
           Auf {{ inventory_hostname }} ist ktutil nicht installiert.
@@ -50,7 +50,7 @@
         - found_creds.matched > 0
         - ktutil_check.rc != 0
 
-    - name: "Prüfen, welche Keytabs bereits existieren"
+    - name: "Check for existing keytabs"
       ansible.builtin.stat:
         path: "{{ item.path }}.keytab"
       loop: "{{ found_creds.files }}"
@@ -58,7 +58,7 @@
         label: "{{ item.path | basename }}.keytab"
       register: keytabs_before
 
-    - name: "Fehlende Keytabs aus Credential-Dateien erzeugen"
+    - name: "Generate missing keytabs from credential files"
       ansible.builtin.shell: |
         set -euo pipefail
         umask 077
@@ -66,8 +66,8 @@
         CREDENTIAL_FILE="{{ item.item.path }}"
         KEYTAB_FILE="${CREDENTIAL_FILE}.keytab"
 
-        # Verzeichnis erzeugen, aber die Keytab-Datei selbst noch nicht.
-        # ktutil kann dadurch eine neue gültige Keytab anlegen.
+        # Create the directory and leave the keytab file absent.
+        # ktutil creates the keytab itself.
         TEMP_DIR="$(mktemp -d "${KEYTAB_FILE}.ansible.XXXXXX")"
         TEMP_KEYTAB="${TEMP_DIR}/generated.keytab"
 
@@ -135,7 +135,7 @@
       no_log: true
       changed_when: true
 
-    - name: "Keytabs nach der Erzeugung erneut prüfen"
+    - name: "Check the generated keytabs"
       ansible.builtin.stat:
         path: "{{ item.path }}.keytab"
       loop: "{{ found_creds.files }}"
@@ -143,7 +143,7 @@
         label: "{{ item.path | basename }}.keytab"
       register: keytab_stats
 
-    - name: "Fehler melden, falls eine Keytab weiterhin fehlt"
+    - name: "Report any missing keytab"
       ansible.builtin.fail:
         msg: >-
           Die Keytab {{ item.item.path }}.keytab konnte nicht erzeugt werden.
@@ -152,7 +152,7 @@
         label: "{{ item.item.path | basename }}.keytab"
       when: not item.stat.exists
 
-    - name: "Live-Check | Kerberos-Ticket sofort beziehen"
+    - name: "Request a Kerberos ticket immediately"
       ansible.builtin.shell: |
         set -o pipefail
 
@@ -185,7 +185,7 @@
       failed_when: false
       no_log: false
 
-    - name: "Ergebnis der Ticket-Prüfung anzeigen"
+    - name: "Report the ticket check result"
       ansible.builtin.debug:
         msg:
           - "Host: {{ inventory_hostname }}"
@@ -198,7 +198,7 @@
       loop_control:
         label: "{{ item.item.path | basename }}"
 
-    - name: "Cron-Einträge erstellen (alle vier Stunden)"
+    - name: "Schedule ticket renewal every four hours"
       ansible.builtin.cron:
         name: "Kinit für {{ item.item.path | basename }} (Intervall)"
         user: root
@@ -219,7 +219,7 @@
         - not (item.skipped | default(false))
         - (item.rc | default(1)) == 0
 
-    - name: "Cron-Einträge erstellen (@reboot)"
+    - name: "Schedule ticket renewal at boot"
       ansible.builtin.cron:
         name: "Kinit für {{ item.item.path | basename }} (Reboot)"
         user: root

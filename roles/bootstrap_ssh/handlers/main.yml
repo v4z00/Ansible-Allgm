@@ -1,5 +1,6 @@
 ---
-- name: SSH neu laden
+- name: Reload SSH
+  listen: SSH neu laden
   ansible.builtin.service:
     name: ssh
     state: reloaded

@@ -4,9 +4,9 @@ Vorhandener Einstieg: `playbooks/maintenance/check-dns.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
 
-- DNS-Aufloesung pruefen
-- Domains aufloesen
-- Ergebnis anzeigen
+- Check DNS resolution
+- Resolve the configured domains
+- Show the result
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 
@@ -30,7 +30,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/check-dns.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/check-dns.yml": "a37175b0984ee88c470ff086e1a3569b2e23ae7b875ab938cbdad25f0341641a"
+    "playbooks/maintenance/check-dns.yml": "b65a0634e730a8ad300af56389814e4a133a57cfb07d667e2aabc01b8ce24e25"
+  },
+  "i18n": {
+    "de": {
+      "title": "Playbook playbooks/maintenance/check-dns.yml",
+      "description": "# Playbook playbooks/maintenance/check-dns.yml\n\nVorhandener Einstieg: `playbooks/maintenance/check-dns.yml`.\n\nIm Quelltext benannte Plays/Aufgaben:\n\n- Check DNS resolution\n- Resolve the configured domains\n- Show the result\n\nAusfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `playbooks/maintenance/check-dns.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Playbook playbooks/maintenance/check-dns.yml",
+      "description": "# Playbook playbooks/maintenance/check-dns.yml\n\nPlaybook: `playbooks/maintenance/check-dns.yml`.\n\nPlay and task names as written in the playbook:\n\n- Check DNS resolution\n- Resolve the configured domains\n- Show the result\n\nRun the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `playbooks/maintenance/check-dns.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {}
+    }
   }
 }
 ```

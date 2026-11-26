@@ -1,9 +1,9 @@
-- name: HTTP-Erreichbarkeit pruefen
+- name: Check HTTP availability
   hosts: all_linux_systems
   gather_facts: false
   become: false
   tasks:
-  - name: HTTPS-Ziel abrufen
+  - name: Request the HTTPS endpoint
     ansible.builtin.uri:
       validate_certs: "{{ (tls_validate_certs | default({})).get('wan_check', tls_validate_certs_default | default(true)) | bool }}"
       url: '{{ wan_check_url | default(''https://example.com/'') }}'
@@ -16,6 +16,6 @@
       return_content: false
     register: wan_result
     check_mode: false
-  - name: Ergebnis anzeigen
+  - name: Show the result
     ansible.builtin.debug:
       var: wan_result.status

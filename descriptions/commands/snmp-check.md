@@ -65,6 +65,36 @@ Vertrauliche Werte werden nicht dokumentiert.
     "bin/control.d/snmp-check.json": "684268949ddc94febb49407cecc8f1bd6fc04bb5311e81abd6d6ac85e7c7d4ed",
     "bin/control.d/snmp-check.sh": "0b708cb015df8985707469e58b89725ea904457e2cc41fb9318a927a24a74940",
     "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
+  },
+  "i18n": {
+    "de": {
+      "title": "SNMPv2-/SNMPv3-Zugaenge pruefen",
+      "description": "# SNMPv2-/SNMPv3-Zugaenge pruefen\n\nSNMPv2-/SNMPv3-Zugaenge pruefen\n\nAufruf: `bin/control snmp-check [Optionen]`.\n\nVorhandene Kurzformen: `snmp-check`.\n\nFeature: kein zusaetzlicher Feature-Schalter. Die aktuelle Aktivierung prueft weiterhin Control.\n\nVoraussetzungen laut Registry:\n- `lib/control/helpers.sh`\n- `playbooks/network/snmp_check.yml`\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `bin/control.d/snmp-check.json`\n- `bin/control.d/snmp-check.sh`\n- `lib/control/helpers.sh`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {
+        "targets": {
+          "label": "targets",
+          "description": "Inventory-Hosts/-Gruppen als Ansible --limit. Fachliche Pruefungen bleiben aktiv."
+        },
+        "check": {
+          "label": "check",
+          "description": "Ansible-Check-Mode anfordern. Ob Aktionen diesen vollstaendig unterstuetzen, bestimmt das Playbook."
+        }
+      }
+    },
+    "en": {
+      "title": "Check SNMPv2 and SNMPv3 access",
+      "description": "# Check SNMPv2 and SNMPv3 access\n\nCheck SNMPv2 and SNMPv3 access\n\nRun: `bin/control snmp-check [options]`.\n\nAliases: `snmp-check`.\n\nAvailable without a separate feature switch. Control checks availability at runtime.\n\nRegistry prerequisites:\n- `lib/control/helpers.sh`\n- `playbooks/network/snmp_check.yml`\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `bin/control.d/snmp-check.json`\n- `bin/control.d/snmp-check.sh`\n- `lib/control/helpers.sh`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {
+        "targets": {
+          "label": "Target hosts or groups",
+          "description": "Limit Ansible to the selected inventory hosts or groups. The playbook still applies its own checks."
+        },
+        "check": {
+          "label": "Check mode",
+          "description": "Request Ansible check mode. Coverage depends on the playbook."
+        }
+      }
+    }
   }
 }
 ```

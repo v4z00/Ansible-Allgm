@@ -1,10 +1,10 @@
 ---
-- name: Docker-Macvlan-Konfigurationsnetze vorbereiten
+- name: Prepare Docker macvlan configuration networks
   hosts: docker_deployment_hosts
   become: true
   gather_facts: false
   pre_tasks:
-    - name: Macvlan-Definitionen validieren
+    - name: Validate macvlan definitions
       ansible.builtin.assert:
         that:
           - item.name is match('^[A-Za-z0-9_.-]+$')
@@ -16,7 +16,7 @@
       loop_control:
         label: "{{ item.name | default('unbenannt') }}"
   tasks:
-    - name: Config-only-Macvlan-Netze ermitteln
+    - name: Identify config-only macvlan networks
       ansible.builtin.command:
         argv: [docker, network, inspect, "{{ item.name }}"]
       loop: "{{ docker_macvlan_config_networks | default([]) }}"
@@ -26,7 +26,7 @@
       changed_when: false
       failed_when: false
 
-    - name: Fehlende Config-only-Macvlan-Netze anlegen
+    - name: Create missing config-only macvlan networks
       ansible.builtin.command:
         argv:
           - docker

@@ -17,7 +17,19 @@ lokalen SQLite-Statushelfer aus.
     "playbooks/scripts/show_status.yml"
   ],
   "source_hashes": {
-    "playbooks/scripts/show_status.yml": "9802fcab327927b0459a04a49b3463b63ecceea9fc5853f7a4136bc7ded5f1dd"
+    "playbooks/scripts/show_status.yml": "095511f8fbdfa648be533dd9541079d839ca6972cc0cf4fdb2f16597ab1e777f"
+  },
+  "i18n": {
+    "de": {
+      "title": "Letzte Zustände direkt auf den Hosts abfragen",
+      "description": "# Letzte lokale Jobzustände anzeigen\n\nAufruf und Pfadauflösung stehen unter [jobs-last](../commands/jobs-last.md).\nDie explizite Hostauswahl ist Pflicht. Das Playbook führt ausschließlich den\nlokalen SQLite-Statushelfer aus.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Read the latest job results directly from the hosts",
+      "description": "# Show the latest local job states\n\nSee [jobs-last](../commands/jobs-last.md) for invocation and path resolution. An explicit host selection is required. The playbook only calls the local SQLite status helper.",
+      "fields": {}
+    }
   }
 }
 ```

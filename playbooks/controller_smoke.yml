@@ -1,5 +1,5 @@
 ---
-- name: Prüfe die Controllerinstallation lokal
+- name: Verify the local controller installation
   hosts: controller_smoke
   connection: local
   gather_facts: false
@@ -8,9 +8,9 @@
     ansible_remote_tmp: "{{ playbook_dir }}/../.local/ansible/smoke"
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
   tasks:
-    - name: Python am Controller über Ansible erreichen
+    - name: Run Python through Ansible on the controller
       ansible.builtin.ping:
-    - name: Inventory und lokale Gruppenvariablen prüfen
+    - name: Validate the inventory and local group variables
       ansible.builtin.assert:
         that:
           - inventory_hostname == 'controller-smoke'

@@ -1,11 +1,11 @@
 ---
-- name: Gemeinsame Linux-Baseline
+- name: Apply the shared Linux baseline
   hosts: all_linux_systems:!opnsense_firewall
   become: true
   gather_facts: true
 
   pre_tasks:
-    - name: Unterstuetztes Betriebssystem pruefen
+    - name: Check for a supported operating system
       ansible.builtin.assert:
         that:
           - ansible_os_family == 'Debian'

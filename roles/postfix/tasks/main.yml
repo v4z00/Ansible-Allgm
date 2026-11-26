@@ -1,5 +1,5 @@
 ---
-- name: Postfix-Konfiguration pruefen
+- name: Validate the Postfix configuration
   ansible.builtin.assert:
     that:
       - postfix_relay_host | length > 0
@@ -8,12 +8,12 @@
     fail_msg: "Postfix-Relay und Credentials zentral konfigurieren."
   no_log: true
 
-- name: Postfix-Pakete installieren
+- name: Install Postfix packages
   ansible.builtin.apt:
     name: [postfix, libsasl2-modules, mailutils]
     state: present
 
-- name: Postfix main.cf verteilen
+- name: Deploy Postfix main.cf
   ansible.builtin.template:
     src: main.cf.j2
     dest: /etc/postfix/main.cf
@@ -21,23 +21,23 @@
     group: root
     mode: '0644'
     backup: true
-  notify: Postfix neu laden
+  notify: Reload Postfix
 
-- name: Absenderadresse fuer diesen Host bestimmen
+- name: Determine the sender address for this host
   ansible.builtin.set_fact:
     postfix_sender_email: >-
       {{ postfix_sender_aliases.get(inventory_hostname, 'lxc') }}@{{ postfix_mail_domain }}
 
-- name: Sender-Canonical-Map verteilen
+- name: Deploy the sender canonical map
   ansible.builtin.template:
     src: sender_canonical.j2
     dest: /etc/postfix/sender_canonical
     owner: root
     group: root
     mode: '0644'
-  notify: Postfix-Canonical-Map aktualisieren
+  notify: Update the Postfix canonical map
 
-- name: SASL-Credentials schreiben
+- name: Write SASL credentials
   ansible.builtin.template:
     src: sasl_passwd.j2
     dest: /etc/postfix/sasl_passwd
@@ -45,9 +45,9 @@
     group: root
     mode: '0600'
   no_log: true
-  notify: Postfix-Maps aktualisieren
+  notify: Update Postfix maps
 
-- name: Postfix aktivieren
+- name: Enable Postfix
   ansible.builtin.systemd:
     name: postfix
     state: started

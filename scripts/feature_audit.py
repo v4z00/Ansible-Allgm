@@ -9,6 +9,8 @@ import sys
 sys.dont_write_bytecode = True
 import yaml
 
+from controller_i18n import cli_args, machine_report, status_text, tr
+
 
 class UniqueLoader(yaml.SafeLoader):
     pass
@@ -50,7 +52,7 @@ def environment_hints(root):
     cfg,error=read_yaml(root/'inventory_config.yml')
     if not error and isinstance(cfg,dict):
         if cfg.get('inventory_mode')=='proxmox' or cfg.get('proxmox_sources') or cfg.get('proxmox_url'):
-            hints.append({'feature':'proxmox','source':'inventory_config.yml','reason':'Proxmox-Inventarkonfiguration vorhanden'})
+            hints.append({'feature':'proxmox','source':'inventory_config.yml','reason':tr('feature_audit.proxmox_config')})
     for p in sorted((root/'inventory').glob('*')):
         if p.is_symlink() or p.suffix not in {'.yml','.yaml'} or not p.is_file():continue
         obj,error=read_yaml(p)
@@ -58,17 +60,17 @@ def environment_hints(root):
         source=str(p.relative_to(root))
         plugin=obj.get('plugin','')
         if isinstance(plugin,str) and 'proxmox' in plugin.lower():
-            hints.append({'feature':'proxmox','source':source,'reason':'Lokale Proxmox-Plugin-Konfiguration vorhanden (nicht ausgefuehrt)'})
+            hints.append({'feature':'proxmox','source':source,'reason':tr('feature_audit.proxmox_plugin')})
         def walk(value):
             if isinstance(value,dict):
                 for key,item in value.items():
                     if isinstance(key,str) and isinstance(item,dict) and item.get('hosts'):
-                        if 'proxmox' in key.lower():hints.append({'feature':'proxmox','source':source,'reason':'Nichtleere Proxmox-Hostgruppe vorhanden'})
-                        if 'docker' in key.lower():hints.append({'feature':'docker','source':source,'reason':'Nichtleere Docker-Hostgruppe vorhanden'})
+                        if 'proxmox' in key.lower():hints.append({'feature':'proxmox','source':source,'reason':tr('feature_audit.proxmox_group')})
+                        if 'docker' in key.lower():hints.append({'feature':'docker','source':source,'reason':tr('feature_audit.docker_group')})
                     if key=='tags':
                         tags=item if isinstance(item,list) else re.split(r'[,;\s]+',item) if isinstance(item,str) else []
                         for tag in tags:
-                            if tag in {'proxmox','docker'}:hints.append({'feature':tag,'source':source,'reason':'Lokales Inventory enthaelt entsprechendes Infrastruktur-Tag'})
+                            if tag in {'proxmox','docker'}:hints.append({'feature':tag,'source':source,'reason':tr('feature_audit.tag')})
                     walk(item)
             elif isinstance(value,list):
                 for item in value:walk(item)
@@ -115,47 +117,41 @@ def collect(root,commands,catalog_path=None):
             else:status=flag_value(value)
         row=dict(info,path=path,key='.'.join(keys),status=status)
         row['warning']=status not in {'AKTIV','DEAKTIVIERT'}
-        if missing and info.get('legacy_default'):row['note']='Bisheriger manueller Standard bleibt verfuegbar; Schalter fehlt dennoch.'
+        if missing and info.get('legacy_default'):row['note']=tr('feature_audit.legacy')
         rows.append(row)
     hints=environment_hints(root);warnings=[]
     for hint in hints:
         row=next((x for x in rows if x['feature']==hint['feature'] and x['key']=='features.'+hint['feature']),None)
         if row and row['status']!='AKTIV':
-            reason='Schalter fehlt in Settings' if row['status']=='FEHLENDER_SCHALTER' else 'Settings-Datei fehlt' if row['status']=='FEHLENDE_DATEI' else 'Funktion ist ausdruecklich deaktiviert' if row['status']=='DEAKTIVIERT' else 'Aktivierung aus Settings nicht sicher lesbar'
-            warnings.append({'feature':hint['feature'],'message':hint['feature'].capitalize()+'-Umgebung aus lokalen Dateien erkennbar, aber '+row['key']+' nicht aktiv: '+reason+'.','source':hint['source']})
+            reason=tr('feature_audit.unset') if row['status']=='FEHLENDER_SCHALTER' else tr('feature_audit.missing') if row['status']=='FEHLENDE_DATEI' else tr('feature_audit.disabled') if row['status']=='DEAKTIVIERT' else tr('feature_audit.unclear')
+            warnings.append({'feature':hint['feature'],'message':tr('feature_audit.site_hint', feature=hint['feature'], key=row['key'], reason=reason),'source':hint['source']})
     return {'settings_modified':False,'inventory_executed':False,'live_hosts_contacted':False,'features':rows,'environment_hints':hints,'environment_warnings':warnings,'warning_count':sum(x['warning'] for x in rows)+len(warnings)}
 
 
 def display(report):
-    print('Feature-Pruefung (nur lokale Dateien; Einstellungen unveraendert):')
-    labels={'FEHLENDER_SCHALTER':'FEHLT: Schalter ist in den Settings nicht vorhanden',
-            'FEHLENDE_DATEI':'FEHLT: Settings-Datei ist nicht vorhanden',
-            'UNLESBARE_SETTINGS':'FEHLER: YAML unlesbar oder doppelte Schluessel',
-            'UNGUELTIGE_STRUKTUR':'FEHLER: Settings-Struktur ist kein passendes Mapping',
-            'UNGUELTIGER_TYP':'FEHLER: Feature ist kein boolescher Schalter',
-            'UNGUELTIGER_PFAD':'FEHLER: Settings-Pfad ausserhalb des Projekts',
-            'DYNAMISCH':'HINWEIS: dynamischer Ausdruck; wird hier nicht ausgewertet'}
+    print(tr('feature_audit.heading'))
     for row in report['features']:
-        print('  '+row['key']+' – '+labels.get(row['status'],row['status'])+' ['+row['path']+']')
+        print('  '+row['key']+' – '+status_text(row['status'])+' ['+row['path']+']')
         if row.get('note'):print('    '+row['note'])
-    for hint in report['environment_warnings']:print('  HINWEIS: '+hint['message']+' Quelle: '+hint['source'])
-    print('Hinweise/fehlende Definitionen: '+str(report['warning_count'])+'. Keine Schalter gesetzt.')
+    for hint in report['environment_warnings']:print(tr('feature_audit.note', message=hint['message'], source=hint['source']))
+    print(tr('feature_audit.count', count=report['warning_count']))
 
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__)
+    argv=cli_args(sys.argv[1:], root=Path(__file__).resolve().parents[1])
+    parser=argparse.ArgumentParser(description=tr('feature_audit.help'))
     parser.add_argument('--project-root',type=Path,default=Path(__file__).resolve().parents[1])
     parser.add_argument('--json',action='store_true')
-    parser.add_argument('--strict',action='store_true',help='Bei fehlenden/unlesbaren Definitionen Exit 1')
-    args=parser.parse_args();root=args.project_root.resolve();commands={}
+    parser.add_argument('--strict',action='store_true',help=tr('feature_audit.strict'))
+    args=parser.parse_args(argv);root=args.project_root.resolve();commands={}
     for p in (root/'bin/control.d').glob('*.json'):
         for c in json.loads(p.read_text()).get('commands',[]):commands[c['name']]=c
     report=collect(root,commands)
-    if args.json:print(json.dumps(report,indent=2))
+    if args.json:print(json.dumps(machine_report(report),indent=2))
     else:display(report)
     return 1 if args.strict and report['warning_count'] else 0
 
 
 if __name__=='__main__':
     try:raise SystemExit(main())
-    except (OSError,ValueError,KeyError,TypeError):raise SystemExit('Feature-Pruefung konnte lokale Struktur/Metadaten nicht lesen; keine Einstellungen veraendert.')
+    except (OSError,ValueError,KeyError,TypeError):raise SystemExit(tr('feature_audit.failed'))

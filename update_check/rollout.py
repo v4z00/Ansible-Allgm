@@ -16,6 +16,9 @@ import sys
 import tempfile
 import time
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from controller_i18n import cli_args, error_text, machine_report, status_text, tr
+
 import check
 import local_extensions
 import staging_manifest as manifest
@@ -36,13 +39,13 @@ def show_versions(root):
         recorded = {name.casefold(): (name, meta["version"])
                     for name, meta in receipt.get("modules", {}).items()}
     except (OSError, ValueError):
-        print("versions.txt fehlt, ist unlesbar oder enthält einen ungültigen Eintrag.", file=sys.stderr)
+        print(tr("update.bad_versions"), file=sys.stderr)
         return 1
     for name, (version, _, _) in rows.items():
         if name.casefold() in recorded:
             print(*recorded.pop(name.casefold()))
         elif name.casefold() in requested:
-            print(name, "(pending installation)")
+            print(name, tr("update.pending"))
         else:
             print(name, version)
     for name, version in recorded.values():
@@ -60,26 +63,26 @@ def show_versions(root):
         except (OSError, subprocess.SubprocessError):
             match = None
         if not match:
-            print("Ansible-TUI: Version nicht lesbar.", file=sys.stderr)
+            print(tr("update.unreadable_tui"), file=sys.stderr)
             return 1
         print("Ansible-TUI", match[1].decode("ascii"))
     elif not rows:
-        print("Keine installierten Module gefunden.")
+        print(tr("update.no_modules"))
     return 0
 
 
 def private_file(path):
     info = path.lstat()
     install.require(stat.S_ISREG(info.st_mode) and info.st_uid == os.geteuid()
-                    and not info.st_mode & 0o077, f"Private Datei mit Modus 0600 erforderlich: {path.name}")
+                    and not info.st_mode & 0o077, tr("update.private_mode", file=path.name))
 
 
 def checkout(scratch, name, row, controller, branch, *, addon=False):
     _, url, token_file = row
     install.require(not github_https.legacy_https(url),
-                    f"{name}: SSH-Eintrag über den Installer auf HTTPS umstellen")
+                    tr("update.https_row", module=name))
     if name.casefold() in {"allgm", "homelab"}:
-        install.require(not token_file, f"{name} wird anonym geladen. Viertes Feld in versions.txt leeren.")
+        install.require(not token_file, tr("update.public_token", module=name))
     root = scratch / name
     github_https.clone_branch(url, root, branch, token_file, controller)
     if addon:
@@ -90,7 +93,7 @@ def checkout(scratch, name, row, controller, branch, *, addon=False):
     for rel, path in files.items():
         install.require(path.is_file() and not path.is_symlink()
                         and install.sha(path) == entries[rel]["sha256"],
-                        f"{name}: SHA-256-Abweichung in Arbeitskopie: {rel}")
+                        tr("update.checkout_hash", module=name, path=rel))
         path.chmod(int(entries[rel]["mode"], 8))
     return root, {rel: path for rel, path in files.items() if rel not in {"VERSION.txt", "controller-overlay.json", "install-controller", "install.sh"}}
 
@@ -100,7 +103,7 @@ def managed_baseline(root):
     if install.receipt_hash(root) is not None:
         data = install.addon.receipt(root / install.RECEIPT)
         install.require(data.get("schema") in (1, 2) and isinstance(data.get("files"), dict),
-                        "Installationsnachweis ungültig")
+                        tr("update.bad_receipt"))
         receipt = {rel: value for rel, value in data["files"].items()
                    if manifest.ship(rel) and manifest.allowed(rel)
                    and isinstance(value, str) and SHA.fullmatch(value)}
@@ -117,12 +120,12 @@ def managed_baseline(root):
     if release.is_file() and (directory / "integrity.json").is_file():
         seal = manifest.load(directory / "integrity.json")["files"]
         install.require(install.sha(release) == seal.get("release.json"),
-                        "Bisheriges Prüfmanifest stimmt nicht mit lokaler Integrität überein")
+                        tr("update.original_release_hash"))
         doc = manifest.load(release)
         for rel in doc["manifests"]:
             source = check.guarded(directory, rel)
             install.require(install.sha(source) == seal.get(rel),
-                            "Bisheriges Komponentenmanifest ist verändert")
+                            tr("update.original_component_hash"))
             legacy.update(manifest.load(source)["files"])
         for ext in (directory / "extensions").glob("*/manifest.json"):
             if not ext.resolve().is_relative_to(directory) or ext.parent.is_symlink():
@@ -173,25 +176,25 @@ def rollout(root, args, local_files=()):
     saved_profile, previous_branch, baseline = managed_baseline(root)
     profile_id = install.installed_profile(root)
     profile = next((name for name in rows if name.casefold() == profile_id), None)
-    install.require(profile is not None, "GitHub-URL für das installierte Profil in versions.txt eintragen")
+    install.require(profile is not None, tr("update.profile_url"))
     with tempfile.TemporaryDirectory(prefix=f"ansible-{branch}-") as tmp:
         folder = Path(tmp).resolve()
         names = ["Allgm", profile] if profile != "Allgm" else ["Allgm"]
         by_key = {n.casefold(): n for n in rows}
         install.require(registrations.keys() <= by_key.keys()
                         and registrations.keys().isdisjoint(n.casefold() for n in names),
-                        "Each # addon=NAME needs its own four-field module row")
+                        tr("update.addon_row"))
         install.require(install.addon.installed(previous).keys() <= registrations.keys(),
-                        "Restore missing registration for installed add-on before updating")
+                        tr("update.restore_registration"))
         install.require(all(name in rows and rows[name][1] for name in names),
-                        "GitHub-URL für installierte Module in versions.txt eintragen")
+                        tr("update.module_url"))
         allgm, combined = checkout(folder, "Allgm", rows["Allgm"], root, branch)
         descriptor = combined.get("controller-base.json")
         capability = manifest.load(descriptor).get("addon_contract", 0) if descriptor else 0
         install.require(type(capability) is int and capability in (0, 1),
-                        "Unsupported target controller add-on contract")
+                        tr("update.unsupported_contract"))
         install.require(capability == 1 or not registrations,
-                        "Target release cannot manage the registered add-ons; keep the current release")
+                        tr("update.target_addons"))
         sources = {"Allgm": allgm}
         owners = dict.fromkeys(combined, "Allgm")
         if profile != "Allgm":
@@ -253,27 +256,29 @@ def rollout(root, args, local_files=()):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__)
+    argv = cli_args(argv, Path(__file__).resolve().parents[1])
+    ap = argparse.ArgumentParser(description=tr("update.description"))
+    ap.add_argument("--lang", choices=("de", "en"), help=tr("cli.lang"))
     modes = ap.add_mutually_exclusive_group()
-    modes.add_argument("--remote", action="store_true", help="Branch prüfen und Änderungen anzeigen (Standard: main)")
-    modes.add_argument("--apply", action="store_true", help="Geprüften Code des gewählten Branches übernehmen")
-    modes.add_argument("--auto", action="store_true", help="main nichtinteraktiv per Cron übernehmen")
-    modes.add_argument("--rollback", metavar="BACKUP", help="Gesicherten Codewechsel zurücknehmen")
-    ap.add_argument("--staging", action="store_true", help="Für diesen Aufruf staging statt main prüfen oder übernehmen")
+    modes.add_argument("--remote", action="store_true", help=tr("update.preview_help"))
+    modes.add_argument("--apply", action="store_true", help=tr("update.apply_help"))
+    modes.add_argument("--auto", action="store_true", help=tr("update.auto_help"))
+    modes.add_argument("--rollback", metavar="BACKUP", help=tr("update.rollback_help"))
+    ap.add_argument("--staging", action="store_true", help=tr("update.staging_help"))
     ap.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     ap.add_argument("--retention-days", type=int, choices=(3, 4), default=4)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
     if args.staging and (args.auto or args.rollback):
-        ap.error("--staging lässt sich nur zur Vorschau oder mit --apply verwenden. --auto verwendet main.")
+        ap.error(tr("update.branch_guard"))
     if not (args.staging or args.remote or args.apply or args.auto or args.rollback):
-        ap.error("Update-Modus fehlt")
+        ap.error(tr("update.missing_mode"))
     branch = "staging" if args.staging else "main"
     os.umask(0o077)
     try:
-        install.require(not args.root.is_symlink(), "Projektroot darf kein Symlink sein")
+        install.require(not args.root.is_symlink(), tr("update.root_link"))
         root = args.root.resolve()
-        install.require((root / "bin/control").is_file(), "Ansible-Controller mit bin/control erforderlich")
+        install.require((root / "bin/control").is_file(), tr("update.missing_controller"))
         lock = root.parent / f".{root.name}.controller-lock"
         fd = os.open(lock, os.O_CREAT | os.O_NOFOLLOW | os.O_RDWR, 0o600)
         with os.fdopen(fd, "r+"):
@@ -281,7 +286,7 @@ def main(argv=None):
             if args.apply or args.auto or args.rollback:
                 install.recover_transaction(root)
             elif (install.backup_home(root) / ".transaction").exists():
-                raise ValueError("Interrupted controller transaction: run --apply for recovery")
+                raise ValueError(tr("update.interrupted"))
             if args.rollback:
                 install.rollback_controller(root, args.rollback)
                 return 0
@@ -290,33 +295,33 @@ def main(argv=None):
                 local_extensions.display(local)
             if not local_extensions.passed(local):
                 if args.json:
-                    print(json.dumps({"branch": branch, "applied": False, "local_extensions": local}))
+                    print(json.dumps(machine_report({"branch": branch, "applied": False, "local_extensions": local})))
                 else:
-                    print(f"Update aus {branch} wegen der lokalen SHA-Prüfung blockiert.")
+                    print(tr("update.local_block", branch=branch))
                 return 1
             status, result = rollout(root, args, local["files"])
             result["local_extensions"] = local
         if args.json:
-            print(json.dumps(result, ensure_ascii=False, indent=2))
+            print(json.dumps(machine_report(result), ensure_ascii=False, indent=2))
         else:
-            print(f"{result['profile']} {branch} · {len(result['changes'])} Änderungen")
+            print(tr("update.change_count", profile=result["profile"], branch=branch, count=len(result["changes"])))
             for module, version in result["versions"].items():
                 print(f"  {module} {version}")
-            for label, field in (("Codepfad", "changes"), ("Lokaler Konflikt", "conflicts"),
-                                 ("Variable", "variables"), ("Registry", "registry"),
-                                 ("Pfadkonflikt mit lokaler Erweiterung", "local_conflicts")):
+            for label, field in ((tr("update.code_path"), "changes"), (tr("update.conflict"), "conflicts"),
+                                 (tr("update.variable"), "variables"), (tr("update.registry"), "registry"),
+                                 (tr("update.local_path_conflict"), "local_conflicts")):
                 for value in result[field]:
-                    print(label, value if isinstance(value, str) else " ".join(value.values()))
+                    print(label, error_text(value) if isinstance(value, str) else " ".join(status_text(v) if k == "status" else v for k, v in value.items()))
             for line in result.get("result", ()):
                 print(line)
-            print("Update blockiert." if status else "Prüfung erfolgreich.")
+            print(tr("update.blocked") if status else tr("update.success"))
         return status
     except BlockingIOError:
-        print("Ein Controller-Update läuft bereits.", file=sys.stderr)
+        print(tr("update.locked"), file=sys.stderr)
         return 1
     except (OSError, ValueError, KeyError, TypeError, check.AuditError,
             subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
-        print(f"Update abgebrochen: {error}", file=sys.stderr)
+        print(tr("update.aborted", error=error_text(error)), file=sys.stderr)
         return 2
 
 

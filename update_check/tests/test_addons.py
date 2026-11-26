@@ -114,7 +114,9 @@ class AddonTests(unittest.TestCase):
         control = "bin/control.d/update-check.json"
         required = json.loads((BASE / control).read_text())["commands"][0]["requires"]
         files = {control, "bin/control", "bin/install-controller", "bin/control.d/update-check.sh",
-                 "controller-base.json", "lib/controller_environment.sh", "scripts/control_runtime.py", *required}
+                 "controller-base.json", "lib/controller_environment.sh", "scripts/control_runtime.py",
+                 "scripts/controller_i18n.py", "lib/control/i18n.sh",
+                 *(p.relative_to(BASE).as_posix() for p in (BASE / "lib/i18n").rglob("*.json")), *required}
         for folder in ("tools", "update_check"):
             files.update(p.relative_to(BASE).as_posix() for p in (BASE / folder).glob("*.py"))
         for rel in files:

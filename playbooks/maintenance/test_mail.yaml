@@ -1,25 +1,25 @@
-- name: Testmail versenden
+- name: Send a test email
   hosts: all_linux_systems
   gather_facts: false
   become: false
   pre_tasks:
-  - name: Ausdrueckliches Ziel pruefen
+  - name: Require an explicit target
     ansible.builtin.assert:
       that:
       - ansible_limit | default('') | length > 0
       fail_msg: Mit --limit HOST oder GRUPPE starten.
-  - name: Feature pruefen
+  - name: Check the feature flag
     ansible.builtin.assert:
       that:
       - features.postfix | default(false) | bool
   tasks:
-  - name: Empfaenger explizit konfigurieren
+  - name: Require an explicit recipient
     ansible.builtin.assert:
       that:
       - mail_test_recipient | default('') | length > 0
       - '''\n'' not in mail_test_recipient'
       - '''\r'' not in mail_test_recipient'
-  - name: Testmail ueber lokalen MTA versenden
+  - name: Send a test email through the local MTA
     ansible.builtin.command:
       argv:
       - sendmail

@@ -1,15 +1,15 @@
 ---
-- name: Betriebsnachricht senden
+- name: Send an operations notification
   hosts: localhost
   connection: local
   gather_facts: false
   tasks:
-    - name: Nachrichtendatei lesen
+    - name: Read the message file
       ansible.builtin.slurp:
         src: "{{ notification_file }}"
       register: notification_content
 
-    - name: Telegram-Nachricht senden
+    - name: Send the Telegram message
       ansible.builtin.uri:
         validate_certs: "{{ (tls_validate_certs | default({})).get('telegram_notification', true) | bool }}"
         url: "https://api.telegram.org/bot{{ telegram_bot_token }}/sendMessage"
@@ -27,7 +27,7 @@
       register: telegram_notification
       failed_when: not (telegram_notification.json.ok | default(false) | bool)
 
-    - name: Fehlende optionale Telegram-Konfiguration anzeigen
+    - name: Report missing optional Telegram settings
       ansible.builtin.debug:
         msg: "Telegram ist nicht konfiguriert; der Lauf wurde ohne Nachricht abgeschlossen."
       when: >-

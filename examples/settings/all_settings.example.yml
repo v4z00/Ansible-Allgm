@@ -1,5 +1,6 @@
 # Neutrale Nachschlagewerte; keine aktive Konfiguration.
 # Werte mit example.invalid sind Platzhalter und werden nicht automatisch uebernommen.
+controller_lang: de
 site_id: template
 site_name: Musterumgebung
 site_managed_by: IT-Administration

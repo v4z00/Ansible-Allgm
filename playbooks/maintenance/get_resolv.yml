@@ -1,9 +1,9 @@
-- name: Resolverkonfiguration anzeigen
+- name: Show resolver configuration
   hosts: all_linux_systems
   gather_facts: false
   become: false
   tasks:
-  - name: resolv.conf lesen
+  - name: Read resolv.conf
     ansible.builtin.command:
       argv:
       - cat
@@ -11,6 +11,6 @@
     register: resolv_result
     changed_when: false
     check_mode: false
-  - name: Ergebnis anzeigen
+  - name: Show the result
     ansible.builtin.debug:
       var: resolv_result.stdout_lines

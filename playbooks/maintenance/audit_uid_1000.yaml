@@ -1,9 +1,9 @@
-- name: UID 1000 pruefen
+- name: Audit UID 1000
   hosts: all_linux_systems
   gather_facts: false
   become: false
   tasks:
-  - name: Benutzer abfragen
+  - name: Look up the user
     ansible.builtin.command:
       argv:
       - getent
@@ -13,6 +13,6 @@
     changed_when: false
     check_mode: false
     failed_when: uid_result.rc not in [0, 2]
-  - name: Ergebnis anzeigen
+  - name: Show the result
     ansible.builtin.debug:
       var: uid_result.stdout_lines

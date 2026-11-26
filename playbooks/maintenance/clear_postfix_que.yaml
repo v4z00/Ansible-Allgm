@@ -1,19 +1,19 @@
-- name: Postfix-Warteschlange erneut zustellen
+- name: Retry delivery of the Postfix queue
   hosts: all_linux_systems
   gather_facts: false
   become: true
   pre_tasks:
-  - name: Ausdrueckliches Ziel pruefen
+  - name: Require an explicit target
     ansible.builtin.assert:
       that:
       - ansible_limit | default('') | length > 0
       fail_msg: Mit --limit HOST oder GRUPPE starten.
-  - name: Feature pruefen
+  - name: Check the feature flag
     ansible.builtin.assert:
       that:
       - features.postfix | default(false) | bool
   tasks:
-  - name: Warteschlange flushen
+  - name: Flush the queue
     ansible.builtin.command:
       argv:
       - postqueue

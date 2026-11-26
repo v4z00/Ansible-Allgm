@@ -4,14 +4,14 @@ Rolle: `roles/bootstrap_ssh`.
 
 Im Bestand definierte Aufgaben:
 
-- Konfigurierten Controller-Key lokal lesen
-- Controller-Key fuer den Ansible-Benutzer hinterlegen
-- Bestehende Standort-Admin-Keys fuer root hinterlegen
-- Lokale Benutzer ab UID 1000 ermitteln
-- Standort-Admin-Keys aus Nicht-root-Konten entfernen
-- Key-Anmeldung vor einer Passwortabschaltung pruefen
-- Passwortanmeldung nach expliziter Freigabe abschalten
-- SSH-Konfiguration vor dem Reload pruefen
+- Read the configured controller key locally
+- Install the controller key for the Ansible user
+- Install existing site admin keys for root
+- List local users with UID 1000 or higher
+- Remove site admin keys from non-root accounts
+- Check key authentication before disabling passwords
+- Disable password authentication when explicitly approved
+- Validate the SSH configuration before reload
 
 Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fakten, Registerwerte und Hostsecrets werden nicht in Eingabeparameter umgedeutet.
 
@@ -47,7 +47,29 @@ Vertrauliche Werte werden nicht dokumentiert.
   ],
   "source_hashes": {
     "roles/bootstrap_ssh/defaults/main.yml": "ea2e0ef76b455a623e9609948662247fb3dc0e7bda7c8dbe34bfb888a2ec4915",
-    "roles/bootstrap_ssh/tasks/main.yml": "3641ade83ffefabdf568f3a4a2b2e67183fc7a6c17cee0c44e9dea8361dfbc4c"
+    "roles/bootstrap_ssh/tasks/main.yml": "d168265533ba97af5f81e007f50a154e4a788f74ba9543ade1cf100e19df228d"
+  },
+  "i18n": {
+    "de": {
+      "title": "Rolle bootstrap_ssh",
+      "description": "# Rolle bootstrap_ssh\n\nRolle: `roles/bootstrap_ssh`.\n\nIm Bestand definierte Aufgaben:\n\n- Read the configured controller key locally\n- Install the controller key for the Ansible user\n- Install existing site admin keys for root\n- List local users with UID 1000 or higher\n- Remove site admin keys from non-root accounts\n- Check key authentication before disabling passwords\n- Disable password authentication when explicitly approved\n- Validate the SSH configuration before reload\n\nDie Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fakten, Registerwerte und Hostsecrets werden nicht in Eingabeparameter umgedeutet.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `roles/bootstrap_ssh/tasks/main.yml`\n- `roles/bootstrap_ssh/defaults/main.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {
+        "root_allowed_keys": {
+          "label": "root_allowed_keys",
+          "description": "Rollen-Default; Bedeutung ueber die aufgefuehrten Tasks pruefen. Keine eigene Feldbeschreibung im Bestand."
+        }
+      }
+    },
+    "en": {
+      "title": "Role bootstrap_ssh",
+      "description": "# Role bootstrap_ssh\n\nRole: `roles/bootstrap_ssh`.\n\nTask names as written in the role:\n\n- Read the configured controller key locally\n- Install the controller key for the Ansible user\n- Install existing site admin keys for root\n- List local users with UID 1000 or higher\n- Remove site admin keys from non-root accounts\n- Check key authentication before disabling passwords\n- Disable password authentication when explicitly approved\n- Validate the SSH configuration before reload\n\nThe parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `roles/bootstrap_ssh/tasks/main.yml`\n- `roles/bootstrap_ssh/defaults/main.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {
+        "root_allowed_keys": {
+          "label": "root_allowed_keys",
+          "description": "Role default. Consult the listed tasks for its purpose. The original role has no separate field description."
+        }
+      }
+    }
   }
 }
 ```

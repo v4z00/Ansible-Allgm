@@ -1,16 +1,16 @@
 ---
-- name: Lokale Docker-Deployment-Struktur vorbereiten
+- name: Prepare local Docker deployment directories
   hosts: localhost
   connection: local
   gather_facts: false
   become: true
   tasks:
-    - name: Mindestens ein Docker-Deployment-Ziel pruefen
+    - name: Require at least one Docker deployment target
       ansible.builtin.assert:
         that: groups.get('docker_deployment_hosts', []) | length > 0
         fail_msg: "Kein Host mit Tag docker ohne deployment-exclude im Inventory."
 
-    - name: Lokales Basisverzeichnis anlegen
+    - name: Create the local base directory
       ansible.builtin.file:
         path: "{{ docker_local_base_dir }}"
         state: directory
@@ -18,7 +18,7 @@
         group: root
         mode: '0700'
 
-    - name: Lokales Hostverzeichnis je Deployment-Ziel anlegen
+    - name: Create a local host directory for each deployment target
       ansible.builtin.file:
         path: "{{ docker_local_base_dir }}/{{ item }}"
         state: directory
@@ -27,12 +27,12 @@
         mode: '0700'
       loop: "{{ groups.get('docker_deployment_hosts', []) }}"
 
-- name: Remote Docker-Deployment-Struktur vorbereiten
+- name: Prepare remote Docker deployment directories
   hosts: docker_deployment_hosts
   become: true
   gather_facts: false
   tasks:
-    - name: Remote Basisverzeichnis anlegen
+    - name: Create the remote base directory
       ansible.builtin.file:
         path: "{{ docker_remote_base_dir }}"
         state: directory
@@ -40,6 +40,6 @@
         group: root
         mode: '0750'
 
-    - name: Docker und Compose-Verfuegbarkeit pruefen
+    - name: Check Docker and Compose availability
       ansible.builtin.command: docker compose version
       changed_when: false

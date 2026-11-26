@@ -4,10 +4,10 @@ Vorhandener Einstieg: `playbooks/maintenance/notify.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
 
-- Betriebsnachricht senden
-- Nachrichtendatei lesen
-- Telegram-Nachricht senden
-- Fehlende optionale Telegram-Konfiguration anzeigen
+- Send an operations notification
+- Read the message file
+- Send the Telegram message
+- Report missing optional Telegram settings
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 
@@ -31,7 +31,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/notify.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/notify.yml": "af8c4189415c7c8371dfcfbbda26c59fbea75be3101f6012315e08b1784c3dc0"
+    "playbooks/maintenance/notify.yml": "f595650ca46703dd8d40a8970f474e0cad3a40686c95ecea5506b582c5bf938b"
+  },
+  "i18n": {
+    "de": {
+      "title": "Playbook playbooks/maintenance/notify.yml",
+      "description": "# Playbook playbooks/maintenance/notify.yml\n\nVorhandener Einstieg: `playbooks/maintenance/notify.yml`.\n\nIm Quelltext benannte Plays/Aufgaben:\n\n- Send an operations notification\n- Read the message file\n- Send the Telegram message\n- Report missing optional Telegram settings\n\nAusfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `playbooks/maintenance/notify.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.\n\n\n## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)\n\nOptionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.\nFehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.\n- `tls_validate_certs.telegram_notification`: Telegram-Nachricht senden (Standard true).\n\nStandortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben\nverwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Playbook playbooks/maintenance/notify.yml",
+      "description": "# Playbook playbooks/maintenance/notify.yml\n\nPlaybook: `playbooks/maintenance/notify.yml`.\n\nPlay and task names as written in the playbook:\n\n- Send an operations notification\n- Read the message file\n- Send the Telegram message\n- Report missing optional Telegram settings\n\nRun the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `playbooks/maintenance/notify.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.\n\n## Per-task TLS certificate validation (1.1.0)\n\nUnder `tls_validate_certs` in `group_vars/all/settings.yml`, `tls_validate_certs.telegram_notification` controls verification for sending Telegram messages. The Telegram task defaults to true. Explicit false disables this check only.\n\nThe site default is `tls_validate_certs_default`, normally true. Telegram tasks independently default to true unless their own override is set.",
+      "fields": {}
+    }
   }
 }
 ```

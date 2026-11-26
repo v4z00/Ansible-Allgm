@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+
+from controller_i18n import cli_args, tr
 import time
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -42,12 +44,12 @@ PLAY='''- name: Read local host job events without executing jobs
 '''
 
 def transport(project,limit,cursors,inventory=None,source_overrides=None):
-    if not limit:raise ValueError('Explicit --limit required')
-    if not (project/'ansible.cfg').is_file():raise ValueError('Existing controller configuration required')
+    if not limit:raise ValueError(tr('jobs.limit'))
+    if not (project/'ansible.cfg').is_file():raise ValueError(tr('jobs.config_required'))
     binary=shutil.which('ansible-playbook')
     if not binary:
         binary=next((str(p) for p in (project/'.venv/bin/ansible-playbook',project/'venv/bin/ansible-playbook') if p.is_file()),None)
-    if not binary:raise ValueError('Use the controller Ansible environment')
+    if not binary:raise ValueError(tr('jobs.environment'))
     with tempfile.TemporaryDirectory(prefix='job-query-') as tmp:
         stage=Path(tmp);spool=stage/'spool';spool.mkdir(mode=0o700)
         for name in ('group_vars','host_vars'):
@@ -62,9 +64,9 @@ def transport(project,limit,cursors,inventory=None,source_overrides=None):
         result=subprocess.run(command,cwd=str(project),env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=120)
         records=[]
         for file in spool.glob('*.json'):
-            if file.stat().st_size>20*1024*1024:raise ValueError('Oversized query response')
+            if file.stat().st_size>20*1024*1024:raise ValueError(tr('jobs.response_size'))
             records.append(json.loads(file.read_text()))
-        if not records:raise ValueError('No target results; check inventory, limit and connectivity')
+        if not records:raise ValueError(tr('jobs.no_results'))
         return records
 
 
@@ -107,7 +109,7 @@ def table(rows):
     icons={'success':'✅','failed':'❌','warning':'⚠️','skipped':'⏭️','running':'⏳'}
     for row in rows:
         print('%s %s %-20s %-28s %s %s'%(icons.get(row['status'],'⚠️'),time.strftime('%d.%m %H:%M',time.localtime(row['started'])),row['source'],row['job'],row['status'],row['run_id']))
-    if not rows:print('Keine passenden Ergebnisse gespeichert.')
+    if not rows:print(tr('jobs.no_rows'))
 
 
 def show_live(records,machine=False):
@@ -126,40 +128,41 @@ def show_live(records,machine=False):
 
 def main():
     os.umask(0o077)
-    p=argparse.ArgumentParser(description=__doc__)
+    argv=cli_args(sys.argv[1:], root=ROOT)
+    p=argparse.ArgumentParser(description=tr("jobs.help"))
     p.add_argument('--project',type=Path,default=ROOT);p.add_argument('--db');p.add_argument('--config',type=Path)
     p.add_argument('--inventory');p.add_argument('--limit');p.add_argument('--json',action='store_true')
     p.add_argument('view',choices=['menu','collect','live','runs','latest','running','errors','details','reports','reset-cursor'],nargs='?',default='menu')
     p.add_argument('--job');p.add_argument('--run');p.add_argument('--source');p.add_argument('--since',type=float);p.add_argument('--until',type=float);p.add_argument('--item');p.add_argument('--seconds',type=int,default=60)
-    a=p.parse_args()
+    a=p.parse_args(argv)
     if a.view=='latest' and any(value is not None for value in (a.since,a.until,a.item)):
-        p.error('latest supports --source and --job; use runs for time/item filters')
+        p.error(tr('jobs.latest_filter'))
     configuration=a.config or a.project/'config/script_jobs_controller.json'
-    if a.config and not configuration.is_file():raise ValueError('Explicit controller configuration missing')
+    if a.config and not configuration.is_file():raise ValueError(tr('jobs.config_missing'))
     settings=json.loads(configuration.read_text()) if configuration.is_file() else {}
     if a.db is None:a.db=settings.get('database',os.environ.get('SCRIPT_JOBS_CONTROLLER_DB','/var/lib/script-jobs/controller.sqlite3'))
     source_overrides=settings.get('source_overrides',{})
-    if not isinstance(source_overrides,dict):raise ValueError('Source overrides must be an object')
+    if not isinstance(source_overrides,dict):raise ValueError(tr('jobs.source_overrides'))
     for host,value in source_overrides.items():
-        if not isinstance(value,dict) or set(value)-{'root','database'}:raise ValueError('Only source paths can be overridden')
+        if not isinstance(value,dict) or set(value)-{'root','database'}:raise ValueError(tr('jobs.source_keys'))
         for path in value.values():
-            if not isinstance(path,str) or not path.startswith('/') or '\n' in path or '..' in Path(path).parts:raise ValueError('Absolute source paths required')
+            if not isinstance(path,str) or not path.startswith('/') or '\n' in path or '..' in Path(path).parts:raise ValueError(tr('jobs.absolute_paths'))
     store=Store(a.db)
     try:
         view=a.view
         if view=='menu':
             while True:
-                print('\n1 Laufende Jobs  2 Letzter Status je Job  3 Fehler/Warnungen\n4 Jobdetails  5 Live verfolgen  6 Berichte/Versand  7 Abfragen  0 Ende')
-                choice=input('Auswahl: ').strip()
+                print(tr('jobs.menu'))
+                choice=input(tr('jobs.choice')).strip()
                 if choice=='0':return 0
                 if choice=='1':table(store.runs(status='running'))
                 elif choice=='2':table(store.latest())
                 elif choice=='3':table([r for r in store.runs(limit=1000) if r['status'] in ('failed','warning')])
-                elif choice=='4':print(json.dumps(store.details(input('Lauf-ID: ').strip()),ensure_ascii=False,indent=2))
+                elif choice=='4':print(json.dumps(store.details(input(tr('jobs.run_id')).strip()),ensure_ascii=False,indent=2))
                 elif choice=='6':
                     print(json.dumps([dict(r) for r in store.db.execute('SELECT p.id,p.category,d.channel,d.status,d.attempts FROM reports p LEFT JOIN deliveries d ON p.id=d.report_id ORDER BY p.created DESC LIMIT 100')],ensure_ascii=False,indent=2))
                 elif choice in ('5','7'):
-                    target=a.limit or input('Inventory-Host/Gruppe: ').strip()
+                    target=a.limit or input(tr('jobs.inventory')).strip()
                     if not target:continue
                     until=time.monotonic()+(60 if choice=='5' else 0)
                     while True:
@@ -167,7 +170,7 @@ def main():
                         if time.monotonic()>=until:break
                         time.sleep(2)
         elif view in ('collect','live'):
-            if not a.limit:p.error('Explicit --limit required for remote queries')
+            if not a.limit:p.error(tr('jobs.remote_limit'))
             end=time.monotonic()+(max(0,min(a.seconds,3600)) if view=='live' else 0)
             while True:
                 result=collect(store,a.project,a.limit,a.inventory,source_overrides)
@@ -176,10 +179,10 @@ def main():
                 if time.monotonic()>=end:return 0 if all(x['status']=='ok' for x in result) else 1
                 time.sleep(2)
         elif view=='reset-cursor':
-            if not a.source:p.error('--source required')
+            if not a.source:p.error(tr('jobs.source_required'))
             store.reset_cursor(a.source)
         elif view=='details':
-            if not a.run:p.error('--run required')
+            if not a.run:p.error(tr('jobs.run_required'))
             print(json.dumps(store.details(a.run),ensure_ascii=False,indent=2))
         elif view=='reports':print(json.dumps([dict(r) for r in store.db.execute('SELECT * FROM deliveries ORDER BY updated DESC LIMIT 100')],indent=2))
         else:
@@ -195,4 +198,4 @@ if __name__=='__main__':
     try:sys.exit(main())
     except KeyboardInterrupt:sys.exit(130)
     except Exception:
-        print('Job query failed; verify inventory, connection, database and selection.',file=sys.stderr);sys.exit(1)
+        print(tr('jobs.query_error'),file=sys.stderr);sys.exit(1)

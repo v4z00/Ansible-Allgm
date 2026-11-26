@@ -4,13 +4,13 @@ Vorhandener Einstieg: `playbooks/docker/prepare_deployment.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
 
-- Lokale Docker-Deployment-Struktur vorbereiten
-- Mindestens ein Docker-Deployment-Ziel pruefen
-- Lokales Basisverzeichnis anlegen
-- Lokales Hostverzeichnis je Deployment-Ziel anlegen
-- Remote Docker-Deployment-Struktur vorbereiten
-- Remote Basisverzeichnis anlegen
-- Docker und Compose-Verfuegbarkeit pruefen
+- Prepare local Docker deployment directories
+- Require at least one Docker deployment target
+- Create the local base directory
+- Create a local host directory for each deployment target
+- Prepare remote Docker deployment directories
+- Create the remote base directory
+- Check Docker and Compose availability
 
 Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.
 
@@ -34,7 +34,19 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/docker/prepare_deployment.yml"
   ],
   "source_hashes": {
-    "playbooks/docker/prepare_deployment.yml": "4f822703e1407cf4e5b82517ba55d9b0e1160db7a5bd4c46b9a0a0cae2bc5c84"
+    "playbooks/docker/prepare_deployment.yml": "f32d982edda310d8f0fdfa1f62e58e21bed5fd127a597633b59bfff09605968c"
+  },
+  "i18n": {
+    "de": {
+      "title": "Playbook playbooks/docker/prepare_deployment.yml",
+      "description": "# Playbook playbooks/docker/prepare_deployment.yml\n\nVorhandener Einstieg: `playbooks/docker/prepare_deployment.yml`.\n\nIm Quelltext benannte Plays/Aufgaben:\n\n- Prepare local Docker deployment directories\n- Require at least one Docker deployment target\n- Create the local base directory\n- Create a local host directory for each deployment target\n- Prepare remote Docker deployment directories\n- Create the remote base directory\n- Check Docker and Compose availability\n\nAusfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein beschreibt nicht alle effektiven Variablen: Rollen, Inventar und lokale Standortkonfiguration wirken weiterhin. Keine allgemeinen --check-/Limit-Garantien daraus ableiten.\n\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `playbooks/docker/prepare_deployment.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {}
+    },
+    "en": {
+      "title": "Playbook playbooks/docker/prepare_deployment.yml",
+      "description": "# Playbook playbooks/docker/prepare_deployment.yml\n\nPlaybook: `playbooks/docker/prepare_deployment.yml`.\n\nPlay and task names as written in the playbook:\n\n- Prepare local Docker deployment directories\n- Require at least one Docker deployment target\n- Create the local base directory\n- Create a local host directory for each deployment target\n- Prepare remote Docker deployment directories\n- Create the remote base directory\n- Check Docker and Compose availability\n\nRun the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `playbooks/docker/prepare_deployment.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {}
+    }
   }
 }
 ```

@@ -1,5 +1,5 @@
 ---
-- name: Zentral definierte Mounts verwalten
+- name: Manage centrally defined mounts
   hosts: all_linux_systems
   become: true
   gather_facts: false
@@ -8,7 +8,7 @@
     storage_vars_path: "{{ playbook_dir }}/../../host_vars/{{ inventory_hostname }}/storage.yml"
 
   pre_tasks:
-    - name: Hostbezogene Storage-Definition suchen
+    - name: Find the storage definition for this host
       ansible.builtin.stat:
         path: "{{ storage_vars_path }}"
       delegate_to: localhost
@@ -16,20 +16,20 @@
       register: storage_vars_file
       tags: [storage, fstab]
 
-    - name: Hostbezogene Storage-Definition laden
+    - name: Load the storage definition for this host
       ansible.builtin.include_vars:
         file: "{{ storage_vars_path }}"
         name: storage_definition
       when: storage_vars_file.stat.exists
       tags: [storage, fstab]
 
-    - name: Verwaltete Mounts festlegen
+    - name: Set the managed mounts
       ansible.builtin.set_fact:
         host_managed_mounts: >-
           {{ (storage_definition | default({})).managed_mounts | default([]) }}
       tags: [storage, fstab]
 
-    - name: Eindeutige Mountnamen und Mountpunkte pruefen
+    - name: Require unique mount names and mount points
       ansible.builtin.assert:
         that:
           - host_managed_mounts | map(attribute='name') | list | unique | length == host_managed_mounts | length
@@ -39,7 +39,7 @@
           oder Mountpunkte.
       tags: [storage, fstab]
 
-    - name: Mountdefinitionen validieren
+    - name: Validate mount definitions
       ansible.builtin.assert:
         that:
           - item.name is defined
@@ -59,7 +59,7 @@
         label: "{{ item.name | default('unbenannt') }}"
       tags: [storage, fstab]
 
-    - name: Benoetigte Mounttypen bestimmen
+    - name: Identify required mount types
       ansible.builtin.set_fact:
         active_mount_fstypes: >-
           {{ (
@@ -73,28 +73,28 @@
       tags: [storage, fstab]
 
   tasks:
-    - name: CIFS-Client installieren
+    - name: Install the CIFS client
       ansible.builtin.package:
         name: cifs-utils
         state: present
       when: "'cifs' in active_mount_fstypes"
       tags: [storage, fstab, packages]
 
-    - name: NFS-Client installieren
+    - name: Install the NFS client
       ansible.builtin.package:
         name: nfs-common
         state: present
       when: "'nfs' in active_mount_fstypes or 'nfs4' in active_mount_fstypes"
       tags: [storage, fstab, packages]
 
-    - name: BindFS installieren
+    - name: Install bindfs
       ansible.builtin.package:
         name: bindfs
         state: present
       when: "'fuse' in active_mount_fstypes"
       tags: [storage, fstab, packages]
 
-    - name: Bereits eingehängte Mountpunkte erkennen
+    - name: Detect active mount points
       ansible.builtin.command:
         argv:
           - findmnt
@@ -109,7 +109,7 @@
       check_mode: false
       tags: [storage, fstab]
 
-    - name: Mountpunkte anlegen
+    - name: Create mount points
       ansible.builtin.file:
         path: "{{ item.path }}"
         state: directory
@@ -125,7 +125,7 @@
         - managed_mountpoint_status.results[mount_index].rc != 0
       tags: [storage, fstab]
 
-    - name: Mounts in fstab eintragen und optional einhaengen
+    - name: Write fstab entries and optionally mount filesystems
       ansible.posix.mount:
         path: "{{ item.path }}"
         src: "{{ item.src | default(omit) }}"
@@ -141,10 +141,10 @@
       loop: "{{ host_managed_mounts }}"
       loop_control:
         label: "{{ item.name }} -> {{ item.path }}"
-      notify: systemd nach fstab-Aenderung neu laden
+      notify: Reload systemd after fstab changes
       tags: [storage, fstab]
 
-    - name: Optionalen Mount-Healthcheck als Cronjob pflegen
+    - name: Manage the optional mount health check cron job
       ansible.builtin.cron:
         name: "Managed mount healthcheck - {{ item.name }}"
         minute: "{{ (item.healthcheck_cron | default('* * * * *')).split()[0] }}"
@@ -162,7 +162,7 @@
         label: "{{ item.name }}"
       tags: [storage, fstab, cron]
 
-    - name: Optionalen Kerberos-Refresh als Cronjob pflegen
+    - name: Manage the optional Kerberos refresh cron job
       ansible.builtin.cron:
         name: "Managed mount refresh - {{ item.name }}"
         minute: "{{ (item.refresh_cron | default('* * * * *')).split()[0] }}"
@@ -183,11 +183,11 @@
         label: "{{ item.name }}"
       tags: [storage, fstab, cron]
 
-    - name: fstab-Handler jetzt ausfuehren
+    - name: Run fstab handlers now
       ansible.builtin.meta: flush_handlers
       tags: [storage, fstab]
 
-    - name: fstab validieren
+    - name: Validate fstab
       ansible.builtin.command:
         cmd: findmnt --verify --verbose
       changed_when: false
@@ -195,6 +195,7 @@
       tags: [storage, fstab]
 
   handlers:
-    - name: systemd nach fstab-Aenderung neu laden
+    - name: Reload systemd after fstab changes
+      listen: systemd nach fstab-Aenderung neu laden
       ansible.builtin.systemd:
         daemon_reload: true

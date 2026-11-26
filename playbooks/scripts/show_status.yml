@@ -1,15 +1,15 @@
 ---
-- name: Letzten lokalen Zustand je Job anzeigen ohne Jobs zu starten
+- name: Show the last recorded result for each local job
   hosts: all_linux_systems
   gather_facts: false
   become: true
   become_user: "{{ script_jobs_owner | default('root') }}"
   tasks:
-    - name: Explizite Hostauswahl verlangen
+    - name: Require an explicit host selection
       ansible.builtin.assert:
         that: ansible_limit | default('') | trim | length > 0
         fail_msg: Fuer die Statusabfrage --limit ZIEL angeben.
-    - name: Vorhandenen lokalen Statushelfer abfragen
+    - name: Query the installed local status helper
       ansible.builtin.command:
         argv:
           - "{{ script_jobs_target_root | default(script_path | default('/scripte')) }}/bin/job-status"
@@ -19,11 +19,11 @@
       changed_when: false
       failed_when: false
       ignore_unreachable: true
-    - name: Letzte Zustaende anzeigen
+    - name: Show the latest results
       ansible.builtin.debug:
         msg: "{{ local_job_status.stdout_lines | default([]) }}"
       when: local_job_status.rc | default(255) == 0
-    - name: Fehlende oder nicht erreichbare Ergebnisablage kenntlich machen
+    - name: Report a missing or unreachable result store
       ansible.builtin.assert:
         that: local_job_status.rc | default(255) == 0
         fail_msg: Host nicht erreichbar oder lokale Ergebnisablage/Statushelfer noch nicht verfuegbar.

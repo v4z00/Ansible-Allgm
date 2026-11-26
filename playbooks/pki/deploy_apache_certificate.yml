@@ -1,5 +1,5 @@
 ---
-- name: Wildcard-Zertifikat auf Apache-Webserver verteilen
+- name: Deploy the wildcard certificate to Apache web servers
   hosts: checkmk_webserver_hosts
   become: true
   gather_facts: false
@@ -15,7 +15,7 @@
     apache_private_key_target: /cert/key.key
 
   pre_tasks:
-    - name: Quelldateien auf dem Controller pruefen
+    - name: Check source files on the controller
       ansible.builtin.stat:
         path: "{{ item }}"
       loop:
@@ -27,14 +27,14 @@
       become: false
       run_once: true
 
-    - name: Ausgewaehlten Zertifikatspfad anzeigen
+    - name: Show the selected certificate path
       ansible.builtin.debug:
         msg: "Zertifikatsquelle: {{ apache_certificate_source_directory }}"
       delegate_to: localhost
       become: false
       run_once: true
 
-    - name: Vollstaendige Quelldateien verlangen
+    - name: Require all certificate source files
       ansible.builtin.assert:
         that:
           - item.stat.exists
@@ -48,7 +48,7 @@
       become: false
       run_once: true
 
-    - name: Entschluesselten privaten Schluessel pruefen
+    - name: Validate the decrypted private key
       ansible.builtin.command:
         argv:
           - openssl
@@ -63,7 +63,7 @@
       become: false
       run_once: true
 
-    - name: Public-Key-Fingerabdruck des privaten Schluessels ermitteln
+    - name: Get the public key fingerprint from the private key
       ansible.builtin.shell: >-
         set -o pipefail;
         openssl pkey -in {{ apache_private_key_source | quote }} -pubout -outform DER
@@ -76,7 +76,7 @@
       become: false
       run_once: true
 
-    - name: Public-Key-Fingerabdruck des Zertifikats ermitteln
+    - name: Get the public key fingerprint from the certificate
       ansible.builtin.shell: >-
         set -o pipefail;
         openssl x509 -in {{ apache_certificate_source | quote }} -pubkey -noout
@@ -90,7 +90,7 @@
       become: false
       run_once: true
 
-    - name: Zusammengehoerendes Zertifikat und Schluessel verlangen
+    - name: Require the certificate and private key to match
       ansible.builtin.assert:
         that:
           - (apache_private_key_fingerprint.stdout | trim) == (apache_certificate_fingerprint.stdout | trim)
@@ -100,7 +100,7 @@
       run_once: true
 
   tasks:
-    - name: Zielverzeichnis fuer Apache-Zertifikat anlegen
+    - name: Create the Apache certificate directory
       ansible.builtin.file:
         path: "{{ apache_certificate_directory }}"
         state: directory
@@ -108,7 +108,7 @@
         group: root
         mode: "0755"
 
-    - name: Zertifikat mit Intermediate-Zertifikat verteilen
+    - name: Deploy the certificate and intermediate chain
       ansible.builtin.copy:
         content: |-
           {{ lookup('ansible.builtin.file', apache_certificate_source) | trim }}
@@ -119,10 +119,10 @@
         mode: "0644"
         backup: true
       notify:
-        - Apache-Konfiguration pruefen
-        - Apache neu starten
+        - Validate the Apache configuration
+        - Restart Apache
 
-    - name: Entschluesselten privaten Schluessel verteilen
+    - name: Deploy the decrypted private key
       ansible.builtin.copy:
         src: "{{ apache_private_key_source }}"
         dest: "{{ apache_private_key_target }}"
@@ -132,15 +132,17 @@
         backup: true
       no_log: true
       notify:
-        - Apache-Konfiguration pruefen
-        - Apache neu starten
+        - Validate the Apache configuration
+        - Restart Apache
 
   handlers:
-    - name: Apache-Konfiguration pruefen
+    - name: Validate the Apache configuration
+      listen: Apache-Konfiguration pruefen
       ansible.builtin.command: apache2ctl configtest
       changed_when: false
 
-    - name: Apache neu starten
+    - name: Restart Apache
+      listen: Apache neu starten
       ansible.builtin.service:
         name: apache2
         state: restarted

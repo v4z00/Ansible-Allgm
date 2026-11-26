@@ -56,7 +56,53 @@ Einzeln aus dem Controllerverzeichnis ausführen:
     "playbooks/docker/check_portainer.yml"
   ],
   "source_hashes": {
-    "playbooks/docker/check_portainer.yml": "83d9f3270f694e70adf9982c2ce92988aa7f389224026d5fc6de666d6f4247d1"
+    "playbooks/docker/check_portainer.yml": "b1476bf04dd3f367adaf3bc73d7bbef5b60615766e944ad003780f69a649b5ee"
+  },
+  "i18n": {
+    "de": {
+      "title": "Portainer-Erreichbarkeit prüfen",
+      "description": "# Portainer-Erreichbarkeit prüfen\n\nDas Playbook wird nach dem regulären Container-Check für dieselben Docker-Hosts aufgerufen. Mit `portainer_check_enabled: true` prüft der Controller den konfigurierten TCP-Port. Ohne Eintrag oder bei `false` entfällt die Verbindung. Ein aktiviertes, unerreichbares Ziel führt zum Fehler. `portainer_check_host`, `portainer_check_port` und `portainer_check_timeout` überschreiben Ansible-Zieladresse, Port 9443 und fünf Sekunden Timeout.\n\nEinzeln aus dem Controllerverzeichnis ausführen:\n\n\u0060\u0060\u0060bash\n.venv/bin/ansible-playbook playbooks/docker/check_portainer.yml --limit ZIELHOST\n\u0060\u0060\u0060\n\n## Parameter",
+      "fields": {
+        "portainer_check_enabled": {
+          "label": "portainer_check_enabled",
+          "description": "Zusätzlichen TCP-Test für Portainer nach dem Pflichtcheck aktivieren."
+        },
+        "portainer_check_host": {
+          "label": "portainer_check_host",
+          "description": "Optionales TCP-Ziel. Ohne Eintrag gilt die Ansible-Adresse des Docker-Hosts."
+        },
+        "portainer_check_port": {
+          "label": "portainer_check_port",
+          "description": "TCP-Port für den optionalen Portainer-Test."
+        },
+        "portainer_check_timeout": {
+          "label": "portainer_check_timeout",
+          "description": "Wartezeit für den Portainer-TCP-Test in Sekunden."
+        }
+      }
+    },
+    "en": {
+      "title": "Check Portainer connectivity",
+      "description": "# Check Portainer connectivity\n\nThis playbook runs for the same Docker hosts after their regular container check. With `portainer_check_enabled: true` the controller probes the TCP port and fails if unreachable. Without the setting, or when false, it skips the probe. Override the default Ansible address, port 9443 and five-second timeout with `portainer_check_host`, `portainer_check_port` and `portainer_check_timeout`.\n\nTo run it separately from the controller directory:\n\n\u0060\u0060\u0060bash\n.venv/bin/ansible-playbook playbooks/docker/check_portainer.yml --limit ZIELHOST\n\u0060\u0060\u0060\n\n## Parameters",
+      "fields": {
+        "portainer_check_enabled": {
+          "label": "portainer_check_enabled",
+          "description": "Enable an additional TCP check for Portainer after the mandatory container checks."
+        },
+        "portainer_check_host": {
+          "label": "portainer_check_host",
+          "description": "Optional TCP target. Defaults to the Docker host’s Ansible address."
+        },
+        "portainer_check_port": {
+          "label": "portainer_check_port",
+          "description": "TCP port for the optional Portainer check."
+        },
+        "portainer_check_timeout": {
+          "label": "portainer_check_timeout",
+          "description": "Timeout for the Portainer TCP check, in seconds."
+        }
+      }
+    }
   }
 }
 ```

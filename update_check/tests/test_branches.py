@@ -30,6 +30,8 @@ class BranchTests(unittest.TestCase):
         cmd = json.loads((BASE / "bin/control.d/update-check.json").read_text())["commands"][0]
         for rel in (*cmd["requires"], "bin/control", "bin/control.d/update-check.json", "bin/control.d/update-check.sh",
                     "lib/controller_environment.sh", "scripts/control_runtime.py",
+                 "scripts/controller_i18n.py", "lib/control/i18n.sh",
+                 *(p.relative_to(BASE).as_posix() for p in (BASE / "lib/i18n").rglob("*.json")),
                     "tools/github_https.py", "tools/install_controller.py",
                     "tools/controller_addons.py", "tools/controller_transaction.py",
                     "update_check/check.sh", "update_check/check.py", "update_check/rollout.py",

@@ -20,6 +20,8 @@ import github_https
 
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE / "update_check"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from controller_i18n import tr
 from staging_manifest import public_library
 import controller_addons as addon
 import controller_transaction as transaction
@@ -462,7 +464,7 @@ def update_controller(dest, all_files, profile, accepted, receipt_source=None, r
     plan, token = update_plan(dest, files, profile, retired, layout)
     changed = plan["files"]
     if not changed and not receipt_source and layout is None:
-        print("Der verwaltete Code entspricht bereits dem Staging-Stand.")
+        print(tr("update.current"))
         return
     if not accepted:
         for rel, hashes in changed.items():
@@ -516,8 +518,8 @@ def update_controller(dest, all_files, profile, accepted, receipt_source=None, r
         transaction.sync_directory(backups)
         put_files(dest, {rel: new / rel if rel in files or rel == RECEIPT else None for rel in (*changed, RECEIPT)},
                   {rel: restore / rel for rel in old}, verify_installed)
-    print(f"Aktualisiert: {len(changed)} Codepfade. Sicherung: {backups / name}")
-    print(f"Rückweg: --rollback {name}")
+    print(tr("update.installed", count=len(changed), backup=backups / name))
+    print(tr("update.undo", name=name))
 
 
 def rollback_controller(dest, name):
@@ -561,7 +563,7 @@ def rollback_controller(dest, name):
         copy_code(original, saved)
         put_files(dest, {rel: saved / rel if rel in original else None for rel in (*plan["files"], RECEIPT)},
                   {rel: revert / rel for rel in current})
-    print(f"Controller-Code aus {name} zurückgesetzt.")
+    print(tr("update.roll_back", name=name))
 
 
 def main():

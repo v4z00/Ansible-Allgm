@@ -65,6 +65,36 @@ Vertrauliche Werte werden nicht dokumentiert.
     "bin/control.d/resolv-show.json": "570a54f0bf24aedbcc2ea65855faae78d4a2c83324d65cb5312c3c1206681f69",
     "bin/control.d/resolv-show.sh": "44924f2d8b95635184add5a3434f585525e91b21fdde610e14ccd79c3e1ca4cf",
     "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
+  },
+  "i18n": {
+    "de": {
+      "title": "Resolver-Konfiguration anzeigen",
+      "description": "# Resolver-Konfiguration anzeigen\n\nResolver-Konfiguration anzeigen\n\nAufruf: `bin/control resolv-show [Optionen]`.\n\nVorhandene Kurzformen: `resolv-show`.\n\nFeature: kein zusaetzlicher Feature-Schalter. Die aktuelle Aktivierung prueft weiterhin Control.\n\nVoraussetzungen laut Registry:\n- `lib/control/helpers.sh`\n- `playbooks/maintenance/get_resolv.yml`\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `bin/control.d/resolv-show.json`\n- `bin/control.d/resolv-show.sh`\n- `lib/control/helpers.sh`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "fields": {
+        "targets": {
+          "label": "targets",
+          "description": "Inventory-Hosts/-Gruppen als Ansible --limit. Fachliche Pruefungen bleiben aktiv."
+        },
+        "check": {
+          "label": "check",
+          "description": "Ansible-Check-Mode anfordern. Ob Aktionen diesen vollstaendig unterstuetzen, bestimmt das Playbook."
+        }
+      }
+    },
+    "en": {
+      "title": "Show the resolver configuration",
+      "description": "# Show the resolver configuration\n\nShow the resolver configuration\n\nRun: `bin/control resolv-show [options]`.\n\nAliases: `resolv-show`.\n\nAvailable without a separate feature switch. Control checks availability at runtime.\n\nRegistry prerequisites:\n- `lib/control/helpers.sh`\n- `playbooks/maintenance/get_resolv.yml`\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `bin/control.d/resolv-show.json`\n- `bin/control.d/resolv-show.sh`\n- `lib/control/helpers.sh`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "fields": {
+        "targets": {
+          "label": "Target hosts or groups",
+          "description": "Limit Ansible to the selected inventory hosts or groups. The playbook still applies its own checks."
+        },
+        "check": {
+          "label": "Check mode",
+          "description": "Request Ansible check mode. Coverage depends on the playbook."
+        }
+      }
+    }
   }
 }
 ```

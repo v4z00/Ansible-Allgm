@@ -1,5 +1,5 @@
 ---
-- name: Kerberos-Konfiguration pruefen
+- name: Validate Kerberos configuration
   ansible.builtin.assert:
     that:
       - kerberos_realm | trim | length > 0
@@ -7,13 +7,13 @@
       - kerberos_admin_server | trim | length > 0
     fail_msg: "Kerberos ist aktiv, aber Realm, KDCs oder Admin-Server fehlen."
 
-- name: Kerberos-Client installieren
+- name: Install the Kerberos client
   ansible.builtin.package:
     name: "{{ 'krb5-user' if ansible_os_family == 'Debian' else 'krb5-workstation' }}"
     state: present
   when: ansible_os_family in ['Debian', 'RedHat']
 
-- name: Kerberos-Konfiguration ausrollen
+- name: Deploy the Kerberos configuration
   ansible.builtin.template:
     src: krb5.conf.j2
     dest: /etc/krb5.conf
@@ -21,7 +21,7 @@
     group: root
     mode: '0644'
 
-- name: Debian-/Proxmox-CIFS-Upcall korrigieren
+- name: Fix the Debian and Proxmox CIFS upcall
   ansible.builtin.lineinfile:
     path: /etc/request-key.d/cifs.spnego.conf
     regexp: '^create\\s+cifs\\.spnego\\s+\\*\\s+\\*\\s+/usr/sbin/cifs\\.upcall'

@@ -1,5 +1,5 @@
 ---
-- name: Explizite Controllerkonfiguration verlangen
+- name: Require explicit controller settings
   ansible.builtin.assert:
     that:
       - script_jobs_mail_to | default('') | length > 0 or (telegram_bot_token | default('') | length > 0 and telegram_chat_id | default('') | length > 0)
@@ -14,22 +14,22 @@
       - script_jobs_report_labels is mapping
       - script_jobs_source_overrides is mapping
   no_log: true
-- name: Privates Controllerverzeichnis bereitstellen
+- name: Create the private controller directory
   ansible.builtin.file:
     path: "{{ script_jobs_controller_db | dirname }}"
     state: directory
     mode: '0700'
-- name: Controlleranbindung als lokale Datenkonfiguration schreiben
+- name: Write local connection settings for the controller
   ansible.builtin.copy:
     content: "{{ {'database': script_jobs_controller_db, 'targets': script_jobs_targets, 'labels': script_jobs_report_labels, 'source_overrides': script_jobs_source_overrides, 'schema': 1} | to_nice_json }}\n"
     dest: "{{ script_jobs_controller_root }}/config/script_jobs_controller.json"
     mode: '0600'
-- name: Ergebnisdatenbank initialisieren
+- name: Initialize the results database
   ansible.builtin.command:
     argv: ["{{ ansible_playbook_python }}", "{{ script_jobs_controller_root }}/artifacts/script-library/bin/script-jobs", --db, "{{ script_jobs_controller_db }}", init]
   changed_when: false
   when: not ansible_check_mode
-- name: Explizit konfigurierte Sammelzeit verwalten
+- name: Manage the explicitly configured collection schedule
   ansible.builtin.cron:
     name: script-jobs-summary
     minute: "{{ script_jobs_summary_cron.minute }}"

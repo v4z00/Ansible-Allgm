@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Expliziter interaktiver Settingsmodus; kein Netzwerk, keine Playbookausfuehrung."""
+import sys
 from pathlib import Path
 import datetime
 import getpass
@@ -11,6 +12,9 @@ import tempfile
 import urllib.parse
 import yaml
 from yaml.tokens import AliasToken,AnchorToken
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from controller_i18n import language, tr
 
 class ConfigureError(Exception):pass
 
@@ -26,10 +30,10 @@ def _parse(text,loader):
     try:
         data=yaml.load(text,Loader=loader)
         if data is None:return {}
-        if not isinstance(data,dict):raise ConfigureError('Settingsdatei ist keine YAML-Zuordnung.')
+        if not isinstance(data,dict):raise ConfigureError(tr("wizard.not_mapping"))
         return data
     except ConfigureError:raise
-    except Exception:raise ConfigureError('YAML ungueltig oder doppelte Schluessel. Keine Aenderung.') from None
+    except Exception:raise ConfigureError(tr("wizard.invalid_yaml")) from None
 
 def set_field(text,key,value,loader):
     """Nur den betroffenen YAML-Wert/Eintrag bearbeiten; restliche Zeilen erhalten."""
@@ -41,7 +45,7 @@ def set_field(text,key,value,loader):
         return text.rstrip()+'\n'+_dump(data)+'\n'
     node=yaml.compose(text);parent_key=None
     for index,part in enumerate(parts):
-        if not isinstance(node,yaml.MappingNode):raise ConfigureError('Verschachtelter Wert ist kein Mapping; bitte manuell pruefen.')
+        if not isinstance(node,yaml.MappingNode):raise ConfigureError(tr("wizard.nested_mapping"))
         hits=[(k,v) for k,v in node.value if k.value==part]
         if not hits:
             nested=value
@@ -65,7 +69,7 @@ def set_field(text,key,value,loader):
             _parse(out,loader)
             return out
         k,v=hits[0]
-        if v.start_mark.index<k.end_mark.index:raise ConfigureError('YAML-Alias nicht automatisch umschreiben.')
+        if v.start_mark.index<k.end_mark.index:raise ConfigureError(tr("wizard.yaml_alias"))
         if index<len(parts)-1:
             parent_key=k;node=v;continue
         rendered=_dump(value)
@@ -76,12 +80,12 @@ def set_field(text,key,value,loader):
         checked=_parse(out,loader)
         found=checked
         for p in parts:found=found[p]
-        if found!=value:raise ConfigureError('YAML-Abschlusspruefung des neuen Werts fehlgeschlagen.')
+        if found!=value:raise ConfigureError(tr("wizard.verify_value"))
         return out
-    raise ConfigureError('Wert konnte nicht zugeordnet werden.')
+    raise ConfigureError(tr("wizard.unknown_value"))
 
 def remove_top_field(text,key,loader):
-    if '.' in key:raise ConfigureError('Verschachtelte Secret-Verschiebung bitte manuell pruefen.')
+    if '.' in key:raise ConfigureError(tr("wizard.nested_secret"))
     _parse(text,loader);node=yaml.compose(text)
     for k,v in node.value:
         if k.value!=key:continue
@@ -117,7 +121,7 @@ def sort_settings(text,catalog,loader):
         end=starts[i+1] if i+1<len(starts) else len(lines)
         blocks.append((order.get(key.value,len(order)),i,''.join(lines[starts[i]:end])))
     result=prefix+''.join(block[2] for block in sorted(blocks,key=lambda x:(x[0],x[1])))
-    if _parse(result,loader)!=_parse(text,loader):raise ConfigureError('Sortierung haette den YAML-Inhalt geaendert; abgebrochen.')
+    if _parse(result,loader)!=_parse(text,loader):raise ConfigureError(tr("wizard.sort_changes"))
     return result,True
 
 def _sensitive(key,value=None):
@@ -144,9 +148,9 @@ def _transaction(root,plans,expected_originals=None):
     backup=root/'x/backups/update_check'/stamp
     originals={};stats={}
     for path,new,secret in plans:
-        if path.is_symlink():raise ConfigureError('Symlink-Datei nicht automatisch bearbeiten.')
+        if path.is_symlink():raise ConfigureError(tr("wizard.symlink"))
         originals[path]=path.read_bytes() if path.exists() else None
-        if expected_originals is not None and originals[path]!=expected_originals[path]:raise ConfigureError('Datei parallel geaendert; keine Speicherung.')
+        if expected_originals is not None and originals[path]!=expected_originals[path]:raise ConfigureError(tr("wizard.concurrent_edit"))
         stats[path]=path.stat() if path.exists() else None
     # Erst komplette Backups, dann Aenderungen. Backupinhalte nie protokollieren.
     backup.mkdir(parents=True,exist_ok=True,mode=0o700)
@@ -159,7 +163,7 @@ def _transaction(root,plans,expected_originals=None):
     try:
         for path,new,secret in plans:
             before=path.read_bytes() if path.exists() else None
-            if before!=originals[path]:raise ConfigureError('Datei parallel geaendert; Speicherung abgebrochen.')
+            if before!=originals[path]:raise ConfigureError(tr("wizard.concurrent_save"))
             _safe_write(path,new,stats[path],secret);written.append((path,new))
     except BaseException:
         for path,new in reversed(written):
@@ -167,7 +171,7 @@ def _transaction(root,plans,expected_originals=None):
             if path.read_bytes()!=new:continue
             if originals[path] is None:path.unlink()
             else:_safe_write(path,originals[path],stats[path],secret=path.name=='secrets.yml')
-        raise ConfigureError('Speicherung fehlgeschlagen; eigene Aenderungen soweit moeglich zurueckgesetzt. Sicherung pruefen.') from None
+        raise ConfigureError(tr("wizard.save_failed")) from None
     return backup
 
 def configure(root,here,api,sort_only=False,input_fn=input,secret_fn=getpass.getpass,print_fn=print,selected_keys=None):
@@ -175,10 +179,10 @@ def configure(root,here,api,sort_only=False,input_fn=input,secret_fn=getpass.get
     catalog=api.load_json(here/'settings_catalog.json')
     contract=api.load_json(here/'settings_contract.json')
     varbase=api.variable_base(root)/'all'
-    if (varbase/'settings.yml').is_symlink() or (varbase/'secrets.yml').is_symlink():raise ConfigureError('Konfigurationsdatei ist ein Symlink; bitte manuell pruefen.')
+    if (varbase/'settings.yml').is_symlink() or (varbase/'secrets.yml').is_symlink():raise ConfigureError(tr("wizard.config_link"))
     settings=api.guarded(root,str((varbase/'settings.yml').relative_to(root)))
     secrets=api.guarded(root,str((varbase/'secrets.yml').relative_to(root)))
-    if settings.is_symlink() or secrets.is_symlink():raise ConfigureError('Konfigurationsdatei ist ein Symlink; bitte manuell pruefen.')
+    if settings.is_symlink() or secrets.is_symlink():raise ConfigureError(tr("wizard.config_link"))
     original_raw=settings.read_bytes() if settings.exists() else None
     secret_raw=secrets.read_bytes() if secrets.exists() else None
     original=original_raw.decode() if original_raw is not None else ''
@@ -186,13 +190,27 @@ def configure(root,here,api,sort_only=False,input_fn=input,secret_fn=getpass.get
     _parse(original,api.UniqueLoader);_parse(original_secret,api.UniqueLoader)
     values,errors=api.global_settings(root)
     fatal=[e for e in errors if e['status'] not in {'GLOBALE_SETTINGS_FEHLEN','BEISPIEL_IN_AKTIVER_KONFIGURATION'}]
-    if fatal:raise ConfigureError('Globale YAML-Duplikate oder unlesbare Dateien zuerst bereinigen. Keine Aenderung.')
+    if fatal:raise ConfigureError(tr("wizard.invalid_global"))
     scoped=api.scoped_definitions(root)
     fields=catalog['fields'];changes=[];new=original;new_secret=original_secret
     rules={r['key']:r for r in contract.get('fields',[])}
-    if selected_keys and any(key not in rules for key in selected_keys):raise ConfigureError('Unbekannte Variable fuer gezielte Einrichtung; zuerst Katalog/Verwendung pruefen.')
+    if selected_keys and any(key not in rules for key in selected_keys):raise ConfigureError(tr("wizard.unknown_setting"))
     sequence=sorted(rules,key=lambda key:(not key.startswith('features.'),list(rules).index(key)))
     if selected_keys:sequence=[key for key in sequence if key in selected_keys]
+    translated_fields = {}
+    if language() == "en":
+        # Use the same field descriptions as the TUI. A profile may omit translations.
+        reference = root / "descriptions/configurations/group_vars__all__settings.md"
+        if reference.is_file() and not reference.is_symlink() and reference.resolve().is_relative_to(root.resolve()):
+            match = re.search(r"```json\s*\n(.*?)\n```", reference.read_text(encoding="utf-8"), flags=re.S)
+            if match:
+                try:
+                    document = json.loads(match[1])
+                    fields_en = document.get("i18n", {}).get("en", {}).get("fields", {})
+                    if isinstance(fields_en, dict):
+                        translated_fields = {key: data for key, data in fields_en.items() if isinstance(data, dict)}
+                except (ValueError, AttributeError):
+                    pass  # A missing translation must not prevent the operator from repairing settings.
     if not sort_only:
         for key in sequence:
             rule=rules[key];feature=rule.get('feature');force=bool(selected_keys)
@@ -203,14 +221,14 @@ def configure(root,here,api,sort_only=False,input_fn=input,secret_fn=getpass.get
             local_settings=_parse(new,api.UniqueLoader);local_secrets=_parse(new_secret,api.UniqueLoader)
             in_settings,_=api.field(local_settings,key);in_secrets,_=api.field(local_secrets,key)
             if not present and key.split('.')[0] in scoped:
-                print_fn(key+': hostbezogene Definition vorhanden; nicht global ersetzen.');continue
+                print_fn(key+tr("wizard.host_value"));continue
             if present:
                 if api.dynamic(old) and not force:continue
                 valid=api.good_type(old,rule['type']) and not (rule.get('nonempty') and old in ('',[],{},None))
 
-                if valid and not force:continue
+                if valid and (not rule.get('choices') or old in rule['choices']) and not force:continue
                 if not (in_settings or in_secrets):
-                    print_fn(key+': in anderer globaler Datei definiert; dort manuell korrigieren.');continue
+                    print_fn(key+tr("wizard.other_file"));continue
             else:
                 if rule.get('default_source') and not force:
                     try:
@@ -227,7 +245,7 @@ def configure(root,here,api,sort_only=False,input_fn=input,secret_fn=getpass.get
                     example_path=api.guarded(root,source)
                     if not expected or api.sha(example_path)!=expected:
                         info.pop('default',None);info.pop('example',None)
-                        print_fn(key+': Beispiel geaendert/fehlend; keine automatische Vorgabe daraus.')
+                        print_fn(key+tr("wizard.example_changed"))
                     else:
                         example_data=api.read_yaml(example_path)
                         found,sample=api.field(example_data,key)
@@ -236,40 +254,41 @@ def configure(root,here,api,sort_only=False,input_fn=input,secret_fn=getpass.get
                             if not info.get('example_only',False):info['default']=sample
                 except Exception:
                     info.pop('default',None);info.pop('example',None)
-            print_fn('\n'+key+' – '+info.get('description','Bekannte lokale Konfigurationsvariable.'))
-            print_fn('Typ: '+rule['type']+'; Quelle: '+info.get('source','settings_contract.json'))
-            if info.get('help'):print_fn(info['help'])
+            prose = translated_fields.get(key, {}) if language() == "en" else info
+            print_fn('\n'+key+' – '+prose.get('description',tr("wizard.variable")))
+            print_fn(tr("wizard.type")+rule['type']+tr("wizard.source")+info.get('source','settings_contract.json'))
+            if prose.get('help'):print_fn(prose['help'])
             default=old if present and api.good_type(old,rule['type']) and not _sensitive(key,old) else info.get('default')
             has_default=('default' in info or (present and not _sensitive(key,old))) and not secret and not info.get('example_only',False)
             if has_default and not api.good_type(default,rule['type']):has_default=False
             if not has_default and 'example' in info and not secret:
-                print_fn('Nur Beispiel, kein produktiver Vorgabewert: '+_dump(info['example']))
+                print_fn(tr("wizard.example")+_dump(info['example']))
             while True:
-                suffix=(' [Vorgabe: '+_dump(default).replace('\n',' ')+']') if has_default else ''
-                prompt='Wert'+suffix+' (s=ueberspringen, q=abbrechen): '
+                suffix=(tr("wizard.default", value=_dump(default).replace("\n"," "))) if has_default else ''
+                prompt=tr("wizard.prompt", default=suffix)
                 answer=secret_fn(prompt) if secret else input_fn(prompt)
-                if answer.strip().lower()=='q':raise ConfigureError('Durch Benutzer abgebrochen; nichts gespeichert.')
+                if answer.strip().lower()=='q':raise ConfigureError(tr("wizard.cancelled"))
                 if answer.strip().lower()=='s':break
                 if not answer.strip() and has_default:value=default
                 else:
                     if not answer.strip():
-                        print_fn('Keine leere Pflichtangabe uebernehmen.');continue
+                        print_fn(tr("wizard.required_input"));continue
                     if rule['type']=='string':value=answer
                     elif rule['type']=='boolean' and answer.strip().lower() in {'j','ja','y','yes','true','1','n','nein','no','false','0'}:
                         value=answer.strip().lower() in {'j','ja','y','yes','true','1'}
                     else:
                         try:value=yaml.safe_load(answer)
-                        except yaml.YAMLError:print_fn('Ungueltige YAML-Eingabe.');continue
-                if not api.good_type(value,rule['type']):print_fn('Wert passt nicht zum erwarteten Typ.');continue
-                if rule.get('nonempty') and value in ('',[],{},None):print_fn('Wert darf nicht leer sein.');continue
+                        except yaml.YAMLError:print_fn(tr("wizard.bad_input"));continue
+                if not api.good_type(value,rule['type']):print_fn(tr("wizard.bad_type"));continue
+                if rule.get('nonempty') and value in ('',[],{},None):print_fn(tr("wizard.empty"));continue
                 if isinstance(value,str) and (key.endswith('_url') or key=='checkmk_download_base_url'):
                     try:
                         parsed=urllib.parse.urlsplit(value)
                         valid_url=parsed.scheme in ('http','https') and bool(parsed.netloc) and parsed.password is None
                     except ValueError:valid_url=False
                     if not valid_url:
-                        print_fn('HTTP-/HTTPS-Adresse ohne eingebettetes Passwort erforderlich.');continue
-                if info.get('choices') and value not in info['choices']:print_fn('Erlaubte Werte: '+', '.join(str(x) for x in info['choices']));continue
+                        print_fn(tr("wizard.url"));continue
+                if info.get('choices') and value not in info['choices']:print_fn(tr("wizard.choices")+', '.join(str(x) for x in info['choices']));continue
 
                 # Unterstuetzt nur bekannte Variablen, keine pauschale Beispieluebernahme.
                 if secret:
@@ -277,29 +296,29 @@ def configure(root,here,api,sort_only=False,input_fn=input,secret_fn=getpass.get
                     new_secret=set_field(new_secret,key,value,api.UniqueLoader)
                 else:
                     if in_secrets and not in_settings:
-                        print_fn('Variable liegt in secrets.yml; bitte dort manuell korrigieren.');break
+                        print_fn(tr("wizard.secret_location"));break
                     new=set_field(new,key,value,api.UniqueLoader)
                 target=values
                 for part in key.split('.')[:-1]:target=target.setdefault(part,{})
                 target[key.split('.')[-1]]=value
                 changes.append((key,value,secret));break
     new,sorted_ok=sort_settings(new,catalog,api.UniqueLoader)
-    if not sorted_ok:print_fn('YAML-Anker erkannt: Reihenfolge zum Schutz der Referenzen unveraendert.')
+    if not sorted_ok:print_fn(tr("wizard.anchor"))
     plans=[]
     if new!=original:plans.append((settings,new.encode(),False))
     if new_secret!=original_secret:plans.append((secrets,new_secret.encode(),True))
-    if not plans:print_fn('Keine Aenderungen erforderlich oder ausgewaehlt.');return False
-    print_fn('\nGeplante Aenderungen:')
+    if not plans:print_fn(tr("wizard.no_changes"));return False
+    print_fn(tr("wizard.preview"))
     for key,value,secret in changes:
-        print_fn('  '+key+' = '+('[verdeckt]' if secret or _sensitive(key,value) else _dump(value).replace('\n',' ')))
-    for path,data,secret in plans:print_fn('  Datei bearbeiten: '+str(path.relative_to(root))+(' (0600)' if secret else ''))
-    if new!=original and not changes:print_fn('  Nur Reihenfolge/Format der obersten Settings-Bloecke; Kommentare und Werte erhalten.')
-    if input_fn('Mit YES speichern, sonst Abbruch: ').strip()!='YES':
-        print_fn('Nicht gespeichert.');return False
+        print_fn('  '+key+' = '+(tr("wizard.hidden") if secret or _sensitive(key,value) else _dump(value).replace('\n',' ')))
+    for path,data,secret in plans:print_fn(tr("wizard.edit_file")+str(path.relative_to(root))+(' (0600)' if secret else ''))
+    if new!=original and not changes:print_fn(tr("wizard.order_only"))
+    if input_fn(tr("wizard.confirm")).strip()!='YES':
+        print_fn(tr("wizard.unsaved"));return False
     # Wiederholte Validierung unmittelbar vor Speicherung.
     for path,data,secret in plans:_parse(data.decode(),api.UniqueLoader)
-    if settings.exists() and settings.read_text()!=original:raise ConfigureError('Settings parallel geaendert; keine Speicherung.')
-    if secrets.exists() and secrets.read_text()!=original_secret:raise ConfigureError('Secrets parallel geaendert; keine Speicherung.')
+    if settings.exists() and settings.read_text()!=original:raise ConfigureError(tr("wizard.settings_changed"))
+    if secrets.exists() and secrets.read_text()!=original_secret:raise ConfigureError(tr("wizard.secrets_changed"))
     backup=_transaction(root,plans,{settings:original_raw,secrets:secret_raw})
-    print_fn('Gespeichert; Sicherung: '+str(backup)+'. Keine Dienste/Playbooks gestartet.')
+    print_fn(tr("wizard.saved")+str(backup)+tr("wizard.no_services"))
     return True

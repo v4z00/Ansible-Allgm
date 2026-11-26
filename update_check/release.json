@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "profile": "allgm",
-  "controller_release": "0.5.0",
+  "controller_release": "0.6.0",
   "manifest_basis": "Geprüfter Workspace-Quellstand",
   "manifests": [
     "manifests/controller_basis.json",
@@ -11,7 +11,7 @@
     "manifests/version_pruefer.json",
     "manifests/script_jobs.json"
   ],
-  "checker_release": "1.3.0",
+  "checker_release": "1.4.0",
   "delivery_scope": "workspace",
   "feature_defaults": {
     "checkmk": false,

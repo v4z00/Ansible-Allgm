@@ -1,5 +1,6 @@
 ---
-- name: Fail2ban neu starten
+- name: Restart Fail2ban
+  listen: Fail2ban neu starten
   ansible.builtin.systemd:
     name: fail2ban
     state: restarted
