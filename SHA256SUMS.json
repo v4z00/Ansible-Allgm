@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "965c347ede5380a5e48476c69db963d42cef28349cda1682b3ea372b06e8ba3c",
+      "sha256": "93231332184e569c2cad4663c8e81d934dfe281dab33374ce1d2e4a073473d18",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -99,7 +99,7 @@
       "mode": "0644"
     },
     "artifacts/script-library/lib/python/job_expectations.py": {
-      "sha256": "659be323230c645a05e865e4545708755be5f4a40142570462a1f86ca5982791",
+      "sha256": "42eae30f5859be67498a930ba8dc24582c08d1b18fa236912dfb47ca13bab9b8",
       "mode": "0644"
     },
     "artifacts/script-library/lib/python/job_notify.py": {
@@ -807,15 +807,15 @@
       "mode": "0644"
     },
     "descriptions/configurations/script_jobs.md": {
-      "sha256": "a454c2096944d6e2634862943985a176fa7e5818960c666961dc8fcf104c0eb2",
+      "sha256": "a7cb653db88e7d7fdac2bb1f19cee4bad642dabf9d70b976bdc940b65bcace11",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-deployment.md": {
-      "sha256": "b244c6df9860dfdac106ed1e166b96afe66f9a60d42927e0cbb5f367d4fe2828",
+      "sha256": "f2a3f9c099c20d87682eeceaa625ba661c12696a2bbc47515332e98d7f9b2e52",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-status.md": {
-      "sha256": "2f86be905dc5b487c3ad8ebcc6605fe43db799208fe17669349c4ee23f71599b",
+      "sha256": "f588fb9c3f1ec76b4d1a2f8e76d25b1bc192c39c4402fb81fbdf65070244070f",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-script-discovery.md": {
@@ -999,7 +999,7 @@
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__deploy_systemd.md": {
-      "sha256": "05226dd897f544e309ed36a94f0806f7d2333b46ae7c2ef9dce9c67ce90a91b2",
+      "sha256": "255a00cc0a9c566da0f8843f6870373d6427a7badb0aa3e06b349f59ad85835e",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__setup_controller.md": {
@@ -1027,7 +1027,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "e10ed614c2e13317668657ecfef447244a2c5bdd83046690f7ff37ad85e0a883",
+      "sha256": "a249b4199c07680d7cbbe5d75c62ff037da9c9aabdc0e01a61822cc46f37bebb",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1091,7 +1091,7 @@
       "mode": "0644"
     },
     "descriptions/roles/script_jobs.md": {
-      "sha256": "a2900e42784500192661d286de6140956415c1159b8ab9b9a2ed79e1398f5abc",
+      "sha256": "ce0d51dfe4cee6ac6bbacaa84bf6e09aee9b707d856370030a4f1037b334fc77",
       "mode": "0644"
     },
     "descriptions/roles/script_jobs_controller.md": {
@@ -1371,7 +1371,7 @@
       "mode": "0644"
     },
     "playbooks/scripts/deploy_systemd.yml": {
-      "sha256": "d119b7890da6f392f8e47599c735a223bfa7eb1879f29eeb20a5546aa157f101",
+      "sha256": "3cc77b91dbce76b62264d2d50e25f67382d0f7f5fabead1e346ab1dc1511742f",
       "mode": "0644"
     },
     "playbooks/scripts/setup_controller.yml": {
@@ -1523,7 +1523,7 @@
       "mode": "0644"
     },
     "roles/script_jobs/defaults/main.yml": {
-      "sha256": "9114b80c2f6a2bfd0fac1ec801becd6c37ec537c586d7c986df004e2c93e20c5",
+      "sha256": "d43bab89763028a7311e916b459847d8db9ea428b4ff625273f5d4a0e427e618",
       "mode": "0644"
     },
     "roles/script_jobs/filter_plugins/local_config.py": {
@@ -1547,7 +1547,7 @@
       "mode": "0644"
     },
     "roles/script_jobs/templates/expectations.json.j2": {
-      "sha256": "8784701f26e6f5e251f580e6b5dc6415775f0470526a7b17c67bd8919ab5d5bd",
+      "sha256": "85e82b87971738ede16c51edd4b87b9bb2d002fa9f7a36e8adfb0870c4e99d07",
       "mode": "0644"
     },
     "roles/script_jobs/templates/profile.service.j2": {
@@ -1734,6 +1734,10 @@
       "sha256": "4ba9f71372e643e17773ebe0d97ced48a8c6719849c64d7a62ff88b227d57fa3",
       "mode": "0644"
     },
+    "tools/job_tests/test_calendar_windows.py": {
+      "sha256": "565d289f5178b0280519c15e9e6a30b9b13581ea63e1032367b173dacfba2e43",
+      "mode": "0644"
+    },
     "tools/job_tests/test_central_summary.py": {
       "sha256": "599f1045d7d0a1626dd904585c7ec08e996b977db03aba0328a21246d4a24fd6",
       "mode": "0644"
@@ -1747,7 +1751,7 @@
       "mode": "0644"
     },
     "tools/job_tests/test_profile_deployment.py": {
-      "sha256": "40b10ed751c3e49da55eb0b57564a08b88cb338847df1d14815d3adf4aea9faa",
+      "sha256": "fc448cd66e77263811bb09407608c401c8ab820053b8e888dcf397a4d19c8a23",
       "mode": "0644"
     },
     "tools/job_tests/test_recovery.py": {
@@ -1815,7 +1819,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "e4f5c67e52edab998382acb7f6327889e1bc51f0869c356a3033d8167a7190c9",
+      "sha256": "e0b8988d8f57316ae439f8feb87f63de40745a25e7e8baddca9bcf03945cd994",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1839,7 +1843,7 @@
       "mode": "0644"
     },
     "update_check/manifests/script_jobs.json": {
-      "sha256": "043645f2f3de69057c1c7de6c59cfa43ae8e7f81bc18ec92017ef65e74580b25",
+      "sha256": "4da2fc296ae41187f3f0674a0275eab5affab89662f7146b918c86168c4d4951",
       "mode": "0644"
     },
     "update_check/manifests/tls_tasks.json": {
@@ -1859,7 +1863,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "375e5326efbb58d7124babd4c0f3d031ba116a57c97692187c5977a039b57612",
+      "sha256": "22cf2c517867863d25e49ef1104c8ae3856f694286c067c6bd7f06b7b0af7ece",
       "mode": "0644"
     },
     "update_check/rollout.py": {

@@ -1,5 +1,17 @@
 # Changelog
 
+## s0.8.10 – Cronfenster und Standardwerte im Dienstdeployment
+
+Jobmodul 0.5.3 wertet mehrere tägliche und häufige Cronfenster korrekt aus.
+Fristen lassen sich zentral vorgeben und pro Host, Job oder Eintrag überschreiben.
+Lange laufende Jobs bleiben beim nächsten Termin sichtbar. Die Prüfung beendet
+keine Prozesse und verändert keine Zeitpläne. Bestehende unvollständige Fenster
+bleiben als unkonfiguriert erkennbar.
+
+Das eigenständige Dienstdeployment stellt seine Rollen-Standardwerte auch dem
+nachfolgenden Library-Schritt bereit. Root-Owner und -Group müssen nicht zusätzlich
+in host_vars wiederholt werden. Vorhandene explizite Benutzer haben weiter Vorrang.
+
 ## s0.8.9 – Numerische Zeitwerte in Dienstprofilen
 
 Jobmodul 0.5.2 akzeptiert Ansible-markierte Zahlen für Start-/Stop- und

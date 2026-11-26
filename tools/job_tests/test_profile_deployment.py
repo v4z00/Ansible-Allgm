@@ -172,6 +172,17 @@ class ProfileIntegration(unittest.TestCase):
             (root / 'ansible.cfg').write_text('[defaults]\ninventory=' + str(root / 'inventory.json') + '\nroles_path=' + str(ROOT / 'roles') + '\nlocal_tmp=' + str(root / 'local-tmp') + '\nremote_tmp=' + str(root / 'remote-tmp') + '\n')
             env = dict(os.environ, ANSIBLE_CONFIG=str(root / 'ansible.cfg'), SCRIPT_JOBS_CALLBACK='0', PATH=str(fakebin) + os.pathsep + os.environ['PATH'])
             command = [str(Path(sys.executable).parent / 'ansible-playbook'), str(ROOT / 'playbooks/scripts/deploy_systemd.yml'), '--limit', 'alpha']
+            # Role defaults must remain available to the following library role.
+            # This plan-only check deliberately has no user/group host overrides.
+            defaults_host=dict(host);defaults_host.pop('script_jobs_owner');defaults_host.pop('script_jobs_group')
+            defaults_inventory={'all': {'hosts': {'alpha': defaults_host}}}
+            defaults_file=root/'default-inventory.json';defaults_file.write_text(json.dumps(defaults_inventory))
+            defaults_play=root/'default-scope.json'
+            defaults_play.write_text(json.dumps([{'hosts':'alpha','gather_facts':False,'tasks':[
+                {'ansible.builtin.include_role':{'name':'script_jobs','tasks_from':'systemd_plan','public':True}},
+                {'ansible.builtin.assert':{'that':["script_jobs_owner == 'root'", "script_jobs_group == 'root'"]}}]}]))
+            defaults_run=subprocess.run([command[0],str(defaults_play),'-i',str(defaults_file),'--limit','alpha'],env=env,cwd=root,capture_output=True,text=True)
+            self.assertEqual(defaults_run.returncode,0,defaults_run.stdout+defaults_run.stderr)
             preview = subprocess.run(command + ['--check'], env=env, cwd=root, capture_output=True, text=True)
             self.assertEqual(preview.returncode, 0, preview.stdout + preview.stderr)
             self.assertFalse((root / 'installed').exists())

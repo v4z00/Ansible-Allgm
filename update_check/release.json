@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "profile": "allgm",
-  "controller_release": "0.8.9",
+  "controller_release": "0.8.10",
   "manifest_basis": "Gepr\u00fcfter Workspace-Quellstand",
   "manifests": [
     "manifests/controller_basis.json",
