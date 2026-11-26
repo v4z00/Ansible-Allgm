@@ -1,5 +1,12 @@
 # Changelog
 
+## s0.8.9 – Numerische Zeitwerte in Dienstprofilen
+
+Jobmodul 0.5.2 akzeptiert Ansible-markierte Zahlen für Start-/Stop- und
+Neustartzeiten. Boolesche Werte, unendliche und ungültige Zahlen bleiben gesperrt.
+Zuvor konnte eine korrekte lokale JSON-/YAML-Profilkonfiguration bei der Vorprüfung
+stoppen; vor diesem Fehler wurden keine Dateien oder Dienste verändert.
+
 ## s0.8.8 – Private Dienstkonfiguration nach Benutzer
 
 Jobmodul 0.5.1 rendert optionale JSON-Einträge aus Hostvariablen und kann je

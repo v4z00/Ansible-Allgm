@@ -106,7 +106,7 @@ def service(spec, target, library, owner, group):
     for key, directive in (('restart_sec', 'RestartSec'), ('timeout_start_sec', 'TimeoutStartSec'), ('timeout_stop_sec', 'TimeoutStopSec')):
         if key in spec:
             value = spec[key]
-            if type(value) not in (int, float) or not 0 <= value <= 86400:
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 <= value <= 86400:
                 raise ValueError('Timeout values require finite seconds between 0 and 86400')
             sections['Service'].append((directive, str(value)))
     if 'pid_file' in spec:sections['Service'].append(('PIDFile', quote(absolute(fixed(spec['pid_file'], target, library)))))

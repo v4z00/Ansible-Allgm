@@ -73,6 +73,14 @@ class Profiles(unittest.TestCase):
             with self.assertRaises((ValueError, KeyError)):
                 planner.service({'unit': 'fixture.service', 'mode': 'active', 'exec_start': ['/bin/true'], **spec}, '/opt/example', '/scripte', 'root', 'root')
 
+    def test_tagged_ansible_numbers_are_accepted_without_accepting_flags_or_nonfinite_values(self):
+        class TaggedInt(int):pass
+        values={'unit':'fixture.service','mode':'active','exec_start':['/bin/true']}
+        row=planner.service({**values,'timeout_start_sec':TaggedInt(30)},'/opt/example','/scripte','root','root')
+        self.assertIn(('TimeoutStartSec','30'),row['sections']['Service'])
+        for value in (True,False,float('nan'),float('inf'),-1,'30'):
+            with self.assertRaises(ValueError):planner.service({**values,'timeout_start_sec':value},'/opt/example','/scripte','root','root')
+
     def test_private_mapping_cannot_replace_units_or_runtime_history(self):
         self.manifest['files'][0]['dest'] = 'unreviewed.service'
         (self.source / 'deployment.json').write_text(json.dumps(self.manifest))
@@ -157,7 +165,7 @@ class ProfileIntegration(unittest.TestCase):
                     'script_jobs_job_config': {'fixture': {'API_TOKEN': 'synthetic-api', 'BOT_TOKEN': 'synthetic-do-not-copy'}},
                     'script_jobs_profile_config': {'fixture': {'API_TOKEN': 'synthetic-profile-api'}},
                     'script_jobs_systemd_profiles': {'watcher': {'source': 'watcher', 'target': str(root / 'installed'), 'library': True,
-                        'services': [{'unit': 'fixture.service', 'mode': 'active', 'exec_start': ['{target}/programs/watcher.sh'], 'wanted_by': ['multi-user.target']}]}},
+                        'services': [{'unit': 'fixture.service', 'mode': 'active', 'timeout_start_sec':30, 'restart_sec':5, 'exec_start': ['{target}/programs/watcher.sh'], 'wanted_by': ['multi-user.target']}]}},
                     'script_jobs_systemd_selected_profiles': ['watcher']}
             inventory = {'all': {'children': {'all_linux_systems': {'hosts': {'alpha': host}}}}}
             (root / 'inventory.json').write_text(json.dumps(inventory))
