@@ -89,6 +89,34 @@ class Profiles(unittest.TestCase):
         with self.assertRaises(ValueError):guard.check([['file', str(directory)]])
         guard.check([['file', str(directory / 'new/file')]])
 
+    def test_service_user_gets_an_isolated_library_and_json_configuration(self):
+        self.profile.update(library=True, owner='serviceuser', group='serviceuser')
+        self.manifest['files'][0]['dest'] = 'programs/watcher.sh'
+        config = self.source / 'settings.json';config.write_text('{"API_TOKEN":""}')
+        self.manifest['files'].append({'path': 'settings.json', 'kind': 'config', 'config_key': 'watcher',
+                                      'sha256': hashlib.sha256(config.read_bytes()).hexdigest()})
+        (self.source / 'deployment.json').write_text(json.dumps(self.manifest))
+        plan = self.plan()
+        self.assertEqual(plan['libraries'], [{'path': self.profile['target'], 'owner': 'serviceuser', 'group': 'serviceuser'}])
+        self.assertEqual(plan['files'][1]['config_key'], 'watcher')
+        self.assertEqual(plan['files'][1]['mode'], '0600')
+        self.assertIn('SCRIPT_LIBRARY_ROOT=' + self.profile['target'], str(plan['services']))
+        self.assertIn(['directory', self.profile['target'] + '/lib/common'], plan['checks'])
+        self.manifest['files'][0]['dest'] = 'lib/common/injected.sh'
+        (self.source / 'deployment.json').write_text(json.dumps(self.manifest))
+        with self.assertRaises(ValueError):self.plan()
+
+    def test_profile_rendering_rejects_non_json_and_overlapping_libraries(self):
+        self.manifest['files'][0]['config_key'] = 'watcher'
+        (self.source / 'deployment.json').write_text(json.dumps(self.manifest))
+        with self.assertRaises(ValueError):self.plan()
+        self.manifest['files'][0].pop('config_key')
+        (self.source / 'deployment.json').write_text(json.dumps(self.manifest))
+        self.profile.update(library=True, target=str(self.root / 'library/nested'))
+        with self.assertRaises(ValueError):self.plan()
+        self.profile['target'] = str(self.root / 'library')
+        with self.assertRaises(ValueError):self.plan()
+
     def test_lifecycle_is_explicit_idempotent_and_does_not_request_environment(self):
         calls = []
         def command(args):
@@ -109,9 +137,12 @@ class ProfileIntegration(unittest.TestCase):
     def test_actual_play_deploys_folder_generates_unit_and_keeps_start_opt_in(self):
         with tempfile.TemporaryDirectory(prefix='profile-deploy-') as temporary:
             root = Path(temporary).resolve();source = root / 'private/alpha/watcher';source.mkdir(parents=True)
-            (source / 'bin').mkdir();program = source / 'bin/watcher.sh'
+            (source / 'programs').mkdir();program = source / 'programs/watcher.sh'
             marker = root / 'program-ran';program.write_text('#!/bin/sh\ntouch ' + str(marker) + '\n')
-            manifest = {'files': [{'path': 'bin/watcher.sh', 'kind': 'script', 'sha256': hashlib.sha256(program.read_bytes()).hexdigest()}]}
+            manifest = {'files': [{'path': 'programs/watcher.sh', 'kind': 'script', 'sha256': hashlib.sha256(program.read_bytes()).hexdigest()}]}
+            settings = source / 'settings.json';settings.write_text('{"API_TOKEN":"", "BOT_TOKEN":"source-must-not-deploy"}')
+            manifest['files'].append({'path': 'settings.json', 'kind': 'config', 'config_key': 'fixture',
+                                      'sha256': hashlib.sha256(settings.read_bytes()).hexdigest()})
             (source / 'deployment.json').write_text(json.dumps(manifest))
             log = root / 'systemctl-actions';fakebin = root / 'fakebin';fakebin.mkdir()
             fake = fakebin / 'systemctl'
@@ -123,8 +154,9 @@ class ProfileIntegration(unittest.TestCase):
                     'script_jobs_target_root': str(root / 'library'), 'script_jobs_database_path': str(root / 'data/jobs.db'),
                     'script_jobs_owner': who, 'script_jobs_group': team,
                     'script_jobs_systemd_unit_dir': str(root / 'units'), 'script_jobs_systemd_unit_owner': who, 'script_jobs_systemd_unit_group': team,
-                    'script_jobs_systemd_profiles': {'watcher': {'source': 'watcher', 'target': str(root / 'installed'),
-                        'services': [{'unit': 'fixture.service', 'mode': 'active', 'exec_start': ['{target}/bin/watcher.sh'], 'wanted_by': ['multi-user.target']}]}},
+                    'script_jobs_job_config': {'fixture': {'API_TOKEN': 'synthetic-api', 'BOT_TOKEN': 'synthetic-do-not-copy'}},
+                    'script_jobs_systemd_profiles': {'watcher': {'source': 'watcher', 'target': str(root / 'installed'), 'library': True,
+                        'services': [{'unit': 'fixture.service', 'mode': 'active', 'exec_start': ['{target}/programs/watcher.sh'], 'wanted_by': ['multi-user.target']}]}},
                     'script_jobs_systemd_selected_profiles': ['watcher']}
             inventory = {'all': {'children': {'all_linux_systems': {'hosts': {'alpha': host}}}}}
             (root / 'inventory.json').write_text(json.dumps(inventory))
@@ -139,8 +171,12 @@ class ProfileIntegration(unittest.TestCase):
             first = subprocess.run(command, env=env, cwd=root, capture_output=True, text=True)
             self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
             unit = (root / 'units/fixture.service').read_text()
-            self.assertIn('ExecStart="' + str(root / 'installed/bin/watcher.sh') + '"', unit)
-            self.assertEqual((root / 'installed/bin/watcher.sh').read_bytes(), program.read_bytes())
+            self.assertIn('ExecStart="' + str(root / 'installed/programs/watcher.sh') + '"', unit)
+            self.assertEqual((root / 'installed/programs/watcher.sh').read_bytes(), program.read_bytes())
+            rendered = json.loads((root / 'installed/settings.json').read_text())
+            self.assertEqual(rendered['API_TOKEN'], 'synthetic-api');self.assertEqual(rendered['BOT_TOKEN'], '')
+            self.assertEqual((root / 'installed/settings.json').stat().st_mode & 0o777, 0o600)
+            self.assertTrue((root / 'installed/lib/common/hm_load_config.sh').is_file())
             self.assertFalse(marker.exists());self.assertIn('daemon-reload', log.read_text());self.assertNotIn(' start ', log.read_text())
             second = subprocess.run(command, env=env, cwd=root, capture_output=True, text=True)
             self.assertEqual(second.returncode, 0, second.stdout + second.stderr)

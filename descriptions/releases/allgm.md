@@ -1,5 +1,12 @@
 # Changelog
 
+## s0.8.8 – Private Dienstkonfiguration nach Benutzer
+
+Jobmodul 0.5.1 rendert optionale JSON-Einträge aus Hostvariablen und kann je
+Systemd-Profil eine vollständige Library im privaten Benutzerordner installieren.
+Dienste benötigen dadurch keine erweiterten Rechte am root-Skriptordner. Bestehende
+Profile bleiben unverändert; neue Felder nur nach explizitem Pilot auswählen.
+
 ## s0.8.7 – Lokales Zusatzregister im Controllerzustand
 
 Prüfer 1.5.4 erkennt auf ausdrückliche Einrichtung auch `.local/extensions`

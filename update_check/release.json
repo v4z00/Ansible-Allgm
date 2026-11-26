@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "profile": "allgm",
-  "controller_release": "0.8.7",
-  "manifest_basis": "Geprüfter Workspace-Quellstand",
+  "controller_release": "0.8.8",
+  "manifest_basis": "Gepr\u00fcfter Workspace-Quellstand",
   "manifests": [
     "manifests/controller_basis.json",
     "manifests/tls_tasks.json",

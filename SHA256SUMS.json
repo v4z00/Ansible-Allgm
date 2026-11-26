@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "02939ea165d14df175ec4d4212b9937ec97bd5d4d79133a013a0ced33cc17aa6",
+      "sha256": "25d3fe425891d4e6cb3a233f6b40013ae633373eecbb4dfcbeece3ce0287b14c",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -811,7 +811,7 @@
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-deployment.md": {
-      "sha256": "f5b7caee778760cd8af3bae04d0aae6d767c2bcfd0e594bbccb8e447e32673ab",
+      "sha256": "75a37d17a362d0c1c361289a17c89679e56bf1d6787cfc3c8542601797a7e0b1",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-status.md": {
@@ -1027,7 +1027,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "aa18d8b6714a835ea5e4b87024d7c8ffd30bf3c228f69db8148b3b318905b10b",
+      "sha256": "984077570a2ecda79c7052d8c848df6dd10e71efd83db1774d64bcc376685b60",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1531,7 +1531,7 @@
       "mode": "0644"
     },
     "roles/script_jobs/filter_plugins/profile_deployment.py": {
-      "sha256": "8f6c1ccb8d2e445d29943ecbdebe1c500077d3e57b0b9612d0178861ffd88d7a",
+      "sha256": "be1e0495ada4b1abba720b77b464582c30c94cd56688eb8b5d30058cc9fabcfb",
       "mode": "0644"
     },
     "roles/script_jobs/tasks/main.yml": {
@@ -1539,7 +1539,7 @@
       "mode": "0644"
     },
     "roles/script_jobs/tasks/systemd_deploy.yml": {
-      "sha256": "c9213421707ddfb6fe9dd712fbfe73b92049aa2d6f85145cd42617b192fea9e8",
+      "sha256": "f04257ab784c902131dd5bea6adf4aac8db0f61ffc0e407e3a5e0d309f678453",
       "mode": "0644"
     },
     "roles/script_jobs/tasks/systemd_plan.yml": {
@@ -1747,7 +1747,7 @@
       "mode": "0644"
     },
     "tools/job_tests/test_profile_deployment.py": {
-      "sha256": "3a29b2933227b62d48b1e93ecde6a138d839bde279b73209e8f5e652019a4552",
+      "sha256": "03c404a7ceb4955da86204c3cd29736bc56be1678bd4dd69ded0a3d15446c706",
       "mode": "0644"
     },
     "tools/job_tests/test_recovery.py": {
@@ -1815,7 +1815,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "0276bc9d9749835eb6950a8bf9eb0b4820117343c28fd2167f0f06a53eb354cf",
+      "sha256": "59ea5448dd63db37ec990bd3d16d2c96fa67c87d5175683744cbf0387085954a",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1839,7 +1839,7 @@
       "mode": "0644"
     },
     "update_check/manifests/script_jobs.json": {
-      "sha256": "acdf5c17d64062b68bbfe77d69b6b5bb34b7b9c337a0ced9cf915f82a80d68c1",
+      "sha256": "99a267cb57f7385bc30101587b0be94af08a7ffecc4ef2be29a5822348f96810",
       "mode": "0644"
     },
     "update_check/manifests/tls_tasks.json": {
@@ -1859,7 +1859,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "36d672ea7f253b66e44664006abd1868e1de7dc3687b43674dfa85c2f4fcc2cc",
+      "sha256": "a2e7c6aafacb7c908ec48fb76586d4c141deaad42854c06bbcef75df069d44dc",
       "mode": "0644"
     },
     "update_check/rollout.py": {

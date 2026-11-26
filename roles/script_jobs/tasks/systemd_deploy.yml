@@ -28,6 +28,17 @@
   loop: "{{ script_profile_dirs.results }}"
   when: not item.stat.exists
   no_log: true
+- name: Install a separate shared library for explicit service users
+  ansible.builtin.include_role:
+    name: script_library
+  vars:
+    script_library_root: "{{ profile_library.path }}"
+    script_library_owner: "{{ profile_library.owner }}"
+    script_library_group: "{{ profile_library.group }}"
+  loop: "{{ script_jobs_profile_plan.libraries }}"
+  loop_control:
+    loop_var: profile_library
+  no_log: true
 - name: Deploy reviewed private files using relative paths
   ansible.builtin.copy:
     src: "{{ item.source }}"
@@ -37,6 +48,18 @@
     group: "{{ item.group }}"
     backup: true
   loop: "{{ script_jobs_profile_plan.files }}"
+  when: item.config_key is not defined
+  no_log: true
+- name: Render private JSON settings from explicit host variables
+  ansible.builtin.copy:
+    content: "{{ (lookup('ansible.builtin.file', item.source) | from_json) | combine(script_jobs_job_config.get(item.config_key, {}), recursive=True) | script_jobs_local_config | to_nice_json }}"
+    dest: "{{ item.dest }}"
+    mode: '0600'
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    backup: true
+  loop: "{{ script_jobs_profile_plan.files }}"
+  when: item.config_key is defined
   no_log: true
 - name: Verify deployed source digests before changing units
   ansible.builtin.stat:
@@ -44,14 +67,14 @@
     checksum_algorithm: sha256
   loop: "{{ script_jobs_profile_plan.files }}"
   register: script_profile_hashes
-  when: not ansible_check_mode
+  when: not ansible_check_mode and item.config_key is not defined
   no_log: true
 - name: Require the reviewed content on the destination
   ansible.builtin.assert:
     that: item.stat.checksum == item.item.sha256
     fail_msg: Zielinhalt weicht vom geprueften Profilmanifest ab.
   loop: "{{ script_profile_hashes.results | default([]) }}"
-  when: not ansible_check_mode
+  when: not ansible_check_mode and not item.skipped | default(false)
   no_log: true
 
 - name: Ensure the explicit unit directory exists

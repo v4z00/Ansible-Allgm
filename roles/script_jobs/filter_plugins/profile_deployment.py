@@ -138,19 +138,33 @@ def deployment(profiles, selected, host_source, library, owner='root', group='ro
         raise ValueError('Explicit known profile selection required')
     if len(set(selected)) != len(selected):raise ValueError('Duplicate selected profile')
     base = Path(absolute(host_source));library = absolute(library);unit_dir = absolute(unit_dir)
-    result = {'files': [], 'directories': [], 'services': []}
+    result = {'files': [], 'directories': [], 'services': [], 'libraries': []}
     destinations = set();units = set();directories = {}
+    library_roots = {library}
+    for name in selected:
+        profile = profiles[name]
+        if isinstance(profile, dict) and profile.get('library') is True:
+            library_roots.add(absolute(profile['target']))
     for name in selected:
         profile = profiles[name]
         if isinstance(profile, list):continue  # Existing explicit status-only profiles.
-        if not isinstance(profile, dict) or set(profile) - {'source', 'target', 'owner', 'group', 'services'}:
+        if not isinstance(profile, dict) or set(profile) - {'source', 'target', 'owner', 'group', 'services', 'library'}:
             raise ValueError('Invalid deployment profile')
+        if 'library' in profile and type(profile['library']) is not bool:
+            raise ValueError('Profile library must be a boolean')
         source = base / relative(profile['source']);target = absolute(profile['target'])
         if target in ('/', '/root', '/etc', '/usr', '/var', '/opt', '/home', '/root/ansible'):
             raise ValueError('Choose a dedicated destination folder')
         if PurePosixPath('/root/ansible') in PurePosixPath(target).parents:
             raise ValueError('Host programs cannot overwrite controller code')
         who = account(profile.get('owner', owner));team = account(profile.get('group', group))
+        profile_library = target if profile.get('library', False) else library
+        if profile.get('library', False):
+            if any(target == root or PurePosixPath(root) in PurePosixPath(target).parents or PurePosixPath(target) in PurePosixPath(root).parents for root in library_roots if root != target) or target == library:
+                raise ValueError('Profile libraries require separate nonoverlapping roots')
+            if any(row['path'] == target for row in result['libraries']):
+                raise ValueError('Duplicate profile library')
+            result['libraries'].append({'path': target, 'owner': who, 'group': team})
         manifest = source / 'deployment.json';no_links(manifest, base)
         data = json.loads(manifest.read_text(encoding='utf8'))
         if not isinstance(data.get('files'), list) or len(data['files']) > 1024:raise ValueError('Explicit source manifest required')
@@ -158,13 +172,13 @@ def deployment(profiles, selected, host_source, library, owner='root', group='ro
             raise ValueError('Imported sources need review before deployment')
         entries = data['files']
         for entry in entries:
-            if not isinstance(entry, dict) or set(entry) - {'path', 'dest', 'sha256', 'kind'}:
+            if not isinstance(entry, dict) or set(entry) - {'path', 'dest', 'sha256', 'kind', 'config_key'}:
                 raise ValueError('Invalid manifest file fields')
             local = source / relative(entry['path']);no_links(local, base)
             rel = relative(entry.get('dest', entry['path']));dest = str(PurePosixPath(target) / rel)
             if dest in destinations:raise ValueError('Profiles target the same file')
-            protected = [str(PurePosixPath(library) / p) for p in ('bin', 'lib/common', 'lib/python', 'lib/data')]
-            if any(dest == p or dest.startswith(p + '/') for p in protected) or dest == library + '/lib/load.sh':
+            protected = [str(PurePosixPath(root) / p) for root in library_roots for p in ('bin', 'lib/common', 'lib/python', 'lib/data', 'lib/load.sh')]
+            if any(dest == p or dest.startswith(p + '/') for p in protected):
                 raise ValueError('Private profiles cannot replace the shared library')
             if entry.get('kind') not in ('script', 'config', 'library', 'data'):
                 raise ValueError('Invalid file kind')
@@ -174,8 +188,16 @@ def deployment(profiles, selected, host_source, library, owner='root', group='ro
             if local.suffix in ('.service', '.timer') or PurePosixPath(dest).suffix in ('.service', '.timer'):
                 raise ValueError('Define units in profiles rather than copying them from files')
             destinations.add(dest)
-            result['files'].append({'source': str(local), 'dest': dest, 'sha256': wanted,
-                                    'mode': '0700' if entry['kind'] == 'script' else '0600', 'owner': who, 'group': team})
+            row = {'source': str(local), 'dest': dest, 'sha256': wanted,
+                   'mode': '0700' if entry['kind'] == 'script' else '0600', 'owner': who, 'group': team}
+            if 'config_key' in entry:
+                key = entry['config_key']
+                if entry['kind'] != 'config' or local.suffix != '.json' or not isinstance(key, str) or not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]*', key):
+                    raise ValueError('Rendered configuration requires a JSON config and an explicit key')
+                defaults = json.loads(local.read_text(encoding='utf8'))
+                if not isinstance(defaults, dict):raise ValueError('Profile configuration must be an object')
+                row['config_key'] = key
+            result['files'].append(row)
             for parent in [PurePosixPath(dest).parent, *PurePosixPath(dest).parent.parents]:
                 if parent == PurePosixPath(target).parent:break
                 key = str(parent)
@@ -185,7 +207,7 @@ def deployment(profiles, selected, host_source, library, owner='root', group='ro
         services = profile.get('services')
         if not isinstance(services, list) or not services:raise ValueError('Deployment profile requires explicit services')
         for spec in services:
-            row = service(spec, target, library, who, team)
+            row = service(spec, target, profile_library, who, team)
             if row['unit'] in units:raise ValueError('Duplicate managed unit')
             row['dest'] = str(PurePosixPath(unit_dir) / row['unit'])
             units.add(row['unit']);result['services'].append(row)
@@ -203,6 +225,8 @@ def deployment(profiles, selected, host_source, library, owner='root', group='ro
                         [['file', row['dest']] for row in result['files']] +
                         ([['directory', unit_dir]] if result['services'] else []) +
                         [['file', row['dest']] for row in result['services']])
+    for row in result['libraries']:
+        result['checks'].extend(['directory', str(PurePosixPath(row['path']) / p)] for p in ('bin', 'lib', 'lib/common', 'lib/python', 'lib/data'))
     return result
 
 
