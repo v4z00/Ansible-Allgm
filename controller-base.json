@@ -1,1 +1,1 @@
-{"schema": 1, "overlay_contract": "1", "addon_contract": 1, "local_extension_schema": 2}
+{"schema": 1, "overlay_contract": "1", "addon_contract": 1, "local_extension_schema": 2, "local_extension_layouts": ["sibling", "internal"]}

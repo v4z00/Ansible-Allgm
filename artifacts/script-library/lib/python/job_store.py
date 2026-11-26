@@ -228,8 +228,16 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
                     import sys
                     print('One expired private job log could not be removed.',file=sys.stderr)
         return removed
-    def report(self,category='general',run_id=None,reserve=True,labels=None):
+    def report(self,category='general',run_id=None,reserve=True,labels=None,channels=None):
         from job_report import format_report,legacy_health,clean_legacy_body
+        if channels is not None and (not isinstance(channels,(list,tuple)) or any(channel not in ('mail','telegram') for channel in channels)):
+            raise ValueError('Invalid report channels')
+        def prepare_channels(identifier):
+            # Persist every intended channel in the same transaction as report
+            # reservation, before any external delivery can be acknowledged.
+            if reserve:
+                self.db.executemany('INSERT OR IGNORE INTO deliveries VALUES(?,?,?,0,0,?)',
+                                    [(identifier,channel,'pending',utc()) for channel in (channels or [])])
         cats=('general','ansible') if category=='general' else (category,)
         with self.transaction():
             pending=self.db.execute("SELECT p.id,p.body FROM reports p WHERE p.category=? AND (NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.report_id=p.id) OR EXISTS(SELECT 1 FROM deliveries d WHERE d.report_id=p.id AND d.status!='sent')) ORDER BY p.created LIMIT 1",(category,)).fetchone()
@@ -247,6 +255,7 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
                     report['body']=format_report(rows,items,health,category,labels)
                 else:report['body']=clean_legacy_body(report['body'])
                 if reserve:self.db.execute('UPDATE reports SET body=? WHERE id=?',(report['body'],report['id']))
+                prepare_channels(report['id'])
                 return report
             params=list(cats);where='r.category IN ('+','.join('?'*len(cats))+') AND r.status!=?';params.append('running')
             if run_id:where+=' AND r.run_id=?';params.append(run_id)
@@ -272,7 +281,7 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
             self.db.execute('INSERT INTO reports VALUES(?,?,?,?)',(identifier,category,utc(),body))
             for row in rows:self.db.execute('INSERT INTO report_runs VALUES(?,?,?,?)',(identifier,row['source'],row['epoch'],row['run_id']))
             for state in health:self.db.execute('INSERT INTO report_health VALUES(?,?,?,?)',(identifier,state['source'],state['status'],state.get('message','')))
-            # Configured channels are added by the notifier before claiming delivery.
+            prepare_channels(identifier)
             return {'id':identifier,'body':body}
     def claim(self,report,channel):
         with self.transaction():
@@ -281,3 +290,149 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
             return result.rowcount==1
     def delivered(self,report,channel,ok):
         with self.transaction():self.db.execute('UPDATE deliveries SET status=?,lease_until=0,updated=? WHERE report_id=? AND channel=?',('sent' if ok else 'pending',utc(),report,channel))
+
+
+class Systemd:
+    """Explicit profile-based service observations; no unit/script-file discovery."""
+    import subprocess
+    UNIT = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_.:@\\-]*\.service\Z')
+    PROPERTIES = ('LoadState', 'ActiveState', 'SubState', 'Type', 'Result',
+                  'ExecMainCode', 'ExecMainStatus', 'ExecMainStartTimestampMonotonic',
+                  'ExecMainExitTimestampMonotonic')
+
+
+    @classmethod
+    def normalize(cls, entries):
+        if not isinstance(entries, list) or len(entries) > 128:
+            raise ValueError('Expected at most 128 explicit systemd bindings')
+        result = []
+        for entry in entries:
+            if not isinstance(entry, dict) or set(entry) - {'unit', 'mode', 'name'}:
+                raise ValueError('Invalid systemd binding fields')
+            unit = entry.get('unit')
+            if not isinstance(unit, str) or not cls.UNIT.fullmatch(unit) or '@.service' in unit:
+                raise ValueError('Explicit system service instance required')
+            mode = entry.get('mode')
+            if mode not in ('active', 'oneshot', 'observe'):
+                raise ValueError('Explicit systemd observation mode required')
+            name = entry.get('name', 'systemd:' + unit[:-8].replace('@', ':').replace('\\', ':'))
+            if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9_.:-]{1,160}', name):
+                raise ValueError('Invalid observation job name')
+            result.append({'unit': unit, 'mode': mode, 'name': name})
+        if len({row['unit'] for row in result}) != len(result) or len({row['name'] for row in result}) != len(result):
+            raise ValueError('Duplicate systemd binding')
+        return result
+
+
+    @classmethod
+    def resolve_profiles(cls, profiles, selected):
+        if not isinstance(profiles, dict) or not isinstance(selected, list):
+            raise ValueError('Systemd profiles require an object and explicit selection list')
+        if any(not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', name)
+               for name in profiles):
+            raise ValueError('Invalid systemd profile name')
+        if any(not isinstance(name, str) or name not in profiles for name in selected) or len(set(selected)) != len(selected):
+            raise ValueError('Unknown or duplicate selected systemd profile')
+        entries = []
+        for name in selected:
+            profile = profiles[name]
+            if isinstance(profile, dict):
+                services = profile.get('services')
+                if not isinstance(services, list):raise ValueError('Explicit profile services required')
+                profile = [{key: row[key] for key in ('unit', 'mode', 'name') if key in row} for row in services if isinstance(row, dict)]
+                if len(profile) != len(services):raise ValueError('Invalid profile service')
+            entries.extend(cls.normalize(profile))
+        return cls.normalize(entries)
+
+
+    @classmethod
+    def load(cls, path):
+        path = Path(path)
+        if path.is_symlink() or path.stat().st_mode & 0o077:
+            raise ValueError('Private systemd binding file required')
+        return cls.normalize(json.loads(path.read_text(encoding='utf8')))
+
+
+    @classmethod
+    def assess(cls, binding, properties):
+        """Interpret only enumerated states and numeric fields; no raw text escapes."""
+        mode = binding['mode']
+        load_state = properties.get('LoadState')
+        active = properties.get('ActiveState')
+        result = properties.get('Result')
+        if load_state != 'loaded':
+            return 'failed', 'Systemd-Dienst fehlt oder konnte nicht geladen werden.'
+        if active == 'failed' or result not in ('success', ''):
+            reasons = {'timeout': 'Zeitlimit erreicht.', 'start-limit-hit': 'Neustartlimit erreicht.',
+                       'watchdog': 'Watchdog hat einen Fehler erkannt.', 'oom-kill': 'Prozess wegen Speichermangel beendet.',
+                       'exit-code': 'Dienstprozess mit Fehler beendet.', 'signal': 'Dienstprozess durch Signal beendet.',
+                       'core-dump': 'Dienstprozess abgestuerzt.'}
+            message = reasons.get(result, 'Systemd meldet einen Dienstfehler; lokales Dienstprotokoll pruefen.')
+            code = properties.get('ExecMainStatus', '')
+            if properties.get('ExecMainCode') == '1' and re.fullmatch(r'[0-9]{1,5}', code) and int(code):
+                message += ' Prozess-Exitstatus: ' + str(int(code)) + '.'
+            return 'failed', message
+        if active in ('activating', 'deactivating', 'reloading', 'refreshing'):
+            return 'warning', 'Systemd-Dienst befindet sich im Zustandswechsel.'
+        if mode == 'oneshot':
+            if properties.get('Type') != 'oneshot':
+                return 'failed', 'Konfigurierte Oneshot-Zuordnung passt nicht zum Diensttyp.'
+            def number(key):
+                value = properties.get(key, '')
+                return int(value) if re.fullmatch(r'[0-9]{1,20}', value) else None
+            start = number('ExecMainStartTimestampMonotonic')
+            end = number('ExecMainExitTimestampMonotonic')
+            if start == 0 and active == 'inactive':
+                return 'skipped', 'In diesem Boot noch kein Oneshot-Lauf beobachtet.'
+            if start is not None and start > 0 and end is not None and end >= start and number('ExecMainCode') == 1 and number('ExecMainStatus') == 0 and result == 'success' and active in ('active', 'inactive'):
+                return 'success', 'Letzter von systemd gespeicherter Oneshot-Abschluss erfolgreich.'
+            return 'warning', 'Kein eindeutiger erfolgreicher Oneshot-Abschluss vorhanden.'
+        if active == 'active' and result == 'success':
+            return 'success', 'Systemd-Dienst zum Abfragezeitpunkt aktiv.'
+        if active == 'inactive':
+            if mode == 'observe':
+                return 'skipped', 'Systemd-Dienst inaktiv; keine Dauerlaufpflicht konfiguriert.'
+            return 'failed', 'Erwarteter dauerhaft aktiver Systemd-Dienst ist inaktiv.'
+        return 'warning', 'Systemd-Dienstzustand nicht eindeutig auswertbar.'
+
+
+    @classmethod
+    def observe(cls, entries):
+        entries = cls.normalize(entries)
+        rows = []
+        env = {'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'LANG': 'C', 'LC_ALL': 'C', 'SYSTEMD_PAGER': ''}
+        for entry in entries:
+            try:
+                completed = cls.subprocess.run(['/usr/bin/systemctl', '--no-pager', 'show', entry['unit'],
+                                            '--property=' + ','.join(cls.PROPERTIES)],
+                                           capture_output=True, text=True, timeout=10, env=env)
+                if completed.returncode:
+                    raise ValueError('Status query failed')
+                properties = {key: value for line in completed.stdout.splitlines()
+                              for key, sep, value in [line.partition('=')]
+                              if sep and key in cls.PROPERTIES}
+                status, summary = cls.assess(entry, properties)
+            except (OSError, ValueError, cls.subprocess.TimeoutExpired):
+                status, summary = 'failed', 'Systemd-Status konnte nicht abgefragt werden.'
+            rows.append({**entry, 'status': status, 'summary': summary})
+        return rows
+
+
+    @classmethod
+    def record(cls, store, entries, sample):
+        """One atomic observation per job/sample, including repeated export pages."""
+        sample = str(uuid.UUID(sample))
+        rows = cls.observe(entries)
+        now = utc()
+        with store.transaction():
+            for row in rows:
+                run = str(uuid.uuid5(uuid.UUID(store.epoch), sample + ':' + row['name']))
+                key = store._key(run)
+                if store.db.execute('SELECT 1 FROM runs WHERE source=? AND epoch=? AND run_id=?', key).fetchone():
+                    continue
+                store.db.execute('INSERT INTO runs(source,epoch,run_id,job,category,status,started,activity,finished,exit_code,summary,duration_seconds) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+                                 (*key, row['name'], 'general', row['status'], now, now, now,
+                                  1 if row['status'] == 'failed' else 0, row['summary'], 0))
+                store._event(run, 'systemd-observation')
+        store.prune(90)
+        return rows

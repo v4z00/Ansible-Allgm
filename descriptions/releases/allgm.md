@@ -1,6 +1,100 @@
 # Changelog
 
+## 0.8.11 – Gültige systemd-Pfadangaben
+
+Diese Freigabe bündelt die Änderungen seit 0.8.2: zentrale Jobberichte setzen offene Versandkanäle nach Abbrüchen fort, bewerten wiederkehrende Cronfenster und können ausdrücklich ausgewählte systemd-Profile samt privaten Dienstordnern verwalten. Enthalten sind Jobmodul 0.5.4 und Controller-Prüfer 1.5.4.
+
+Für bestehende Controller ist keine automatische Host-/Cronumstellung vorgesehen. Neue Dienstprofile zuerst mit privaten Quellen und `--check` prüfen. Ein lokales Freigaberegister bleibt an seinem vorhandenen Ort; eine gewünschte Schema- oder Pfadmigration erfolgt separat mit Vorschau und Sicherung. Siehe [Update und lokale Register](../commands/update-check.md) und [Dienstdeployment](../configurations/systemd-job-deployment.md).
+
+Jobmodul 0.5.4 erzeugt WorkingDirectory und PIDFile ohne Anführungszeichen.
+Die erzeugten Dienstdefinitionen werden dadurch von systemd korrekt geladen.
+Bestehende Profile behalten ihre Pfade und ausdrücklichen Aktivierungseinstellungen.
+
+## s0.8.10 – Cronfenster und Standardwerte im Dienstdeployment
+
+Jobmodul 0.5.3 wertet mehrere tägliche und häufige Cronfenster korrekt aus.
+Fristen lassen sich zentral vorgeben und pro Host, Job oder Eintrag überschreiben.
+Lange laufende Jobs bleiben beim nächsten Termin sichtbar. Die Prüfung beendet
+keine Prozesse und verändert keine Zeitpläne. Bestehende unvollständige Fenster
+bleiben als unkonfiguriert erkennbar.
+
+Das eigenständige Dienstdeployment stellt seine Rollen-Standardwerte auch dem
+nachfolgenden Library-Schritt bereit. Root-Owner und -Group müssen nicht zusätzlich
+in host_vars wiederholt werden. Vorhandene explizite Benutzer haben weiter Vorrang.
+
+## s0.8.9 – Numerische Zeitwerte in Dienstprofilen
+
+Jobmodul 0.5.2 akzeptiert Ansible-markierte Zahlen für Start-/Stop- und
+Neustartzeiten. Boolesche Werte, unendliche und ungültige Zahlen bleiben gesperrt.
+Zuvor konnte eine korrekte lokale JSON-/YAML-Profilkonfiguration bei der Vorprüfung
+stoppen; vor diesem Fehler wurden keine Dateien oder Dienste verändert.
+
+## s0.8.8 – Private Dienstkonfiguration nach Benutzer
+
+Jobmodul 0.5.1 rendert optionale JSON-Einträge aus Hostvariablen und kann je
+Systemd-Profil eine vollständige Library im privaten Benutzerordner installieren.
+Dienste benötigen dadurch keine erweiterten Rechte am root-Skriptordner. Bestehende
+Profile bleiben unverändert; neue Felder nur nach explizitem Pilot auswählen.
+
+## s0.8.7 – Lokales Zusatzregister im Controllerzustand
+
+Prüfer 1.5.4 erkennt auf ausdrückliche Einrichtung auch `.local/extensions`
+innerhalb des Controllers. Der bisherige Nachbarordner bleibt unterstützt.
+Schemawechsel, Rücknahme und weitere lokale Paketupdates funktionieren mit beiden
+Ablagen; zwei gleichzeitige Register blockieren. Dateiinhalte und Freigabe-SHA
+bleiben erhalten. Kein automatisches Verschieben beim Update. Für ältere Prüfer
+den Registerordner vor dem Code-Rollback an den Nachbarpfad zurücklegen.
+
+## s0.8.6 – Private Dienstordner und Units per Profil
+
+Jobmodul 0.5.0 ergänzt explizite Quell-/Zielordner mit erhaltenen relativen Pfaden.
+Geprüfte private Dateien bleiben außerhalb von Git; systemd-Units entstehen aus
+Profilwerten. Das eigenständige Playbook `playbooks/scripts/deploy_systemd.yml`
+benötigt kein altes Hostmanifest. Bestehende Listenprofile bleiben status-only.
+
+Für die Nutzung private Profilmanifeste prüfen und zuerst mit `--check` planen.
+Aktivieren, Starten oder Neustarten erfolgt ausschließlich durch explizite
+Profilfelder. Kein automatischer Altbestandabbau, keine Konfigurationsmigration.
+Die bestehende SQLite-Historie und zentralen Berichte bleiben erhalten.
+
+## s0.8.5 – Systemd-Statusprofile im Skript-Deployment
+
+Bestehende Dienste lassen sich ueber zentrale Profile und eine ausdrueckliche
+Hostauswahl in lokale SQLite und die zentrale Summary einbinden. Das bestehende
+Skript-Deployment verteilt die feste Statuskonfiguration; Zuordnungen werden
+nicht aus Skript- oder Unitdateien erraten. Units, MainPID, Starts und Cron bleiben
+bei dieser Statusanbindung unveraendert. Dauerlaeufer, Oneshots und optionale
+Dienste werden getrennt bewertet; es handelt sich um Momentaufnahmen.
+
+Fuer die Nutzung erst Library und ausgewaehlte Profile bereitstellen. Ohne
+Profilauswahl bleibt das bisherige Verhalten erhalten. Bestandsabfrage 0.1.1
+behandelt uninstanziierte Vorlagen separat statt als fehlgeschlagene Units.
+
+## s0.8.4 – Custom-systemd-Bestand ohne Secret-Export
+
+Ein eigenständiger lesender Ansible-Sammler findet Custom-/Skriptservices und
+zugehörige Timer. Umgebungswerte, Konfigurationsinhalte und Befehlsargumente
+bleiben auf dem Host. Ergebnisse liegen ungepackt pro Host vor; komplexe Starts
+und Userdienste benötigen weitere Prüfung. Der Sammler ändert keine Units oder
+Crons und übernimmt noch keine Schedulerzuordnung automatisch.
+
+## s0.8.3 – Jobberichte nach Abbrüchen fortsetzen
+
+Alle konfigurierten Versandkanäle werden zusammen mit dem Bericht vorgemerkt.
+Nach einem Abbruch direkt nach der Mailbestätigung bleibt Telegram offen.
+Ein fehlgeschlagener Ansible-Abfragelauf gilt auch bei einzelnen vorhandenen
+Antworten als unvollständig; seine Teildaten werden nicht als vollständige
+Sammlung übernommen. Der nächste Abruf setzt an den bisherigen Cursorn fort.
+
+Keine Konfigurations- oder Datenbankmigration nötig. Hostjobs und Cron bleiben
+unverändert. Zusätzliche Tests decken Abbrüche, Parallelversand, veraltete Abfragen
+und die Übernahme vorhandener SQLite-Datenbanken ab.
+
 ## 0.8.2 – Controller-Prüfer 1.5.3
+
+Die Prüfungen für Updates, Bereinigung und Feature-Schalter sind leichter zu pflegen. Befehle, Exitcodes und die Struktur der JSON-Berichte bleiben kompatibel. Eine Konfigurationsmigration ist für diesen Patch nicht nötig.
+
+## s0.8.2 – Controller-Prüfer 1.5.3
 
 Die Prüfungen für Updates, Bereinigung und Feature-Schalter sind leichter zu pflegen. Befehle, Exitcodes und die Struktur der JSON-Berichte bleiben kompatibel. Eine Konfigurationsmigration ist für diesen Patch nicht nötig.
 

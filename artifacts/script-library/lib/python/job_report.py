@@ -35,6 +35,8 @@ def label(source, job, category, labels):
     if chosen is None:
         if category == 'vzdump':
             chosen = 'Vzdump'
+        elif job.startswith('systemd:'):
+            chosen = 'Dienst ' + job.split(':', 1)[1].removesuffix('.service').replace('_', ' ').replace('-', ' ')
         elif job.startswith('ansible:'):
             name = re.sub(r'\.ya?ml$', '', job.split(':', 1)[1]).replace('_', ' ').replace('-', ' ')
             chosen = 'Ansible ' + name[:1].upper() + name[1:]

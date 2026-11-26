@@ -59,6 +59,8 @@ def require_compatible(report, metadata, *, rollback=False):
     if report["status"] == "NICHT_EINGERICHTET":
         return
     require(isinstance(metadata, dict), tr("extension.target_schema"))
+    if report.get("layout") == "internal":
+        require("internal" in metadata.get("local_extension_layouts", []), tr("extension.target_layout"))
     supported = metadata.get("local_extension_schema", 1)
     require(type(supported) is int and supported in (1, 2), tr("extension.target_schema"))
     if (rollback and report["status"] == MIGRATION_REQUIRED and report.get("integrity_status") == "OK"
@@ -108,7 +110,12 @@ def read_json(path):
 
 
 def location(controller):
-    return controller.with_name(controller.name + "-local")
+    legacy = controller.with_name(controller.name + "-local")
+    internal = controller / ".local/extensions"
+    if internal.exists() or internal.is_symlink():
+        require(not legacy.exists() and not legacy.is_symlink(), tr("extension.ambiguous_location"))
+        return internal
+    return legacy
 
 
 def marker(controller):
@@ -239,7 +246,9 @@ def inspect(controller):
                     tr("extension.permissions"))
         identifier = regular(pin).read_text().strip()
         require(IDENT.fullmatch(identifier), tr("extension.invalid_registration"))
-        return scan(root, identifier, controller)
+        report = scan(root, identifier, controller)
+        report["layout"] = "internal" if root == controller / ".local/extensions" else "sibling"
+        return report
     except (OSError, ValueError, TypeError, KeyError, AttributeError) as error:
         return {"status": "FEHLER", "error": str(error), "files": []}
 

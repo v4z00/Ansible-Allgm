@@ -1,5 +1,5 @@
 ---
-- name: Deploy local scripts and cron jobs with the shared Git library
+- name: Deploy local scripts, cron jobs and selected systemd status profiles
   hosts: all_linux_systems
   gather_facts: false
   become: true

@@ -6,5 +6,13 @@ script_jobs_owner: root
 script_jobs_group: root
 script_jobs_common_config: "{{ script_library_common_config | default({}) }}"
 script_jobs_job_config: "{{ script_library_job_config | default({}) }}"
+script_jobs_profile_config: {}
+script_jobs_expected_defaults: {}
+script_jobs_expected_overrides: {}
 script_jobs_sets: {}
 script_jobs_selected_sets: []
+script_jobs_systemd_profiles: {}
+script_jobs_systemd_selected_profiles: []
+script_jobs_systemd_unit_dir: /etc/systemd/system
+script_jobs_systemd_unit_owner: root
+script_jobs_systemd_unit_group: root

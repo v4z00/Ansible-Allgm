@@ -61,6 +61,28 @@ class MigrationTests(unittest.TestCase):
     def backups(self):
         return list(self.local.glob("register.json.schema1.*.bak"))
 
+    def test_internal_register_keeps_preview_migration_and_rollback_working(self):
+        destination = self.controller / ".local/extensions"
+        self.local.rename(destination)
+        self.local = destination
+        self.record = destination / "register.json"
+        before = snapshot(self.site)
+        self.cli("--check")
+        self.assertEqual(before, snapshot(self.site))
+        self.cli("--apply")
+        backup, = self.backups()
+        self.assertEqual(backup.read_bytes(), self.original)
+        self.cli("--check")
+        self.cli("--rollback", str(backup))
+        self.assertEqual(self.record.read_bytes(), self.original)
+
+    def test_two_register_locations_fail_without_modifying_either(self):
+        internal = self.controller / ".local/extensions"
+        internal.mkdir(mode=0o700)
+        before = snapshot(self.site)
+        self.cli("--apply", success=False)
+        self.assertEqual(before, snapshot(self.site))
+
     def test_preview_creates_no_files_or_locks_and_does_not_expose_entry_data(self):
         before = snapshot(self.site)
         for flags in ([], ["--check"], ["--lang", "de", "--check"]):

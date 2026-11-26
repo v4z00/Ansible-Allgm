@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import uuid
 
 from controller_i18n import cli_args, tr
 import time
@@ -22,6 +23,15 @@ PLAY='''- name: Read local host job events without executing jobs
   become: true
   become_user: "{{ script_jobs_owner | default('root') }}"
   tasks:
+    - name: Observe explicitly configured systemd services without running jobs
+      ansible.builtin.command:
+        argv: "{{ [script_jobs_python | default('/usr/bin/python3'), job_source_overrides.get(inventory_hostname, {}).get('root', script_jobs_target_root | default(script_path | default('/scripte'))) ~ '/bin/script-jobs', '--db', job_source_overrides.get(inventory_hostname, {}).get('database', script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3')), 'systemd-record', '--config', (job_source_overrides.get(inventory_hostname, {}).get('database', script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3'))) | dirname ~ '/systemd.json', '--sample', job_systemd_sample, '--expect-profiles', ({'profiles': script_jobs_systemd_profiles | default({}), 'selected': script_jobs_systemd_selected_profiles} | to_json)] }}"
+      when: script_jobs_systemd_selected_profiles | default([]) | length > 0
+      register: job_systemd_query
+      changed_when: false
+      ignore_errors: true
+      ignore_unreachable: true
+      no_log: true
     - name: Query existing local SQLite helper
       ansible.builtin.command:
         argv: "{{ [script_jobs_python | default('/usr/bin/python3'), job_source_overrides.get(inventory_hostname, {}).get('root', script_jobs_target_root | default(script_path | default('/scripte'))) ~ '/bin/script-jobs', '--db', job_source_overrides.get(inventory_hostname, {}).get('database', script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3')), 'export', '--after', (job_cursors.get(inventory_hostname, {}).get('last_id', 0) | string), '--limit', '100'] + (['--epoch', job_cursors[inventory_hostname]['epoch']] if job_cursors.get(inventory_hostname, {}).get('epoch') else []) }}"
@@ -29,6 +39,11 @@ PLAY='''- name: Read local host job events without executing jobs
       changed_when: false
       ignore_errors: true
       ignore_unreachable: true
+      no_log: true
+    - name: Refuse stale results after a failed systemd observation
+      ansible.builtin.set_fact:
+        job_query: "{{ job_query | combine({'rc': 1}) }}"
+      when: not (job_systemd_query.skipped | default(false)) and job_systemd_query.rc | default(255) != 0
       no_log: true
     - name: Transfer only structured job data to temporary local spool
       ansible.builtin.copy:
@@ -43,7 +58,7 @@ PLAY='''- name: Read local host job events without executing jobs
       no_log: true
 '''
 
-def transport(project,limit,cursors,inventory=None,source_overrides=None):
+def transport(project,limit,cursors,inventory=None,source_overrides=None,systemd_sample=None):
     if not limit:raise ValueError(tr('jobs.limit'))
     if not (project/'ansible.cfg').is_file():raise ValueError(tr('jobs.config_required'))
     binary=shutil.which('ansible-playbook')
@@ -55,13 +70,14 @@ def transport(project,limit,cursors,inventory=None,source_overrides=None):
         for name in ('group_vars','host_vars'):
             if (project/name).exists():(stage/name).symlink_to(project/name,target_is_directory=True)
         (stage/'query.yml').write_text(PLAY)
-        (stage/'params.json').write_text(json.dumps({'job_targets':limit,'job_cursors':cursors,'job_spool':str(spool),'job_source_overrides':source_overrides or {}}))
+        (stage/'params.json').write_text(json.dumps({'job_targets':limit,'job_cursors':cursors,'job_spool':str(spool),'job_source_overrides':source_overrides or {},'job_systemd_sample':systemd_sample or str(uuid.uuid4())}))
         env=os.environ.copy();env.update(ANSIBLE_CONFIG=str(project/'ansible.cfg'),ANSIBLE_VERBOSITY='0',ANSIBLE_DEBUG='0',ANSIBLE_NOCOLOR='1')
         # Do not recursively record this internal collection as an Ansible job.
         env['SCRIPT_JOBS_CALLBACK']='0'
         command=[binary,str(stage/'query.yml'),'--limit',limit,'-e','@'+str(stage/'params.json')]
         if inventory:command+=['-i',inventory]
         result=subprocess.run(command,cwd=str(project),env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=120)
+        if result.returncode!=0:raise ValueError('Ansible collection did not complete; partial spool refused')
         records=[]
         for file in spool.glob('*.json'):
             if file.stat().st_size>20*1024*1024:raise ValueError(tr('jobs.response_size'))
@@ -71,10 +87,10 @@ def transport(project,limit,cursors,inventory=None,source_overrides=None):
 
 
 def collect(store,project,limit,inventory=None,source_overrides=None):
-    output=[]
+    output=[];systemd_sample=str(uuid.uuid4())
     for page in range(20):
         cursors={r['source']:dict(r) for r in store.db.execute('SELECT source,epoch,last_id FROM cursors')}
-        try:records=transport(project,limit,cursors,inventory,source_overrides)
+        try:records=transport(project,limit,cursors,inventory,source_overrides,systemd_sample)
         except Exception:
             store.health('controller:collection','query-failed')
             return output+[{'host':'controller:collection','status':'query-failed'}]

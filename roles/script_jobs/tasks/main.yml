@@ -23,6 +23,19 @@
   ansible.builtin.assert:
     that: script_jobs_effective | map(attribute='name') | unique | length == script_jobs_effective | length
 
+- name: Validate explicit systemd observations separately from cron jobs
+  ansible.builtin.set_fact:
+    script_jobs_systemd_effective: "{{ script_jobs_systemd_profiles | script_jobs_systemd_config(script_jobs_systemd_selected_profiles) }}"
+  no_log: true
+- name: Reject cron and systemd mappings for the same job
+  ansible.builtin.assert:
+    that:
+      - script_jobs_effective | map(attribute='name') | intersect(script_jobs_systemd_effective | map(attribute='name') | list) | length == 0
+    fail_msg: Einen Job entweder per Cron verwalten oder als systemd-Dienst beobachten.
+
+- name: Validate selected deployment profiles before changing files
+  ansible.builtin.include_tasks: systemd_plan.yml
+
 - name: Read the private deployment manifest on the controller
   ansible.builtin.set_fact:
     script_jobs_manifest: "{{ lookup('ansible.builtin.file', script_jobs_source_root ~ '/' ~ inventory_hostname ~ '/deployment.json') | from_json }}"
@@ -141,12 +154,25 @@
     dest: "{{ script_jobs_database_path | dirname }}/expectations.json"
     mode: '0600'
 
+- name: Write explicit systemd status bindings without changing units
+  ansible.builtin.copy:
+    content: "{{ script_jobs_systemd_effective | to_nice_json }}"
+    dest: "{{ script_jobs_database_path | dirname }}/systemd.json"
+    mode: '0600'
+    owner: "{{ script_jobs_owner }}"
+    group: "{{ script_jobs_group }}"
+  no_log: true
+
 - name: Initialize SQLite without running jobs
   ansible.builtin.command:
     argv: ["{{ script_jobs_target_root }}/bin/script-jobs", --db, "{{ script_jobs_database_path }}", init, --expectations, "{{ script_jobs_database_path | dirname }}/expectations.json"]
   changed_when: false
   become_user: "{{ script_jobs_owner }}"
   when: not ansible_check_mode
+
+- name: Deploy selected private folders and service definitions
+  ansible.builtin.include_tasks: systemd_deploy.yml
+  when: script_jobs_profile_plan.services | length > 0
 
 - name: Migrate explicitly mapped legacy cron entries once
   ansible.builtin.script:
