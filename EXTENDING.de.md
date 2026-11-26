@@ -194,7 +194,7 @@ Der erste Archivaufruf zeigt die Vorschau. Der zweite verlangt die freigegebene 
 
 ## D · Installation und Commit-Siegel prüfen
 
-Die Tests vergleichen Schlüssel und Platzhalter der Sprachkataloge, beide Sprachfassungen der Beschreibungen und die hinterlegten Quellhashes. Der Release-Builder prüft Komponentenmanifeste und Integrität des Checkers. Die Git-Verifier vergleichen beide Commits mit ihrem jeweiligen Siegel. Zuletzt prüft der installierte Update-Checker das Add-on offline.
+Die Tests vergleichen Schlüssel und Platzhalter der Sprachkataloge, beide Sprachfassungen der Beschreibungen und die hinterlegten Quellhashes. Der Release-Builder prüft Komponentenmanifeste und Integrität des Checkers. Die Git-Verifier vergleichen beide Commits mit ihrem jeweiligen Siegel. Zuletzt vergleicht der installierte Update-Checker die lokalen Add-on-Dateien mit ihren hinterlegten SHA-256-Werten. Diese Prüfung läuft ohne Netzwerkzugriff.
 
 <!-- example: D -->
 ```bash
@@ -204,7 +204,7 @@ python3 -m unittest discover -s update_check/tests -p test_description_languages
 python3 tools/update_check/build_release.py --release-root "$BASE" --check-dir update_check
 python3 update_check/staging_manifest.py verify Allgm HEAD
 (cd "$ADDON" && python3 .githooks/staging_manifest.py addon-verify Heartbeat HEAD)
-"$TARGET/bin/control" --lang en update-check --offline --only addon-heartbeat --json > "$LAB/heartbeat-audit.json"
+"$TARGET/bin/control" --lang en update-check --only addon-heartbeat --json > "$LAB/heartbeat-audit.json"
 ```
 
 Beide Sprachfassungen kannst du in einem sauberen, bereits committeten Checkout mit `CONTROLLER_TEST_EXTENDING_EXAMPLES=1 python3 -m unittest discover -s update_check/tests -p test_extending_examples.py` in frischen lokalen Klonen durchspielen.

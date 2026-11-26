@@ -1751,7 +1751,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "223439bf5dee14542b180b85b94408df8ec6d1c528865b9f5239b3d3417b5720",
+      "sha256": "ff4182d030f4092f3562f67bf168306b12490a67f4d99bfe65fb0153a254d297",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1783,7 +1783,7 @@
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "dd1eb4f9b0b677eb7ead9493fdedfc909fd2e0bcc10aa14f727fcc53e0be0a2c",
+      "sha256": "4c5c6ec3de32d4419cc0c873055cd91700eb5c05c16b8433df18fe40790bd2d7",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1859,7 +1859,7 @@
       "mode": "0644"
     },
     "update_check/tests/test_extending_examples.py": {
-      "sha256": "99aa4231dd7e880d682d2d04f86f838fe1c6048cbe87b88b9ce020207af91053",
+      "sha256": "0d578e96af415cddf2479bbcde5923d9b35c5e53d72b178e83886bdb1d68fec5",
       "mode": "0644"
     },
     "update_check/tests/test_handler_aliases.py": {

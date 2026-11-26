@@ -1,5 +1,7 @@
 [English](README.md) | [Deutsch](README.de.md)
+
 # Ansible-Allgm
+
 Hallöchen! Hier liegt meine gehärtete Ansible-Controller-Basis für Debian 12 und 13. Sie erzeugt Inventories aus Proxmox, verwaltet Docker-Stacks, bindet Checkmk an und erfasst Jobs lokal in SQLite. Ein optionales Standortprofil und weitere Add-ons nutzen dieselbe SHA-256-Prüfung und denselben Rollback.
 
 ## Für wen lohnt sich das?

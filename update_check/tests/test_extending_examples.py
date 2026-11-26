@@ -157,7 +157,7 @@ class ExtendingGuideTests(unittest.TestCase):
                     stdin=f"refs/heads/staging {unsealed} refs/heads/staging {'0' * 40}\n")
         self.launch(addon, env, ["git", "commit", "-qm", "Add rollback example"])
         self.launch(addon, env, [*cli, "HEAD"])
-        installer = [base / "bin/install-controller", "--target", target, "--skip-runtime", "--addon", addon,
+        installer = [base / "bin/install-controller", "--target", target, "--addon", addon,
                      "--addon-url", "Heartbeat=https://github.com/example/Ansible-Heartbeat.git", "--update"]
         preview = self.launch(base, env, installer)
         plan = re.search(r"--apply ([0-9a-f]{64})", preview)

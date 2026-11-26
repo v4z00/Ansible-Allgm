@@ -194,7 +194,7 @@ The first archive call shows the preview. The second requires the approved SHA a
 
 ## D · Check the installed result and the committed seals
 
-These tests compare catalog keys and placeholders, the two translations of descriptions, and their recorded source hashes. The release builder checks component manifests and checker integrity. The Git verifiers compare the two committed trees against their respective seals. Finally, run the installed checker's offline audit for the add-on.
+These tests compare catalog keys and placeholders, the two translations of descriptions, and their recorded source hashes. The release builder checks component manifests and checker integrity. The Git verifiers compare the two committed trees against their respective seals. The installed checker then compares the add-on's local files against their recorded SHA-256 hashes. This audit makes no network requests.
 
 <!-- example: D -->
 ```bash
@@ -204,7 +204,7 @@ python3 -m unittest discover -s update_check/tests -p test_description_languages
 python3 tools/update_check/build_release.py --release-root "$BASE" --check-dir update_check
 python3 update_check/staging_manifest.py verify Allgm HEAD
 (cd "$ADDON" && python3 .githooks/staging_manifest.py addon-verify Heartbeat HEAD)
-"$TARGET/bin/control" --lang en update-check --offline --only addon-heartbeat --json > "$LAB/heartbeat-audit.json"
+"$TARGET/bin/control" --lang en update-check --only addon-heartbeat --json > "$LAB/heartbeat-audit.json"
 ```
 
 To replay both language editions in fresh local clones, run `CONTROLLER_TEST_EXTENDING_EXAMPLES=1 python3 -m unittest discover -s update_check/tests -p test_extending_examples.py` from a clean, committed checkout.

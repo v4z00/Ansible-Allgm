@@ -1,5 +1,7 @@
 [English](README.md) | [Deutsch](README.de.md)
+
 # Ansible-Allgm
+
 A hardened Ansible controller framework for Debian 12 and 13. The shared core generates inventory from Proxmox, manages Docker stacks, integrates with Checkmk and records jobs in a local SQLite database. One optional site profile and additional add-ons share the same SHA-256 update and rollback process.
 
 ## Who is it for?
