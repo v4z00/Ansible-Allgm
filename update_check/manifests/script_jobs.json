@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "script_jobs",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "files": {
     "artifacts/script-library/bin/job-status": "48e59321a3f8cd7e907205e00fbf48fa4a4c42d4ffa6c0165f3243fdf202bbf0",
     "artifacts/script-library/bin/script-jobs": "967bb307f3fadc4a63847353da4dc53a48ce551e263cae1eef04987726478598",
@@ -49,6 +49,7 @@
     "roles/script_jobs_controller/tasks/main.yml": "72f1e99feb83af463a9515a92c6eccba4452395d5dcf9ffc5e0e047e6c5cbe67",
     "roles/script_library/defaults/main.yml": "528e1bc8cdc3355cdc681063581a63f9ac4d2c6643bf7773792dbe416e71b709",
     "roles/script_library/tasks/main.yml": "5c8ea369955cff8e1b6be81a22a7a581ed0b791c029929149c0fb9ad206cc357",
+    "scripts/get_systemd_scripts.py": "15f6a6f7b629257dd74256ba3871fa0ae271846fd0ef65f218c4e3635d7e40a7",
     "scripts/job_console.py": "86b132d7c2be2c3f044bb6470be4649bf8a078174e0e0f5e571d022cc7822966",
     "scripts/job_cron_guard.py": "c34ea1082b716021447fcff3869c73d9dfac808775118d3d38cde965543457d2",
     "scripts/job_summary.py": "b5a50589306ad0445faa0faea158925da781e121b72dd8cd256525bfea9c601f",
@@ -58,7 +59,8 @@
     "tools/job_tests/test_controller_failures.py": "6f6841e9b6255c87a5d198f77ad7407040cfe930bc431814083c2900605005fd",
     "tools/job_tests/test_jobs.py": "90ee93bc941b1665be032ffda0eb4ddb552020ec17c01aa296a559b6e00e9784",
     "tools/job_tests/test_recovery.py": "2832dfbfcc61ad4107d18509bfa63a63065abfdf8ec187cb40f196527dbaeade",
-    "tools/job_tests/test_summary.py": "6a995ff3c356bb25c22d2c2b51a1d467a8ddeae8e3705b0903e8fd2263a39838"
+    "tools/job_tests/test_summary.py": "6a995ff3c356bb25c22d2c2b51a1d467a8ddeae8e3705b0903e8fd2263a39838",
+    "tools/job_tests/test_systemd_discovery.py": "2199449f13d79e9d3630c78529c80ed5bd3eb40890a155b4725be4b471126b45"
   },
   "scope": "Neutrale Library und generische Jobverwaltung; keine produktiven Skripte oder Hostwerte",
   "version_files": [],

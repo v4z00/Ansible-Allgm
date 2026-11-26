@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "780363b8ef02ff7e83eb72709f6396b09dec21a26403bb44f58ea8d6757fe33d",
+      "sha256": "cf6a05db55c83ecdf0b3323be40d441e20f4bbd3860a3f4104a9dab70fbae161",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -810,6 +810,10 @@
       "sha256": "f30a7792dd72b5316bd640b0863500f44941227b9a60f2e62e7cda3daee2c3f3",
       "mode": "0644"
     },
+    "descriptions/configurations/systemd-script-discovery.md": {
+      "sha256": "1470d4fbfabac335827868413a0bdc53182d9d765318cd07b05d3a1b16c3088b",
+      "mode": "0644"
+    },
     "descriptions/playbooks/playbooks__base.md": {
       "sha256": "851988b76bec89a1639f86193f0b2716c9e48b9af42c2e55e027e8c60f9dfece",
       "mode": "0644"
@@ -1011,7 +1015,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "797f42cbfce1275b9eebf62df6276a988b3c250c9de6172c68b0ab3d37515dd1",
+      "sha256": "3736dd0a2303ff472db044fcf7b3e404aabaa547b157a952b9e2609c8011dd8c",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1618,6 +1622,10 @@
       "sha256": "adba46bd0de0c2385a7fbba2915eb62a362b90e084c968c431eab879ecd9523c",
       "mode": "0644"
     },
+    "scripts/get_systemd_scripts.py": {
+      "sha256": "15f6a6f7b629257dd74256ba3871fa0ae271846fd0ef65f218c4e3635d7e40a7",
+      "mode": "0644"
+    },
     "scripts/job_console.py": {
       "sha256": "86b132d7c2be2c3f044bb6470be4649bf8a078174e0e0f5e571d022cc7822966",
       "mode": "0644"
@@ -1706,6 +1714,10 @@
       "sha256": "6a995ff3c356bb25c22d2c2b51a1d467a8ddeae8e3705b0903e8fd2263a39838",
       "mode": "0644"
     },
+    "tools/job_tests/test_systemd_discovery.py": {
+      "sha256": "2199449f13d79e9d3630c78529c80ed5bd3eb40890a155b4725be4b471126b45",
+      "mode": "0644"
+    },
     "tools/local_callbacks/extension_receipt.py": {
       "sha256": "dba3e0b117c848b03ab6f2b487d27da3fd91f09ea7c804c827f64879225e7990",
       "mode": "0644"
@@ -1755,7 +1767,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "3f5f2232a4b479aeab221a94f74f88874a075ab3f5b0a4c5efb916e5fc9a0935",
+      "sha256": "5523f889cb7701ec10465af65f7509a707d7916dcd210dab9dd344c0af491516",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1771,7 +1783,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "0641f03b65b22775d7313dd78d8acb201b92fb46bddc0d25cd6b46b0c1fb4b11",
+      "sha256": "0567bf42f01a606fffdeca3eb023bcc3129a462079ff3718576ca5237d477cef",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1779,7 +1791,7 @@
       "mode": "0644"
     },
     "update_check/manifests/script_jobs.json": {
-      "sha256": "49695e0dd147cd0811bf60992e659855b8523177df2183a90c071d4b57d02602",
+      "sha256": "b47abc636009b89ea7b43339ee739ac3883a81d4f661fee976dfb5f68fecd6de",
       "mode": "0644"
     },
     "update_check/manifests/tls_tasks.json": {
@@ -1799,7 +1811,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "db06d8a6263513ec259729f0a4885dbb799eb2492564c5c93b3e0cb9b807f3da",
+      "sha256": "03e40960403bf0bde6322cb8f107d4f996e76320ac446998e7e206755ee8c8c1",
       "mode": "0644"
     },
     "update_check/rollout.py": {

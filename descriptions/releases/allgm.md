@@ -1,5 +1,13 @@
 # Changelog
 
+## s0.8.4 – Custom-systemd-Bestand ohne Secret-Export
+
+Ein eigenständiger lesender Ansible-Sammler findet Custom-/Skriptservices und
+zugehörige Timer. Umgebungswerte, Konfigurationsinhalte und Befehlsargumente
+bleiben auf dem Host. Ergebnisse liegen ungepackt pro Host vor; komplexe Starts
+und Userdienste benötigen weitere Prüfung. Der Sammler ändert keine Units oder
+Crons und übernimmt noch keine Schedulerzuordnung automatisch.
+
 ## s0.8.3 – Jobberichte nach Abbrüchen fortsetzen
 
 Alle konfigurierten Versandkanäle werden zusammen mit dem Bericht vorgemerkt.
