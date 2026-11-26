@@ -170,12 +170,12 @@ def write_atomic(path, content):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', default=str(Path(__file__).resolve().parent.parent))
-    parser.add_argument('--source', default=os.environ.get('ANSIBLE_DOCKER_CONFIG_ROOT', '/root/docker-configs'))
+    parser.add_argument('--root', default=os.environ.get('ANSIBLE_PROJECT_ROOT') or Path(__file__).resolve().parent.parent)
+    parser.add_argument('--source', default=os.environ.get('ANSIBLE_DOCKER_CONFIG_ROOT') or None)
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
     root = Path(args.root).resolve()
-    source = Path(args.source).resolve()
+    source = Path(args.source).resolve() if args.source else root.parent / 'docker-configs'
     if not source.is_dir():
         parser.error('Docker-Konfigurationsverzeichnis fehlt: %s' % source)
     discovered, errors = discover(source)

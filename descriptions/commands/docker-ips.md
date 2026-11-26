@@ -9,6 +9,7 @@ Vorhandene Kurzformen: `docker-ips`.
 Feature: docker. Die aktuelle Aktivierung prueft weiterhin Control.
 
 Voraussetzungen laut Registry:
+- `playbooks/docker/vars/paths.yml`
 - `lib/control/helpers.sh`
 - `playbooks/docker/get_docker_ips.yaml`
 
@@ -62,14 +63,14 @@ Vertrauliche Werte werden nicht dokumentiert.
     "lib/control/helpers.sh"
   ],
   "source_hashes": {
-    "bin/control.d/docker-ips.json": "99904af0da7f767356b6edc4157aae43b2238bead74b17a806e07a914c0a9f86",
+    "bin/control.d/docker-ips.json": "ea874233ac2a15fc43b1feb105593f0e6dc8199061e56c84571d2feee1f966dd",
     "bin/control.d/docker-ips.sh": "350dede679ee4f4fa3ce0d61a7c4d3647b88ed51ecda2bfbdc5dd9f97bdab387",
     "lib/control/helpers.sh": "71898aff95dfffd6873a1e6c4f90e3bdce23c25f6eed0df640dde87afd3bc19e"
   },
   "i18n": {
     "de": {
       "title": "Docker-Netze und statische IPs auswerten",
-      "description": "# Docker-Netze und statische IPs auswerten\n\nDocker-Netze und statische IPs auswerten\n\nAufruf: `bin/control docker-ips [Optionen]`.\n\nVorhandene Kurzformen: `docker-ips`.\n\nFeature: docker. Die aktuelle Aktivierung prueft weiterhin Control.\n\nVoraussetzungen laut Registry:\n- `lib/control/helpers.sh`\n- `playbooks/docker/get_docker_ips.yaml`\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `bin/control.d/docker-ips.json`\n- `bin/control.d/docker-ips.sh`\n- `lib/control/helpers.sh`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "description": "# Docker-Netze und statische IPs auswerten\n\nDocker-Netze und statische IPs auswerten\n\nAufruf: `bin/control docker-ips [Optionen]`.\n\nVorhandene Kurzformen: `docker-ips`.\n\nFeature: docker. Die aktuelle Aktivierung prueft weiterhin Control.\n\nVoraussetzungen laut Registry:\n- `playbooks/docker/vars/paths.yml`\n- `lib/control/helpers.sh`\n- `playbooks/docker/get_docker_ips.yaml`\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `bin/control.d/docker-ips.json`\n- `bin/control.d/docker-ips.sh`\n- `lib/control/helpers.sh`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
       "fields": {
         "targets": {
           "label": "targets",
@@ -83,7 +84,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     },
     "en": {
       "title": "Inspect Docker networks and static IP addresses",
-      "description": "# Inspect Docker networks and static IP addresses\n\nInspect Docker networks and static IP addresses\n\nRun: `bin/control docker-ips [options]`.\n\nAliases: `docker-ips`.\n\nFeature: docker. Control checks availability at runtime.\n\nRegistry prerequisites:\n- `lib/control/helpers.sh`\n- `playbooks/docker/get_docker_ips.yaml`\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `bin/control.d/docker-ips.json`\n- `bin/control.d/docker-ips.sh`\n- `lib/control/helpers.sh`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "description": "# Inspect Docker networks and static IP addresses\n\nInspect Docker networks and static IP addresses\n\nRun: `bin/control docker-ips [options]`.\n\nAliases: `docker-ips`.\n\nFeature: docker. Control checks availability at runtime.\n\nRegistry prerequisites:\n- `playbooks/docker/vars/paths.yml`\n- `lib/control/helpers.sh`\n- `playbooks/docker/get_docker_ips.yaml`\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `bin/control.d/docker-ips.json`\n- `bin/control.d/docker-ips.sh`\n- `lib/control/helpers.sh`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
       "fields": {
         "targets": {
           "label": "Target hosts or groups",

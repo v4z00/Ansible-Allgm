@@ -111,19 +111,20 @@ influx_repository_suite: stable
 influx_repository_component: main
 influx_key_url: https://repos.influxdata.com/influxdata-archive.key
 influx_key_fpr: 24C975CBA61A024EE1B631787C3D57159FC2F927
-docker_local_base_dir: /root/docker-configs
+# docker_local_base_dir: /srv/docker-configs  # Defaults to docker-configs next to the controller.
 docker_remote_base_dir: /srv/docker-configs
 docker_compose_file_patterns:
 - docker-compose.yml
 - compose.yml
 - docker-compose.yaml
 - compose.yaml
+docker_deploy_pause_summary: true
 docker_compose_timeout: 120
 docker_wait_retry_delay: 10
 docker_wait_retries: 6
 docker_critical_stacks: []
 docker_macvlan_config_networks: []
-local_base_dir: '{{ docker_local_base_dir }}'
+# local_base_dir: /srv/docker-configs  # Optional legacy override.
 remote_base_dir: '{{ docker_remote_base_dir }}'
 compose_file_patterns: '{{ docker_compose_file_patterns }}'
 compose_timeout: '{{ docker_compose_timeout }}'
@@ -139,7 +140,8 @@ checkmk_agent_package_src: '{{ inventory_dir }}/../artifacts/checkmk/check-mk-ag
 checkmk_plugins_src_dir: '{{ inventory_dir }}/../artifacts/checkmk/plugins'
 checkmk_default_folder: /managed/unassigned
 checkmk_enable_base_plugins: true
-checkmk_migration_plan: '{{ inventory_dir }}/../x/reports/checkmk_migration_plan.yml'
+# checkmk_migration_plan: /srv/reports/checkmk_migration_plan.yml
+checkmk_backup_mode: docker
 checkmk_backup_target_host: ''
 checkmk_container_name: checkmk
 checkmk_backup_dir: /backup

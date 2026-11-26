@@ -1,4 +1,4 @@
 script_jobs_controller_db: /var/lib/script-jobs/controller.sqlite3
-script_jobs_controller_root: /root/ansible
+script_jobs_controller_root: "{{ lookup('ansible.builtin.env', 'ANSIBLE_PROJECT_ROOT') or ((playbook_dir ~ '/../..') | realpath) }}"
 script_jobs_report_labels: {}
 script_jobs_source_overrides: {}

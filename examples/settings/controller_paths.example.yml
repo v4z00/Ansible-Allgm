@@ -1,0 +1,33 @@
+# Optional controller settings. Copy only the overrides needed at your site.
+# Report directory for Checkmk, Docker and fstab audits. Relative paths start at the controller project.
+controller_reports_dir: x/reports
+# Pause after the deployment summary. The orphan-stack confirmation is independent.
+docker_deploy_pause_summary: true
+# Run the pre-migration OMD backup in Docker or directly on the backup host with native.
+checkmk_backup_mode: docker
+# Certificate file name inside the certificate source directory.
+apache_certificate_filename: certificate.crt
+# Intermediate certificate file name inside the source directory.
+apache_intermediate_filename: intermediate1.crt
+# Encrypted input key file name used by the preparation script.
+apache_encrypted_key_filename: wildcard_example_org.key
+# Prepared key file name in the source directory.
+apache_private_key_filename: wildcard_example_org_unencrypted.key
+# Certificate file name in the destination directory.
+apache_certificate_target_filename: cert.cert
+# Private key file name in the destination directory.
+apache_private_key_target_filename: key.key
+# Remote Apache certificate directory.
+apache_certificate_directory: /cert
+# Optional absolute certificate source directory.
+apache_certificate_source_directory: /srv/certificates/2030
+# Optional absolute certificate source file.
+apache_certificate_source: /srv/certificates/2030/certificate.crt
+# Optional absolute intermediate source file.
+apache_intermediate_source: /srv/certificates/2030/intermediate1.crt
+# Optional absolute prepared key source file.
+apache_private_key_source: /srv/certificates/2030/service.key
+# Optional absolute certificate destination file.
+apache_certificate_target: /etc/apache2/tls/service.crt
+# Optional absolute key destination file.
+apache_private_key_target: /etc/apache2/tls/service.key

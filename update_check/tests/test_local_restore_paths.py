@@ -1,4 +1,5 @@
 """Guard the destination of a restore against registered local files and whole roles."""
+from unittest import mock
 import hashlib
 import json
 from pathlib import Path
@@ -157,3 +158,23 @@ class LocalRestorePathsTests(unittest.TestCase):
             install.inspect_before_change(self.root, write=True, rollback=True)
         self.assertFalse((self.root / name).exists())
         self.assertTrue(self.journal.is_dir())
+
+    def test_recovery_restores_catalog_already_removed_by_an_interrupted_exchange(self):
+        import controller_i18n as messages
+        import shutil
+
+        self.approve("playbooks/site/one.yml")
+        catalogs = self.root / "lib/i18n"
+        shutil.copytree(ROOT / "lib/i18n", catalogs)
+        rel = "lib/i18n/status_codes.json"
+        original = (self.root / rel).read_bytes()
+        self.write_journal({rel: (original, None)})
+        with mock.patch.object(messages, "CATALOGS", catalogs):
+            messages.status_codes.cache_clear()
+            try:
+                install.recover_transaction(self.root)
+                self.assertEqual((self.root / rel).read_bytes(), original)
+                self.assertTrue(messages.status_codes())
+                self.assertFalse(self.journal.exists())
+            finally:
+                messages.status_codes.cache_clear()

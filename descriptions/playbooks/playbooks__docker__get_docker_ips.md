@@ -32,7 +32,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/docker/get_docker_ips.yaml"
   ],
   "source_hashes": {
-    "playbooks/docker/get_docker_ips.yaml": "166494d251bbbb73fdc8f4f1c35cf40b651f600247b033ee8ba5de735ac64cde"
+    "playbooks/docker/get_docker_ips.yaml": "44bf67ebe7cc949db183b9df87c7b36e97be6242597c924bc22f1c2db1e4e7e2"
   },
   "i18n": {
     "de": {

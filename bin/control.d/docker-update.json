@@ -11,7 +11,8 @@
         "scripts/run_docker_update.sh",
         "playbooks/docker/update_containers.yml",
         "playbooks/docker/check_docker.yml",
-        "playbooks/docker/check_portainer.yml"
+        "playbooks/docker/check_portainer.yml",
+        "playbooks/docker/vars/paths.yml"
       ],
       "aliases": [
         {

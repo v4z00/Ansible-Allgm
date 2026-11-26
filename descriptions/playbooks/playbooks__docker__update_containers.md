@@ -37,7 +37,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/docker/update_containers.yml"
   ],
   "source_hashes": {
-    "playbooks/docker/update_containers.yml": "5032c4ae4bded8b5fd8aeae85ee0bc473993ed5727d20c2870c0a12f22ba5c61"
+    "playbooks/docker/update_containers.yml": "907a3eb0c9767a739cfb36c5f274ba557d6912a3899ec1c39bd48ae3d3f80f48"
   },
   "i18n": {
     "de": {

@@ -1,6 +1,7 @@
 ---
 - name: Inspect Docker sources and existing networks
   hosts: docker_deployment_hosts
+  vars_files: [vars/paths.yml]
   become: true
   gather_facts: false
 
@@ -17,7 +18,7 @@
           - "{{ ansible_playbook_python }}"
           - "{{ playbook_dir }}/../../scripts/check_docker_sources.py"
         stdin: >-
-          {{ {'base': (local_base_dir | default(docker_local_base_dir)),
+          {{ {'base': _docker_local_config_dir,
               'host': inventory_hostname,
               'patterns': (compose_file_patterns | default(docker_compose_file_patterns | default(['docker-compose.yml', 'docker-compose.yaml', 'compose.yml', 'compose.yaml']))),
               'networks': (docker_networks | default([]))} | to_json }}

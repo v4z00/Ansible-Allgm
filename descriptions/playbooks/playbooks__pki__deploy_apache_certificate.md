@@ -40,7 +40,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/pki/deploy_apache_certificate.yml"
   ],
   "source_hashes": {
-    "playbooks/pki/deploy_apache_certificate.yml": "7939189a6bc84990841c6daac805dbb9e4ffa6f3b9cf297e92a2b7103222272b"
+    "playbooks/pki/deploy_apache_certificate.yml": "4f7d78bcfac9d8d1b70c875941645b57943a6b4dd6a3424171086e3df88137a9"
   },
   "i18n": {
     "de": {

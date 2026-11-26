@@ -1,6 +1,7 @@
 ---
 - name: Prepare local Docker deployment directories
   hosts: localhost
+  vars_files: [vars/paths.yml]
   connection: local
   gather_facts: false
   become: true
@@ -12,7 +13,7 @@
 
     - name: Create the local base directory
       ansible.builtin.file:
-        path: "{{ docker_local_base_dir }}"
+        path: "{{ _docker_local_config_dir }}"
         state: directory
         owner: root
         group: root
@@ -20,7 +21,7 @@
 
     - name: Create a local host directory for each deployment target
       ansible.builtin.file:
-        path: "{{ docker_local_base_dir }}/{{ item }}"
+        path: "{{ _docker_local_config_dir }}/{{ item }}"
         state: directory
         owner: root
         group: root
@@ -29,12 +30,13 @@
 
 - name: Prepare remote Docker deployment directories
   hosts: docker_deployment_hosts
+  vars_files: [vars/paths.yml]
   become: true
   gather_facts: false
   tasks:
     - name: Create the remote base directory
       ansible.builtin.file:
-        path: "{{ docker_remote_base_dir }}"
+        path: "{{ _docker_remote_config_dir }}"
         state: directory
         owner: root
         group: root

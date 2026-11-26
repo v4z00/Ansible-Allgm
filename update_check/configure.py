@@ -102,7 +102,7 @@ def remove_top_field(text,key,loader):
 
 def sort_settings(text,catalog,loader):
     _parse(text,loader)
-    # YAML-Anker sind reihenfolgeabhaengig: niemals vor ihre Definition verschieben.
+    # Keep YAML anchors before every alias that references them.
     if any(isinstance(token,(AliasToken,AnchorToken)) for token in yaml.scan(text)):
         return text,False
     node=yaml.compose(text)

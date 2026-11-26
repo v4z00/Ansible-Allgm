@@ -8,7 +8,8 @@
       "feature": "docker",
       "requires": [
         "lib/control/helpers.sh",
-        "playbooks/docker/get_docker_ips.yaml"
+        "playbooks/docker/get_docker_ips.yaml",
+        "playbooks/docker/vars/paths.yml"
       ],
       "aliases": [
         {

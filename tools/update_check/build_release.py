@@ -51,7 +51,7 @@ def main():
         seal=json.loads((ext.parent/'integrity.json').read_text());seal['manifest_sha256']=hashlib.sha256(outputs[ext].encode()).hexdigest()
         outputs[ext.parent/'integrity.json']=json.dumps(seal,indent=2,ensure_ascii=False)+'\n'
     if a.write:
-        # Erst alle Quelldateien pruefen; bis hier kein Schreibzugriff.
+        # Verify every source before writing any seal.
         for path,text in outputs.items():path.write_text(text)
         seal=json.loads((here/'integrity.json').read_text())
         seal['files']={rel:sha(safe(here,rel)) for rel in seal['files']}

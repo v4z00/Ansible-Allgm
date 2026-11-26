@@ -3,6 +3,7 @@
 # ==============================================================================
 - name: "PLAY 1: Prepare the deployment"
   hosts: docker_deployment_hosts
+  vars_files: [vars/paths.yml]
   become: yes
   gather_facts: no
 
@@ -19,10 +20,11 @@
     - name: "TASK 1.2: Validate base variables"
       ansible.builtin.assert:
         that:
-          - local_base_dir is defined
-          - remote_base_dir is defined
+          - _docker_local_config_dir is string and _docker_local_config_dir is abs
+          - _docker_remote_config_dir is string and _docker_remote_config_dir is abs
           - compose_file_patterns is defined
-        fail_msg: "Define local_base_dir, remote_base_dir and compose_file_patterns."
+          - hostvars['localhost'].global_prune_confirmation is undefined
+        fail_msg: "Configure absolute Docker paths and compose_file_patterns. The orphan confirmation must come from the terminal."
         success_msg: "Base variables are set."
 
 
@@ -31,6 +33,7 @@
 # ==============================================================================
 - name: "PLAY 2: Find unmanaged Docker stacks"
   hosts: docker_deployment_hosts
+  vars_files: [vars/paths.yml]
   become: yes
   gather_facts: no
 
@@ -38,11 +41,11 @@
     - name: "TASK 2.1: Find managed Compose files for this host on the controller"
       delegate_to: localhost
       ansible.builtin.find:
-        paths: "{{ local_base_dir }}/{{ inventory_hostname }}"
+        paths: "{{ _docker_local_config_dir }}/{{ inventory_hostname }}"
         patterns: "{{ compose_file_patterns }}"
         recurse: yes
       register: local_compose_projects
-      failed_when: false
+      failed_when: local_compose_projects is failed or local_compose_projects.skipped_paths | default({}) | length > 0
 
     - name: "TASK 2.2: Collect managed Compose project names"
       ansible.builtin.set_fact:
@@ -112,7 +115,13 @@
   gather_facts: no
   connection: local
 
+  any_errors_fatal: true
   tasks:
+    - name: "Reject a preset orphan confirmation"
+      ansible.builtin.assert:
+        that: global_prune_confirmation is undefined
+        fail_msg: "A preset orphan confirmation is invalid. Answer the removal prompt at the terminal."
+
     - name: "TASK 2.5.1: Count orphan stack candidates across hosts"
       ansible.builtin.set_fact:
         global_prune_candidate_count: >-
@@ -182,8 +191,8 @@
       ansible.builtin.shell: |
         set -e
 
-        PROJECT_NAME="{{ item.Name }}"
-        COMPOSE_FILE="{{ (item.ConfigFiles | string).split(',')[0] }}"
+        PROJECT_NAME={{ item.Name | quote }}
+        COMPOSE_FILE={{ (item.ConfigFiles | string).split(',')[0] | quote }}
         PROJECT_DIR="$(dirname "$COMPOSE_FILE")"
 
         echo "Removing orphan stack: $PROJECT_NAME"
@@ -220,6 +229,7 @@
       when:
         - prune_candidates | default([]) | length > 0
         - hostvars['localhost'].global_prune_confirmed | default(false)
+        - (hostvars['localhost'].global_prune_confirmation | default({})).get('user_input', '') == 'yes'
       register: prune_result
       failed_when: prune_result.rc != 0
       changed_when: true
@@ -261,13 +271,14 @@
 # ==============================================================================
 - name: "PLAY 3: Synchronize configuration"
   hosts: docker_deployment_hosts
+  vars_files: [vars/paths.yml]
   become: yes
   gather_facts: no
 
   tasks:
     - name: "TASK 3.1: Create the target directory"
       ansible.builtin.file:
-        path: "{{ remote_base_dir }}/{{ inventory_hostname }}"
+        path: "{{ _docker_remote_config_dir }}/{{ inventory_hostname }}"
         state: directory
         mode: '0770'
         owner: root
@@ -275,8 +286,8 @@
 
     - name: "TASK 3.2: Synchronize project directories"
       ansible.posix.synchronize:
-        src: "{{ local_base_dir }}/{{ inventory_hostname }}/"
-        dest: "{{ remote_base_dir }}/{{ inventory_hostname }}/"
+        src: "{{ _docker_local_config_dir }}/{{ inventory_hostname }}/"
+        dest: "{{ _docker_remote_config_dir }}/{{ inventory_hostname }}/"
         dest_port: "{{ (managed_host_access | default({})).get(inventory_hostname, {}).get('port', managed_access_default_port | default(22)) | int }}"
         delete: yes
         archive: yes
@@ -284,7 +295,7 @@
 
     - name: "TASK 3.3: Find Compose projects on the target host"
       ansible.builtin.find:
-        paths: "{{ remote_base_dir }}/{{ inventory_hostname }}"
+        paths: "{{ _docker_remote_config_dir }}/{{ inventory_hostname }}"
         patterns: "{{ compose_file_patterns }}"
         recurse: yes
       register: all_compose_projects
@@ -302,6 +313,7 @@
 # ==============================================================================
 - name: "PLAY 4: Set file permissions from host_vars before deployment"
   hosts: docker_deployment_hosts
+  vars_files: [vars/paths.yml]
   become: true
   gather_facts: false
 
@@ -324,7 +336,7 @@
 
     - name: "TASK 4.2: Check target paths"
       ansible.builtin.stat:
-        path: "{{ item.path if item.absolute | default(false) | bool else remote_base_dir ~ '/' ~ inventory_hostname ~ '/' ~ item.path }}"
+        path: "{{ item.path if item.absolute | default(false) | bool else _docker_remote_config_dir ~ '/' ~ inventory_hostname ~ '/' ~ item.path }}"
       loop: "{{ host_docker_file_permissions }}"
       loop_control:
         label: "{{ item.path }}"
@@ -332,7 +344,7 @@
 
     - name: "TASK 4.3: Apply configured file permissions"
       ansible.builtin.file:
-        path: "{{ item.item.path if item.item.absolute | default(false) | bool else remote_base_dir ~ '/' ~ inventory_hostname ~ '/' ~ item.item.path }}"
+        path: "{{ item.item.path if item.item.absolute | default(false) | bool else _docker_remote_config_dir ~ '/' ~ inventory_hostname ~ '/' ~ item.item.path }}"
         state: "{{ 'directory' if item.item.create | default(false) | bool else omit }}"
         owner: "{{ item.item.owner | default(omit) }}"
         group: "{{ item.item.group | default(omit) }}"
@@ -542,11 +554,12 @@
 # ==============================================================================
 - name: "PLAY 9: Write the deployment summary and log"
   hosts: localhost
+  vars_files: [vars/paths.yml]
   connection: local
   gather_facts: yes
 
   vars:
-    log_dir: "{{ playbook_dir }}/../../x/reports/docker"
+    log_dir: "{{ _docker_reports_dir }}/docker"
     log_file: "{{ log_dir }}/deployment-{{ ansible_date_time.iso8601_basic_short }}.log"
 
   tasks:
@@ -569,3 +582,9 @@
           Deployment summary (log contents):
           {{ lookup('file', log_file) }}
           Press Enter to continue.
+      when: docker_deploy_pause_summary | default(true) | bool
+
+    - name: Report the deployment summary without waiting
+      ansible.builtin.debug:
+        msg: "{{ lookup('ansible.builtin.file', log_file) }}"
+      when: not (docker_deploy_pause_summary | default(true) | bool)

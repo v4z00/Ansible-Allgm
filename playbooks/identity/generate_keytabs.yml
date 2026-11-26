@@ -1,5 +1,5 @@
 ---
-- name: "Manage Kerberos keytabs, schedule renewal and check tickets"
+- name: "Generate Kerberos keytabs and schedule ticket renewal"
   hosts: all_linux_systems
   become: true
 
@@ -25,6 +25,7 @@
         paths: "{{ current_search_path | trim }}"
         patterns:
           - "{{ kerberos_credential_pattern }}"
+        # Each deployment defines which credential files to exclude.
         excludes: "{{ kerberos_credential_excludes }}"
         file_type: file
         recurse: false

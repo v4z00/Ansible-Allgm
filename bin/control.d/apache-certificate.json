@@ -9,6 +9,7 @@
       "requires": [
         "lib/control/helpers.sh",
         "scripts/deploy_apache_certificate.sh",
+        "scripts/apache_certificate_files.py",
         "playbooks/pki/deploy_apache_certificate.yml"
       ],
       "aliases": [

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Interaktiv Checkmk-Altbestand dem generierten Ansible-Inventar zuordnen."""
+"""Interactively match existing Checkmk hosts to the generated Ansible inventory."""
 import argparse
 import json
 import os
@@ -155,13 +155,46 @@ def confirm_automatic(current, target, matched_by):
 
 
 def publish(path, document):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=path.parent, delete=False) as handle:
-        json.dump(document, handle, ensure_ascii=False, indent=2)
-        handle.write('\n')
-        temporary = Path(handle.name)
-    temporary.chmod(0o600)
-    os.replace(temporary, path)
+    path = path.absolute()
+    if '..' in path.parts or any(part.is_symlink() for part in (path, *path.parents)):
+        raise MigrationError('Choose a plan path without symlinks or .. components.')
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=path.parent, delete=False) as handle:
+            temporary = Path(handle.name)
+            json.dump(document, handle, ensure_ascii=False, indent=2)
+            handle.write('\n')
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def plan_destination(root, settings, explicit=None):
+    if explicit:
+        return Path(explicit)
+    configured = settings.get('checkmk_migration_plan')
+    if configured and not isinstance(configured, str):
+        raise MigrationError('checkmk_migration_plan must be a path.')
+    if configured and ('{{' not in configured and '{%' not in configured):
+        return root / configured
+    if configured in ("{{ inventory_dir }}/../x/reports/checkmk_migration_plan.yml",
+                      "{{ playbook_dir }}/../../x/reports/checkmk_migration_plan.yml"):
+        return root / 'x/reports/checkmk_migration_plan.yml'
+    if configured:
+        raise MigrationError('Use a literal checkmk_migration_plan path or pass --output.')
+    directory = settings.get('controller_reports_dir') or os.environ.get('ANSIBLE_REPORTS_DIR') or 'x/reports'
+    if not isinstance(directory, str) or '{{' in directory or '{%' in directory:
+        raise MigrationError('Use a literal controller_reports_dir path or pass --output.')
+    return root / directory / 'checkmk_migration_plan.yml'
 
 
 def run(args):
@@ -212,7 +245,7 @@ def run(args):
             'matched_by': matched_by,
         })
         remaining.remove(target)
-    output = Path(args.output) if args.output else root / 'x/reports/checkmk_migration_plan.yml'
+    output = plan_destination(root, common, args.output)
     plan = {
         'checkmk_site': common['checkmk_site'],
         'mappings': mappings,
@@ -230,7 +263,7 @@ def run(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', default=str(Path(__file__).resolve().parent.parent))
+    parser.add_argument('--root', default=os.environ.get('ANSIBLE_PROJECT_ROOT') or str(Path(__file__).resolve().parent.parent))
     parser.add_argument('--output')
     args = parser.parse_args()
     try:

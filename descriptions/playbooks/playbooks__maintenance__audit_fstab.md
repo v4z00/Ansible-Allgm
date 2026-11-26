@@ -30,7 +30,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/maintenance/audit_fstab.yml"
   ],
   "source_hashes": {
-    "playbooks/maintenance/audit_fstab.yml": "b1e1f301e2f690b333ea38e0f23e2e6cf02d88cc241afcd0f59dbae6907a0fde"
+    "playbooks/maintenance/audit_fstab.yml": "1f19cb227a93c2b75d9a511185a36fada66c00dca85296d213eca9901ad7f161"
   },
   "i18n": {
     "de": {

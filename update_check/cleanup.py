@@ -84,20 +84,20 @@ def scan_sources(root,exclude=None,external=True):
     return result,sorted(set(errors))
 
 def dependencies(root,rel,sources):
-    # Auch reine Dateinamen und literale Globs pruefen; Unklarheit behaelt die Datei.
+    # Check bare file names and literal globs. Keep files when a reference is ambiguous.
     name=Path(rel).name;hits=[]
     token=re.compile(r'(?<![A-Za-z0-9_.-])'+re.escape(name)+r'(?![A-Za-z0-9_.-])')
     for source,text in sources:
         if source==rel:continue
         direct=rel in text or str(root/rel) in text or bool(token.search(text))
         glob=False
-        # Nur erkennbare Dateisystem-Globaufrufe; Shell-Sentinels wie --limit '*' sind keine Abhaengigkeit.
+        # Match filesystem globs. Shell arguments such as --limit '*' are independent.
         for call in re.finditer(r"(?:glob|rglob)\(\s*([\"'])([^\"'\n]+)\1",text):
             literal=call.group(2)
             if '*' not in literal and '?' not in literal:continue
             before=text[text.rfind('\n',0,call.start())+1:call.start()]
             prefixes=[v for v in re.findall(r"[\"']([^\"']+)[\"']",before) if v.split('/')[0] in CODE_DIRS]
-            # Dynamische Globs fremder Datenverzeichnisse sind kein belegter Projektdateiverweis.
+            # Dynamic globs outside the project do not establish a file dependency.
             if not prefixes and not literal.startswith('/') and not re.search(r'\b(?:root|project_root|ansible_root)\b|Path\([\"\']\.[\"\']',before):continue
             if prefixes and not (rel==prefixes[-1] or rel.startswith(prefixes[-1].rstrip('/')+'/')):continue
             if literal.startswith('/'):glob=fnmatch.fnmatch(str(root/rel),literal)

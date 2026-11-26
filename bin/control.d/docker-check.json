@@ -10,7 +10,8 @@
         "lib/control/helpers.sh",
         "scripts/check_docker.sh",
         "scripts/check_docker_sources.py",
-        "playbooks/docker/check_docker.yml"
+        "playbooks/docker/check_docker.yml",
+        "playbooks/docker/vars/paths.yml"
       ],
       "aliases": [
         {

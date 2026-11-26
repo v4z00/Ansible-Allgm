@@ -2,15 +2,20 @@
 - name: "Collect host fstab files for audit"
   hosts: all_linux_systems
   become: yes
+  vars:
+    audit_project_root: "{{ lookup('ansible.builtin.env', 'ANSIBLE_PROJECT_ROOT') or ((playbook_dir ~ '/../..') | realpath) }}"
+    audit_reports_path: "{{ controller_reports_dir | default(lookup('ansible.builtin.env', 'ANSIBLE_REPORTS_DIR') or 'x/reports', true) }}"
+    audit_fstab_directory: "{{ [audit_project_root, audit_reports_path, 'fstab_audit'] | path_join }}"
   tasks:
     - name: "Create the local audit log directory"
       ansible.builtin.file:
-        path: "{{ playbook_dir }}/../../x/reports/fstab_audit"
+        path: "{{ audit_fstab_directory }}"
         state: directory
+        mode: '0700'
       delegate_to: localhost
 
     - name: "Fetch the host fstab file"
       ansible.builtin.fetch:
         src: /etc/fstab
-        dest: "{{ playbook_dir }}/../../x/reports/fstab_audit/{{ inventory_hostname }}_fstab"
+        dest: "{{ audit_fstab_directory }}/{{ inventory_hostname }}_fstab"
         flat: yes

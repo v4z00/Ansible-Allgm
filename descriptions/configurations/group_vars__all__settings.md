@@ -10,6 +10,8 @@ Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
 
+Die optionalen Einstellungen für Berichte, Apache, Docker und Checkmk stehen in `examples/settings/controller_paths.example.yml`.
+
 ```json
 {
   "schema_version": 1,
@@ -1118,19 +1120,158 @@ Vertrauliche Werte werden nicht dokumentiert.
       "required": false,
       "sensitive": false,
       "description": "Wartezeit für den Portainer-TCP-Test in Sekunden."
+    },
+    {
+      "id": "controller_reports_dir",
+      "label": "Berichtsverzeichnis",
+      "description": "Ziel für Docker-, Checkmk- und fstab-Berichte. Relative Pfade beginnen im Controllerprojekt.",
+      "type": "string",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "docker_deploy_pause_summary",
+      "label": "Docker-Abschlusspause",
+      "description": "Nach der Zusammenfassung auf eine Taste warten. Eine Löschung verwaister Stacks erfordert weiterhin eine Bestätigung.",
+      "type": "boolean",
+      "required": false,
+      "sensitive": false,
+      "default": true
+    },
+    {
+      "id": "checkmk_backup_mode",
+      "label": "Checkmk-Sicherungsmodus",
+      "description": "docker führt OMD im Container aus, native direkt auf dem Sicherungshost.",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "default": "docker"
+    },
+    {
+      "id": "apache_certificate_filename",
+      "label": "Zertifikatsdateiname",
+      "description": "Name des Zertifikats im Quellverzeichnis.",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "default": "certificate.crt"
+    },
+    {
+      "id": "apache_intermediate_filename",
+      "label": "Dateiname der Zwischenzertifikate",
+      "description": "Name der Zertifikatskette im Quellverzeichnis.",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "default": "intermediate1.crt"
+    },
+    {
+      "id": "apache_encrypted_key_filename",
+      "label": "Verschlüsselter Schlüssel",
+      "description": "Name der verschlüsselten Eingabedatei für das Vorbereitungsskript.",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "default": "wildcard_example_org.key"
+    },
+    {
+      "id": "apache_private_key_filename",
+      "label": "Vorbereiteter Schlüssel",
+      "description": "Name der vom Playbook verteilten Schlüsseldatei.",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "default": "wildcard_example_org_unencrypted.key"
+    },
+    {
+      "id": "apache_certificate_target_filename",
+      "label": "Zertifikatsname am Ziel",
+      "description": "Dateiname des Zertifikats im Zielverzeichnis.",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "default": "cert.cert"
+    },
+    {
+      "id": "apache_private_key_target_filename",
+      "label": "Schlüsselname am Ziel",
+      "description": "Dateiname des Schlüssels im Zielverzeichnis.",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "default": "key.key"
+    },
+    {
+      "id": "apache_certificate_directory",
+      "label": "Apache-Zielverzeichnis",
+      "description": "Verzeichnis auf dem Webserver für Zertifikat und Schlüssel.",
+      "type": "string",
+      "required": false,
+      "sensitive": false,
+      "default": "/cert"
+    },
+    {
+      "id": "apache_certificate_source_directory",
+      "label": "Apache-Quellverzeichnis",
+      "description": "Optionaler absoluter Pfad zum PEM-Verzeichnis auf dem Controller.",
+      "type": "string",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "apache_certificate_source",
+      "label": "Quelldatei Zertifikat",
+      "description": "Optionaler absoluter Pfad zur Zertifikatsdatei.",
+      "type": "string",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "apache_intermediate_source",
+      "label": "Quelldatei Zwischenzertifikat",
+      "description": "Optionaler absoluter Pfad zur Zwischenzertifikatsdatei.",
+      "type": "string",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "apache_private_key_source",
+      "label": "Quelldatei Schlüssel",
+      "description": "Optionaler absoluter Dateipfad des vorbereiteten Schlüssels.",
+      "type": "string",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "apache_certificate_target",
+      "label": "Zielpfad Zertifikat",
+      "description": "Optionaler absoluter Dateipfad des Zertifikats auf dem Webserver.",
+      "type": "string",
+      "required": false,
+      "sensitive": false
+    },
+    {
+      "id": "apache_private_key_target",
+      "label": "Zielpfad Schlüssel",
+      "description": "Optionaler absoluter Dateipfad des Schlüssels auf dem Webserver.",
+      "type": "string",
+      "required": false,
+      "sensitive": false
     }
   ],
   "constraints": [],
   "sources": [
-    "examples/settings/all_settings.example.yml"
+    "examples/settings/all_settings.example.yml",
+    "examples/settings/controller_paths.example.yml"
   ],
   "source_hashes": {
-    "examples/settings/all_settings.example.yml": "705407d67a78332a61b3b7f5259da1fd160993aeb734c822cefe051438313be6"
+    "examples/settings/all_settings.example.yml": "de813875024c9a4a77bbe7cd827533bc7b8d429c9a3ba8747f0b42b49dfcba9d",
+    "examples/settings/controller_paths.example.yml": "5221bdc30a837a0ec4af252ba47b37d791605bcac9f4023bb3039b9b1013490f"
   },
   "i18n": {
     "de": {
       "title": "Konfigurationsreferenz group_vars/all/settings.yml",
-      "description": "# Konfigurationsreferenz group_vars/all/settings.yml\n\nDiese Angaben beschreiben ausschliesslich die vorliegende Vorlagen-/Beispieldatei, nicht die effektiven Werte eines laufenden Hosts.\n\nDie Datei wird durch diese Dokumentation weder aktiviert noch in bestehende Standortkonfigurationen kopiert.\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `examples/settings/all_settings.example.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.\n\n\n## TLS-Schalter pro Aufgabe (1.1.0)\n\n`tls_validate_certs_default` ist der optionale Standortstandard (ohne Eintrag true).\n`tls_validate_certs` ist eine YAML-Zuordnung mit optionalen booleschen Aufgabenschaltern.\nTelegram-Defaults bleiben true. Beispiele und vollstaendige Zuordnung: `examples/tls/settings.example.yml`.",
+      "description": "# Konfigurationsreferenz group_vars/all/settings.yml\n\nDiese Angaben beschreiben ausschliesslich die vorliegende Vorlagen-/Beispieldatei, nicht die effektiven Werte eines laufenden Hosts.\n\nDie Datei wird durch diese Dokumentation weder aktiviert noch in bestehende Standortkonfigurationen kopiert.\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `examples/settings/all_settings.example.yml`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.\n\n\n## TLS-Schalter pro Aufgabe (1.1.0)\n\n`tls_validate_certs_default` ist der optionale Standortstandard (ohne Eintrag true).\n`tls_validate_certs` ist eine YAML-Zuordnung mit optionalen booleschen Aufgabenschaltern.\nTelegram-Defaults bleiben true. Beispiele und vollstaendige Zuordnung: `examples/tls/settings.example.yml`.\n\nDie optionalen Einstellungen für Berichte, Apache, Docker und Checkmk stehen in `examples/settings/controller_paths.example.yml`.",
       "fields": {
         "controller_lang": {
           "label": "Controller-Sprache",
@@ -1623,12 +1764,76 @@ Vertrauliche Werte werden nicht dokumentiert.
         "portainer_check_timeout": {
           "label": "portainer_check_timeout",
           "description": "Wartezeit für den Portainer-TCP-Test in Sekunden."
+        },
+        "controller_reports_dir": {
+          "label": "Berichtsverzeichnis",
+          "description": "Ziel für Docker-, Checkmk- und fstab-Berichte. Relative Pfade beginnen im Controllerprojekt."
+        },
+        "docker_deploy_pause_summary": {
+          "label": "Docker-Abschlusspause",
+          "description": "Nach der Zusammenfassung auf eine Taste warten. Eine Löschung verwaister Stacks erfordert weiterhin eine Bestätigung."
+        },
+        "checkmk_backup_mode": {
+          "label": "Checkmk-Sicherungsmodus",
+          "description": "docker führt OMD im Container aus, native direkt auf dem Sicherungshost."
+        },
+        "apache_certificate_filename": {
+          "label": "Zertifikatsdateiname",
+          "description": "Name des Zertifikats im Quellverzeichnis."
+        },
+        "apache_intermediate_filename": {
+          "label": "Dateiname der Zwischenzertifikate",
+          "description": "Name der Zertifikatskette im Quellverzeichnis."
+        },
+        "apache_encrypted_key_filename": {
+          "label": "Verschlüsselter Schlüssel",
+          "description": "Name der verschlüsselten Eingabedatei für das Vorbereitungsskript."
+        },
+        "apache_private_key_filename": {
+          "label": "Vorbereiteter Schlüssel",
+          "description": "Name der vom Playbook verteilten Schlüsseldatei."
+        },
+        "apache_certificate_target_filename": {
+          "label": "Zertifikatsname am Ziel",
+          "description": "Dateiname des Zertifikats im Zielverzeichnis."
+        },
+        "apache_private_key_target_filename": {
+          "label": "Schlüsselname am Ziel",
+          "description": "Dateiname des Schlüssels im Zielverzeichnis."
+        },
+        "apache_certificate_directory": {
+          "label": "Apache-Zielverzeichnis",
+          "description": "Verzeichnis auf dem Webserver für Zertifikat und Schlüssel."
+        },
+        "apache_certificate_source_directory": {
+          "label": "Apache-Quellverzeichnis",
+          "description": "Optionaler absoluter Pfad zum PEM-Verzeichnis auf dem Controller."
+        },
+        "apache_certificate_source": {
+          "label": "Quelldatei Zertifikat",
+          "description": "Optionaler absoluter Pfad zur Zertifikatsdatei."
+        },
+        "apache_intermediate_source": {
+          "label": "Quelldatei Zwischenzertifikat",
+          "description": "Optionaler absoluter Pfad zur Zwischenzertifikatsdatei."
+        },
+        "apache_private_key_source": {
+          "label": "Quelldatei Schlüssel",
+          "description": "Optionaler absoluter Dateipfad des vorbereiteten Schlüssels."
+        },
+        "apache_certificate_target": {
+          "label": "Zielpfad Zertifikat",
+          "description": "Optionaler absoluter Dateipfad des Zertifikats auf dem Webserver."
+        },
+        "apache_private_key_target": {
+          "label": "Zielpfad Schlüssel",
+          "description": "Optionaler absoluter Dateipfad des Schlüssels auf dem Webserver."
         }
       }
     },
     "en": {
       "title": "Configuration reference for group_vars/all/settings.yml",
-      "description": "# Configuration reference for group_vars/all/settings.yml\n\nThis reference describes the example file. Effective host values depend on local settings.\n\nThis reference does not activate the example or copy it into an existing site configuration.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `examples/settings/all_settings.example.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.\n\n## TLS settings per task (1.1.0)\n\n`tls_validate_certs_default` sets the optional site default, normally true. `tls_validate_certs` maps individual tasks to optional Boolean overrides. Telegram tasks independently default to true. See `examples/tls/settings.example.yml` for examples and the complete mapping.",
+      "description": "# Configuration reference for group_vars/all/settings.yml\n\nThis reference describes the example file. Effective host values depend on local settings.\n\nThis reference does not activate the example or copy it into an existing site configuration.\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `examples/settings/all_settings.example.yml`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.\n\n## TLS settings per task (1.1.0)\n\n`tls_validate_certs_default` sets the optional site default, normally true. `tls_validate_certs` maps individual tasks to optional Boolean overrides. Telegram tasks independently default to true. See `examples/tls/settings.example.yml` for examples and the complete mapping.\n\nOptional report, Apache, Docker and Checkmk settings are listed in `examples/settings/controller_paths.example.yml`.",
       "fields": {
         "controller_lang": {
           "label": "Controller language",
@@ -2121,23 +2326,73 @@ Vertrauliche Werte werden nicht dokumentiert.
         "portainer_check_timeout": {
           "label": "portainer_check_timeout",
           "description": "Timeout for the Portainer TCP check, in seconds."
+        },
+        "controller_reports_dir": {
+          "label": "Report directory",
+          "description": "Report directory for Checkmk, Docker and fstab audits. Relative paths start at the controller project."
+        },
+        "docker_deploy_pause_summary": {
+          "label": "Docker summary pause",
+          "description": "Pause after the deployment summary. The orphan-stack confirmation is independent."
+        },
+        "checkmk_backup_mode": {
+          "label": "Checkmk backup mode",
+          "description": "Run the pre-migration OMD backup in Docker or directly on the backup host with native."
+        },
+        "apache_certificate_filename": {
+          "label": "Certificate file name",
+          "description": "Certificate file name inside the certificate source directory."
+        },
+        "apache_intermediate_filename": {
+          "label": "Intermediate certificate file name",
+          "description": "Intermediate certificate file name inside the source directory."
+        },
+        "apache_encrypted_key_filename": {
+          "label": "Encrypted key file name",
+          "description": "Encrypted input key file name used by the preparation script."
+        },
+        "apache_private_key_filename": {
+          "label": "Prepared key file name",
+          "description": "Prepared key file name in the source directory."
+        },
+        "apache_certificate_target_filename": {
+          "label": "Target certificate file name",
+          "description": "Certificate file name in the destination directory."
+        },
+        "apache_private_key_target_filename": {
+          "label": "Target key file name",
+          "description": "Private key file name in the destination directory."
+        },
+        "apache_certificate_directory": {
+          "label": "Apache target directory",
+          "description": "Remote Apache certificate directory."
+        },
+        "apache_certificate_source_directory": {
+          "label": "Apache source directory",
+          "description": "Optional absolute certificate source directory."
+        },
+        "apache_certificate_source": {
+          "label": "Source certificate path",
+          "description": "Optional absolute certificate source file."
+        },
+        "apache_intermediate_source": {
+          "label": "Intermediate certificate path",
+          "description": "Optional absolute intermediate source file."
+        },
+        "apache_private_key_source": {
+          "label": "Prepared key path",
+          "description": "Optional absolute prepared key source file."
+        },
+        "apache_certificate_target": {
+          "label": "Target certificate path",
+          "description": "Optional absolute certificate destination file."
+        },
+        "apache_private_key_target": {
+          "label": "Target key path",
+          "description": "Optional absolute key destination file."
         }
       }
     }
   }
 }
 ```
-
-## Quellen und Pflege
-
-- `examples/settings/all_settings.example.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
-
-
-## TLS-Schalter pro Aufgabe (1.1.0)
-
-`tls_validate_certs_default` ist der optionale Standortstandard (ohne Eintrag true).
-`tls_validate_certs` ist eine YAML-Zuordnung mit optionalen booleschen Aufgabenschaltern.
-Telegram-Defaults bleiben true. Beispiele und vollstaendige Zuordnung: `examples/tls/settings.example.yml`.

@@ -19,7 +19,7 @@ except ImportError:
     cli_args(sys.argv[1:], Path(__file__).resolve().parents[1])
     raise SystemExit(tr('audit.dependency'))
 
-CHECKER_VERSION = '1.5.0'
+CHECKER_VERSION = '1.5.1'
 VERSION_RE = re.compile(r'(?<![A-Za-z0-9])\d+\.\d+\.\d+(?:[a-zA-Z][A-Za-z0-9.-]*)?')
 class AuditError(Exception): pass
 class UniqueLoader(yaml.SafeLoader): pass
@@ -201,7 +201,7 @@ def global_settings(root):
         try: data=read_yaml(p)
         except AuditError as e: errors.append({'path':rel,'status':str(e)}); continue
         # Ansible ersetzt Dictionaries bei normalem hash_behaviour=replace.
-        # Ueberlappungen werden sichtbar gemeldet, nicht still als gueltig angenommen.
+        # Report overlapping definitions explicitly.
         for key,value in data.items():
             if not isinstance(key,str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',key):
                 errors.append({'path':rel,'status':'UNGUELTIGER_VARIABLENNAME'}); continue
@@ -212,7 +212,7 @@ def global_settings(root):
     return values,errors
 
 def scoped_definitions(root):
-    # Nur Namen von alternativen Definitionen sammeln, keine Inhalte ausgeben.
+    # Collect alternate definition names without exposing their values.
     definitions=set()
     for base in ('group_vars','host_vars'):
         d=variable_base(root,base)
@@ -297,7 +297,7 @@ def check_settings(root,contract,code_root=None,report_unknown=True,check_links=
             present,enabled=field(values,'features.'+feature)
             if present and enabled is False: continue
             if not present or not isinstance(enabled,bool):
-                # Features selbst werden separat geprueft; kein falscher Pflichtfehler.
+                # Feature switches are checked separately.
                 continue
         exists,value=field(values,key)
         if not exists:

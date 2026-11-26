@@ -1,7 +1,6 @@
-# ~/.bashrc des Ansible-Controllers
-# Alle Funktionen und Aliase werden zentral im Projekt gepflegt.
+# Controller shell entry point. Functions and aliases live in the project.
 
-export ANSIBLE_PROJECT_ROOT="/root/ansible"
+export ANSIBLE_PROJECT_ROOT="${ANSIBLE_PROJECT_ROOT:-/root/ansible}"
 
 if [[ -r "${ANSIBLE_PROJECT_ROOT}/config/shell_aliases.sh" ]]; then
     # shellcheck disable=SC1090

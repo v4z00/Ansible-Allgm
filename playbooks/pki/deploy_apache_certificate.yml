@@ -1,140 +1,96 @@
 ---
-- name: Deploy the wildcard certificate to Apache web servers
+- name: Deploy a certificate and private key to Apache web servers
   hosts: checkmk_webserver_hosts
   become: true
   gather_facts: false
   serial: 1
 
   vars:
-    apache_certificate_source_directory: "{{ apache_certificate_root }}/{{ apache_certificate_year }}"
-    apache_certificate_source: "{{ apache_certificate_source_directory }}/certificate.crt"
-    apache_intermediate_source: "{{ apache_certificate_source_directory }}/intermediate1.crt"
-    apache_private_key_source: "{{ apache_certificate_source_directory }}/wildcard_example_org_unencrypted.key"
-    apache_certificate_directory: /cert
-    apache_certificate_target: /cert/cert.cert
-    apache_private_key_target: /cert/key.key
+    _pki_helper: "{{ playbook_dir }}/../../scripts/apache_certificate_files.py"
+    _pki_source_dir: "{{ apache_certificate_source_directory | default((apache_certificate_root | default('')) ~ '/' ~ (apache_certificate_year | default(''))) }}"
+    _pki_cert_name: "{{ apache_certificate_filename | default('certificate.crt') }}"
+    _pki_chain_name: "{{ apache_intermediate_filename | default('intermediate1.crt') }}"
+    _pki_key_name: "{{ apache_private_key_filename | default('wildcard_example_org_unencrypted.key') }}"
+    _pki_cert: "{{ apache_certificate_source | default(_pki_source_dir ~ '/' ~ _pki_cert_name) }}"
+    _pki_chain: "{{ apache_intermediate_source | default(_pki_source_dir ~ '/' ~ _pki_chain_name) }}"
+    _pki_key: "{{ apache_private_key_source | default(_pki_source_dir ~ '/' ~ _pki_key_name) }}"
+    _pki_target_dir: "{{ apache_certificate_directory | default('/cert') }}"
+    _pki_cert_target_name: "{{ apache_certificate_target_filename | default('cert.cert') }}"
+    _pki_key_target_name: "{{ apache_private_key_target_filename | default('key.key') }}"
+    _pki_cert_target: "{{ apache_certificate_target | default(_pki_target_dir ~ '/' ~ _pki_cert_target_name) }}"
+    _pki_key_target: "{{ apache_private_key_target | default(_pki_target_dir ~ '/' ~ _pki_key_target_name) }}"
 
   pre_tasks:
-    - name: Check source files on the controller
-      ansible.builtin.stat:
-        path: "{{ item }}"
-      loop:
-        - "{{ apache_certificate_source }}"
-        - "{{ apache_intermediate_source }}"
-        - "{{ apache_private_key_source }}"
-      register: apache_certificate_source_files
-      delegate_to: localhost
-      become: false
-      run_once: true
-
-    - name: Show the selected certificate path
-      ansible.builtin.debug:
-        msg: "Zertifikatsquelle: {{ apache_certificate_source_directory }}"
-      delegate_to: localhost
-      become: false
-      run_once: true
-
-    - name: Require all certificate source files
+    - name: Require simple file names within the selected directories
       ansible.builtin.assert:
         that:
-          - item.stat.exists
-          - item.stat.isreg
-          - item.stat.size | int > 0
-        fail_msg: "Quelldatei fehlt oder ist leer: {{ item.item }}"
-      loop: "{{ apache_certificate_source_files.results }}"
-      loop_control:
-        label: "{{ item.item }}"
-      delegate_to: localhost
-      become: false
-      run_once: true
+          - item is string
+          - item is match('^[^/\x00-\x1f\x7f]+\Z')
+          - item not in ['.', '..']
+        quiet: true
+      loop: "{{ [_pki_cert_name, _pki_chain_name, _pki_key_name, _pki_cert_target_name, _pki_key_target_name] }}"
 
-    - name: Validate the decrypted private key
+    - name: Validate the certificate, chain and matching private key on the controller
       ansible.builtin.command:
-        argv:
-          - openssl
-          - pkey
-          - -in
-          - "{{ apache_private_key_source }}"
-          - -noout
-          - -passin
-          - "pass:"
-      changed_when: false
+        argv: ["{{ ansible_playbook_python }}", "{{ _pki_helper }}", validate, "{{ _pki_cert }}", "{{ _pki_chain }}", "{{ _pki_key }}"]
       delegate_to: localhost
       become: false
-      run_once: true
-
-    - name: Get the public key fingerprint from the private key
-      ansible.builtin.shell: >-
-        set -o pipefail;
-        openssl pkey -in {{ apache_private_key_source | quote }} -pubout -outform DER
-        | openssl dgst -sha256
-      args:
-        executable: /bin/bash
-      register: apache_private_key_fingerprint
       changed_when: false
-      delegate_to: localhost
-      become: false
-      run_once: true
+      check_mode: false
 
-    - name: Get the public key fingerprint from the certificate
-      ansible.builtin.shell: >-
-        set -o pipefail;
-        openssl x509 -in {{ apache_certificate_source | quote }} -pubkey -noout
-        | openssl pkey -pubin -outform DER
-        | openssl dgst -sha256
-      args:
-        executable: /bin/bash
-      register: apache_certificate_fingerprint
-      changed_when: false
-      delegate_to: localhost
-      become: false
-      run_once: true
-
-    - name: Require the certificate and private key to match
+    - name: Keep controller sources separate when deploying locally
       ansible.builtin.assert:
         that:
-          - (apache_private_key_fingerprint.stdout | trim) == (apache_certificate_fingerprint.stdout | trim)
-        fail_msg: "certificate.crt und der entschluesselte private Schluessel passen nicht zusammen. Es wird nichts verteilt."
-      delegate_to: localhost
-      become: false
-      run_once: true
+          - ([_pki_cert_target, _pki_key_target] | intersect([_pki_cert, _pki_chain, _pki_key])) | length == 0
+        quiet: true
+      when: ansible_connection | default('ssh') == 'local' or inventory_hostname in ['localhost', '127.0.0.1', '::1']
 
   tasks:
-    - name: Create the Apache certificate directory
-      ansible.builtin.file:
-        path: "{{ apache_certificate_directory }}"
+    - name: Allocate a private transfer directory
+      ansible.builtin.tempfile:
         state: directory
-        owner: root
-        group: root
-        mode: "0755"
+        prefix: apache-pki-
+      register: _pki_transfer
+      check_mode: false
+      changed_when: false
 
-    - name: Deploy the certificate and intermediate chain
-      ansible.builtin.copy:
-        content: |-
-          {{ lookup('ansible.builtin.file', apache_certificate_source) | trim }}
-          {{ lookup('ansible.builtin.file', apache_intermediate_source) | trim }}
-        dest: "{{ apache_certificate_target }}"
-        owner: root
-        group: root
-        mode: "0644"
-        backup: true
-      notify:
-        - Validate the Apache configuration
-        - Restart Apache
+    - name: Stage and verify the Apache certificate pair
+      block:
+        - name: Transfer the certificate files into private staging
+          ansible.builtin.copy:
+            src: "{{ item.src }}"
+            dest: "{{ _pki_transfer.path }}/{{ item.name }}"
+            mode: "0600"
+            decrypt: false
+          loop:
+            - {src: "{{ _pki_cert }}", name: leaf.pem}
+            - {src: "{{ _pki_chain }}", name: chain.pem}
+            - {src: "{{ _pki_key }}", name: key.pem}
+          no_log: true
+          diff: false
+          changed_when: false
+          check_mode: false
 
-    - name: Deploy the decrypted private key
-      ansible.builtin.copy:
-        src: "{{ apache_private_key_source }}"
-        dest: "{{ apache_private_key_target }}"
-        owner: root
-        group: root
-        mode: "0600"
-        backup: true
-      no_log: true
-      notify:
-        - Validate the Apache configuration
-        - Restart Apache
+        - name: Install the verified pair and check Apache before restart
+          ansible.builtin.script:
+            cmd: >-
+              {{ _pki_helper | quote }} install {{ 'check' if ansible_check_mode else 'apply' }}
+              {{ (_pki_transfer.path ~ '/leaf.pem') | quote }} {{ (_pki_transfer.path ~ '/chain.pem') | quote }}
+              {{ (_pki_transfer.path ~ '/key.pem') | quote }} {{ _pki_cert_target | quote }} {{ _pki_key_target | quote }}
+            executable: python3
+          register: _pki_install
+          changed_when: _pki_install.stdout | trim == 'changed'
+          check_mode: false
 
+      always:
+        - name: Remove the private transfer directory
+          ansible.builtin.file:
+            path: "{{ _pki_transfer.path }}"
+            state: absent
+          changed_when: false
+          check_mode: false
+
+  # Keep the existing handler names for plays that import this playbook.
   handlers:
     - name: Validate the Apache configuration
       listen: Apache-Konfiguration pruefen
@@ -146,4 +102,3 @@
       ansible.builtin.service:
         name: apache2
         state: restarted
-

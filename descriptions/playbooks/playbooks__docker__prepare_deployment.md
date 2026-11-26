@@ -34,7 +34,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     "playbooks/docker/prepare_deployment.yml"
   ],
   "source_hashes": {
-    "playbooks/docker/prepare_deployment.yml": "f32d982edda310d8f0fdfa1f62e58e21bed5fd127a597633b59bfff09605968c"
+    "playbooks/docker/prepare_deployment.yml": "8b38a93c4b8e9a40b94329d49492846e5450154620f4621ff6130e95379e2edc"
   },
   "i18n": {
     "de": {

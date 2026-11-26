@@ -486,7 +486,12 @@ def recover_transaction(dest, local=None):
             check_local_restore(report, metadata, entries, recovering=True)
     if interrupted.exists() or interrupted.is_symlink():
         # Recovery can itself replace or remove the active translation catalogs.
-        preload_for_update()
+        # A previous process may already have removed a catalog. The verified
+        # journal can restore it; only a fresh exchange requires a full preload.
+        try:
+            preload_for_update()
+        except FileNotFoundError:
+            pass
     transaction.recover(dest, backups, transaction_path)
 
 

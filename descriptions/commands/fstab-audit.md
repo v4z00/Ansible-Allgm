@@ -18,6 +18,8 @@ Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
 
+Der Audit legt die Dateien unter `controller_reports_dir/fstab_audit` ab. Ohne Vorgabe gilt `ANSIBLE_REPORTS_DIR`, andernfalls `x/reports` im Controllerprojekt. Relative Pfade beginnen im Projektverzeichnis.
+
 ```json
 {
   "schema_version": 1,
@@ -69,7 +71,7 @@ Vertrauliche Werte werden nicht dokumentiert.
   "i18n": {
     "de": {
       "title": "fstab-Dateien einsammeln",
-      "description": "# fstab-Dateien einsammeln\n\nfstab-Dateien einsammeln\n\nAufruf: `bin/control fstab-audit [Optionen]`.\n\nVorhandene Kurzformen: `audit-fstab`, `fstab-audit`.\n\nFeature: kein zusaetzlicher Feature-Schalter. Die aktuelle Aktivierung prueft weiterhin Control.\n\nVoraussetzungen laut Registry:\n- `lib/control/helpers.sh`\n- `playbooks/maintenance/audit_fstab.yml`\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `bin/control.d/fstab-audit.json`\n- `bin/control.d/fstab-audit.sh`\n- `lib/control/helpers.sh`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "description": "# fstab-Dateien einsammeln\n\nfstab-Dateien einsammeln\n\nAufruf: `bin/control fstab-audit [Optionen]`.\n\nVorhandene Kurzformen: `audit-fstab`, `fstab-audit`.\n\nFeature: kein zusaetzlicher Feature-Schalter. Die aktuelle Aktivierung prueft weiterhin Control.\n\nVoraussetzungen laut Registry:\n- `lib/control/helpers.sh`\n- `playbooks/maintenance/audit_fstab.yml`\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `bin/control.d/fstab-audit.json`\n- `bin/control.d/fstab-audit.sh`\n- `lib/control/helpers.sh`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.\n\nDer Audit legt die Dateien unter `controller_reports_dir/fstab_audit` ab. Ohne Vorgabe gilt `ANSIBLE_REPORTS_DIR`, andernfalls `x/reports` im Controllerprojekt. Relative Pfade beginnen im Projektverzeichnis.",
       "fields": {
         "targets": {
           "label": "targets",
@@ -83,7 +85,7 @@ Vertrauliche Werte werden nicht dokumentiert.
     },
     "en": {
       "title": "Collect fstab files",
-      "description": "# Collect fstab files\n\nCollect fstab files\n\nRun: `bin/control fstab-audit [options]`.\n\nAliases: `audit-fstab`, `fstab-audit`.\n\nAvailable without a separate feature switch. Control checks availability at runtime.\n\nRegistry prerequisites:\n- `lib/control/helpers.sh`\n- `playbooks/maintenance/audit_fstab.yml`\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `bin/control.d/fstab-audit.json`\n- `bin/control.d/fstab-audit.sh`\n- `lib/control/helpers.sh`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "description": "# Collect fstab files\n\nCollect fstab files\n\nRun: `bin/control fstab-audit [options]`.\n\nAliases: `audit-fstab`, `fstab-audit`.\n\nAvailable without a separate feature switch. Control checks availability at runtime.\n\nRegistry prerequisites:\n- `lib/control/helpers.sh`\n- `playbooks/maintenance/audit_fstab.yml`\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `bin/control.d/fstab-audit.json`\n- `bin/control.d/fstab-audit.sh`\n- `lib/control/helpers.sh`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.\n\nThe audit writes files under `controller_reports_dir/fstab_audit`. The fallback is `ANSIBLE_REPORTS_DIR`, then `x/reports` in the controller project. Relative paths start at the project root.",
       "fields": {
         "targets": {
           "label": "Target hosts or groups",
@@ -98,12 +100,3 @@ Vertrauliche Werte werden nicht dokumentiert.
   }
 }
 ```
-
-## Quellen und Pflege
-
-- `bin/control.d/fstab-audit.json`
-- `bin/control.d/fstab-audit.sh`
-- `lib/control/helpers.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.

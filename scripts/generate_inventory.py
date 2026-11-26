@@ -637,7 +637,7 @@ def run(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', default=str(Path(__file__).resolve().parent.parent))
+    parser.add_argument('--root', default=os.environ.get('ANSIBLE_PROJECT_ROOT') or str(Path(__file__).resolve().parent.parent))
     parser.add_argument('--config')
     parser.add_argument('--check', action='store_true')
     parser.add_argument('--interactive', action='store_true',

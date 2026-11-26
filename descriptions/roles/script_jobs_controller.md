@@ -33,7 +33,7 @@ werden gemeinsam konsolidiert, der Vzdump-Bericht bleibt getrennt.
     "roles/script_jobs_controller/tasks/main.yml"
   ],
   "source_hashes": {
-    "roles/script_jobs_controller/defaults/main.yml": "a70274f7c9a6cd64e44b4dbb8bd54c130188545f5622d4f480c41151dd1aa16a",
+    "roles/script_jobs_controller/defaults/main.yml": "6ed7c2a5fc02ca90ca0f0b3a36e81ec81ec5f3edd50952c8f170ef57db040cba",
     "roles/script_jobs_controller/tasks/main.yml": "72f1e99feb83af463a9515a92c6eccba4452395d5dcf9ffc5e0e047e6c5cbe67"
   },
   "i18n": {

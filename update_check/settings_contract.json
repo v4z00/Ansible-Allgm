@@ -439,13 +439,13 @@
     {
       "key": "docker_local_base_dir",
       "type": "string",
-      "required": true,
+      "required": false,
       "feature": "docker"
     },
     {
       "key": "docker_remote_base_dir",
       "type": "string",
-      "required": true,
+      "required": false,
       "feature": "docker"
     },
     {
@@ -577,7 +577,7 @@
     {
       "key": "checkmk_migration_plan",
       "type": "string",
-      "required": true,
+      "required": false,
       "feature": "checkmk"
     },
     {
@@ -589,7 +589,7 @@
     {
       "key": "checkmk_container_name",
       "type": "string",
-      "required": true,
+      "required": false,
       "feature": "checkmk"
     },
     {
@@ -987,6 +987,92 @@
         "de",
         "en"
       ]
+    },
+    {
+      "key": "controller_reports_dir",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "docker_deploy_pause_summary",
+      "type": "boolean",
+      "required": false,
+      "feature": "docker"
+    },
+    {
+      "key": "checkmk_backup_mode",
+      "type": "string",
+      "required": false,
+      "feature": "checkmk",
+      "choices": [
+        "docker",
+        "native"
+      ]
+    },
+    {
+      "key": "apache_certificate_filename",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_intermediate_filename",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_encrypted_key_filename",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_private_key_filename",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_certificate_target_filename",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_private_key_target_filename",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_certificate_directory",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_certificate_source_directory",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_certificate_source",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_intermediate_source",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_private_key_source",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_certificate_target",
+      "type": "string",
+      "required": false
+    },
+    {
+      "key": "apache_private_key_target",
+      "type": "string",
+      "required": false
     }
   ],
   "tls_tasks": [

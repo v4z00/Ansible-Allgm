@@ -1,0 +1,11 @@
+---
+_docker_project_root: >-
+  {{ lookup('ansible.builtin.env', 'ANSIBLE_PROJECT_ROOT') or (playbook_dir | dirname | dirname) }}
+_docker_local_config_dir: >-
+  {{ local_base_dir | default(docker_local_base_dir | default(
+      lookup('ansible.builtin.env', 'ANSIBLE_DOCKER_CONFIG_ROOT') or
+      ((_docker_project_root | dirname) ~ '/docker-configs'), true), true) }}
+_docker_remote_config_dir: "{{ remote_base_dir | default(docker_remote_base_dir | default('/srv/docker-configs', true), true) }}"
+_docker_reports_dir: >-
+  {{ [_docker_project_root, controller_reports_dir | default(
+      lookup('ansible.builtin.env', 'ANSIBLE_REPORTS_DIR') or 'x/reports', true)] | path_join }}

@@ -1,5 +1,11 @@
 # Changelog
 
+## s0.8.0 – Wählbare Betriebspfade und Backup-Modi
+
+Checkmk sichert vor einer Migration wahlweise im Docker-Container oder direkt mit OMD auf dem Zielhost. Bei Apache sind Quellen, Dateinamen und Ziele einstellbar. Das Docker-Deployment kann die Abschlussanzeige ohne Pause schreiben. Verwaiste Stacks brauchen weiterhin eine bestätigte Löschfreigabe.
+
+Alternative Controllerverzeichnisse werden von Shell, Job-Sammlung und Berichten berücksichtigt. Die bisherigen Befehlsnamen und Playbookpfade, darunter `postfix-queue-clear` und `clear_postfix_que.yaml`, bleiben für vorhandene Cronjobs und direkte Playbook-Aufrufe gültig.
+
 ## s0.7.0 – Lokale Freigaben migrieren
 
 Neue Standortpakete verstehen deutsche und englische Dateiköpfe. Für einen

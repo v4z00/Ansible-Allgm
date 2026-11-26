@@ -1,12 +1,13 @@
 ---
 - name: "Docker Container Updates (Ansible Watchtower)"
   hosts: docker_deployment_hosts
+  vars_files: [vars/paths.yml]
   become: yes
   gather_facts: yes
 
   vars:
     # Remote configuration directory
-    docker_host_config_dir: "{{ docker_remote_base_dir }}/{{ inventory_hostname }}"
+    docker_host_config_dir: "{{ _docker_remote_config_dir }}/{{ inventory_hostname }}"
     # Temporary report on the remote server
     summary_file: "/tmp/docker_update_summary.txt"
 

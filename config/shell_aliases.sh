@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
-# Ansible Command Center fuer Bash und Zsh.
-# Wird von der verwalteten ~/.bashrc geladen.
-# Die verwaltete ~/.zshrc laedt anschliessend ebenfalls ~/.bashrc.
+# Shared controller commands for Bash and Zsh, loaded by the managed shell profile.
 
 export ANSIBLE_PROJECT_ROOT="${ANSIBLE_PROJECT_ROOT:-/root/ansible}"
 export ANSIBLE_ALIASES_FILE="${ANSIBLE_ALIASES_FILE:-${ANSIBLE_PROJECT_ROOT}/config/shell_aliases.sh}"
 
-# Alte Definitionen aus der bisherigen ~/.bashrc koennen in Zsh beim Parsen
-# gleichnamiger Funktionen expandiert werden (z. B. `alias reload=...`).
-# Vor dem erneuten Laden deshalb nur die von dieser Datei verwalteten
-# Funktionsnamen als Aliase entfernen. Bereits vorhandene Funktionen werden
-# durch die folgenden Definitionen sauber ersetzt.
+# Zsh expands old aliases while parsing new function definitions.
+# Remove our aliases before defining or reloading those functions.
 unalias control ansible-cd ansible-status host-info group-show log-show \
     ansible-run my-help myhelp docker-push audit-crons reload edit-alias git-save \
     2>/dev/null || true
 
-# Benutzerlokale pipx-Programme verfuegbar machen, ohne PATH-Eintraege zu doppeln.
+# Include user-installed pipx programs once.
 case ":${PATH}:" in
     *:"${HOME}/.local/bin":*) ;;
     *) export PATH="${PATH}:${HOME}/.local/bin" ;;
@@ -162,7 +157,7 @@ git-save() {
 }
 
 # help: Verwaltete Bashrc installieren und aktuelle Shell neu laden
-alias bashrc-install='install -m 0644 /root/ansible/config/bashrc /root/.bashrc && source /root/.bashrc'
+alias bashrc-install='install -m 0644 "${ANSIBLE_PROJECT_ROOT}/config/bashrc" "${HOME}/.bashrc" && source "${HOME}/.bashrc"'
 
 
 # control-modules-v1: generated aliases from the command registry.

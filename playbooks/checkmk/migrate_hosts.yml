@@ -1,173 +1,207 @@
 ---
-- name: Back up the Checkmk site before host migration
-  hosts: "{{ checkmk_backup_target_host | default(undef('Lokalen Sicherungshost angeben'), true) | mandatory }}"
-  become: true
+- name: Check the controller is included in the migration limit
+  hosts: "{{ 'all:localhost' if ansible_limit is defined else 'localhost' }}"
   gather_facts: false
-  pre_tasks:
-    - name: Check the migration plan before backup
-      ansible.builtin.stat:
-        path: "{{ checkmk_migration_plan }}"
-      delegate_to: localhost
-      become: false
-      register: migration_plan_preflight
-
-    - name: Stop before making changes if the migration plan is missing
-      ansible.builtin.assert:
-        that: migration_plan_preflight.stat.exists
-        fail_msg: "Zuerst bin/control checkmk-migration-plan ausfuehren."
-
-    - name: Load the migration plan for validation
-      ansible.builtin.include_vars:
-        file: "{{ checkmk_migration_plan }}"
-        name: checkmk_migration_preflight
-
-    - name: Validate the site and at least one migration target
+  become: false
+  any_errors_fatal: true
+  tasks:
+    - name: Require both the API controller and backup host in a limit
       ansible.builtin.assert:
         that:
-          - checkmk_migration_preflight.checkmk_site == checkmk_site
-          - checkmk_migration_preflight.targets | length > 0
-        fail_msg: "Migrationsplan passt nicht zur Site oder enthaelt keine Ziele."
+          - "'localhost' in ansible_play_hosts_all"
+          - (hostvars['localhost'].checkmk_backup_target_host | default('')) in ansible_play_hosts_all
+        fail_msg: Include localhost and the configured backup host in the migration limit.
+      run_once: true
+      when: ansible_limit is defined
 
-  tasks:
-    - name: Set the backup file path
-      ansible.builtin.set_fact:
-        checkmk_backup_file: >-
-          {{ checkmk_backup_dir }}/{{ checkmk_site }}-pre-host-migration-{{ lookup('pipe', 'date -u +%Y%m%dT%H%M%SZ') }}.tar.gz
-
-    - name: Create the backup directory in the Checkmk container
-      ansible.builtin.command:
-        argv: [docker, exec, "{{ checkmk_container_name }}", mkdir, -p, "{{ checkmk_backup_dir }}"]
-      changed_when: false
-
-    - name: Back up the Checkmk site to a temporary archive
-      ansible.builtin.command:
-        argv:
-          - docker
-          - exec
-          - "{{ checkmk_container_name }}"
-          - omd
-          - backup
-          - "{{ checkmk_site }}"
-          - "{{ checkmk_backup_file }}.tmp"
-      changed_when: true
-
-    - name: Verify the backup archive
-      ansible.builtin.command:
-        argv: [docker, exec, "{{ checkmk_container_name }}", tar, -tzf, "{{ checkmk_backup_file }}.tmp"]
-      changed_when: false
-
-    - name: Finalize the verified backup
-      ansible.builtin.command:
-        argv: [docker, exec, "{{ checkmk_container_name }}", mv, "{{ checkmk_backup_file }}.tmp", "{{ checkmk_backup_file }}"]
-      changed_when: true
-
-    - name: Report the backup path
-      ansible.builtin.debug:
-        msg: "Checkmk-Sicherung erstellt: {{ checkmk_backup_file }}"
-
-    - name: Record the verified backup for this run
-      ansible.builtin.set_fact:
-        checkmk_migration_backup_complete: true
-
-- name: Apply the planned Checkmk host migration
+- name: Back up the Checkmk site and apply the saved host migration
   hosts: localhost
   connection: local
-  become: false
   gather_facts: false
+  become: false
+  vars:
+    _migration_root: "{{ lookup('ansible.builtin.env', 'ANSIBLE_PROJECT_ROOT') | default(playbook_dir | dirname | dirname, true) }}"
+    _reports_dir: "{{ controller_reports_dir | default(lookup('ansible.builtin.env', 'ANSIBLE_REPORTS_DIR'), true) | default('x/reports', true) }}"
+    _migration_plan: "{{ [_migration_root, checkmk_migration_plan | default([_reports_dir, 'checkmk_migration_plan.yml'] | path_join, true)] | path_join }}"
+    _backup_host: "{{ hostvars[checkmk_backup_target_host] }}"
+    _backup_mode: "{{ _backup_host.checkmk_backup_mode | default('docker') }}"
+    _backup_dir: "{{ _backup_host.checkmk_backup_dir | default('/backup') }}"
+    _backup_prefix: "{{ ['docker', 'exec', _backup_host.checkmk_container_name] if _backup_mode == 'docker' else [] }}"
+    _backup_temp: "{{ _backup_workspace.stdout }}/site.tar.gz"
+
   pre_tasks:
-    - name: Check confirmation from the backup host
+    - name: Validate the backup inventory host
       ansible.builtin.assert:
         that:
+          - checkmk_backup_target_host | default('') | length > 0
           - checkmk_backup_target_host in hostvars
-          - hostvars[checkmk_backup_target_host].checkmk_migration_backup_complete | default(false) | bool
-        fail_msg: Der lokale Sicherungshost muss in diesem Lauf sein Backup erfolgreich abschliessen.
+        fail_msg: Set checkmk_backup_target_host to one inventory host and include it with localhost in any limit.
 
-    - name: Check the migration plan
-      ansible.builtin.stat:
-        path: "{{ checkmk_migration_plan }}"
-      register: migration_plan_file
-
-    - name: Stop if the migration plan is missing
+    - name: Validate the backup mode, site and directory
       ansible.builtin.assert:
-        that: migration_plan_file.stat.exists
-        fail_msg: "Zuerst bin/control checkmk-migration-plan ausfuehren."
+        that:
+          - _backup_mode in ['docker', 'native']
+          - _backup_dir is string and _backup_dir.startswith('/')
+          - checkmk_site is match('^[A-Za-z0-9][A-Za-z0-9_.-]*\Z')
+          - _backup_mode != 'docker' or (_backup_host.checkmk_container_name | default('')) is match('^[A-Za-z0-9][A-Za-z0-9_.-]*\Z')
+        fail_msg: Choose docker or native, set an absolute backup directory and specify a container name for Docker.
 
-    - name: Load the migration plan
+    - name: Check that the saved migration plan exists
+      ansible.builtin.stat:
+        path: "{{ _migration_plan }}"
+      register: _plan_file
+
+    - name: Require a saved migration plan
+      ansible.builtin.assert:
+        that: _plan_file.stat.isreg | default(false)
+        fail_msg: "Create the plan with bin/control checkmk-migration-plan first ({{ _migration_plan }})."
+
+    - name: Load the saved migration plan
       ansible.builtin.include_vars:
-        file: "{{ checkmk_migration_plan }}"
+        file: "{{ _migration_plan }}"
         name: checkmk_migration
+      no_log: true
 
-    - name: Validate the site and plan contents
+    - name: Validate the site and migration targets
       ansible.builtin.assert:
         that:
           - checkmk_migration.checkmk_site == checkmk_site
           - checkmk_migration.mappings is iterable
-          - checkmk_migration.targets is iterable
-        fail_msg: "Migrationsplan passt nicht zur konfigurierten Checkmk-Site."
+          - checkmk_migration.targets | length > 0
+        fail_msg: Create a migration plan for the configured Checkmk site before applying it.
+
+    - name: Finish check mode after validating the plan and backup settings
+      ansible.builtin.meta: end_play
+      when: ansible_check_mode
 
   tasks:
-    - name: Ensure the target Checkmk folders exist
-      checkmk.general.folder:
-        validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_folders', tls_validate_certs_default | default(true)) | bool }}"
-        server_url: "{{ checkmk_server_url }}"
-        site: "{{ checkmk_site }}"
-        automation_user: "{{ checkmk_api_user }}"
-        automation_secret: "{{ checkmk_api_password }}"
-        path: "{{ item.path }}"
-        name: "{{ item.name }}"
-        state: present
-      loop: "{{ checkmk_folders }}"
-      loop_control:
-        label: "{{ item.path }}"
+    - name: Create and verify the site archive on the backup host
+      delegate_to: "{{ checkmk_backup_target_host }}"
+      become: true
       no_log: true
+      module_defaults:
+        ansible.builtin.command:
+          expand_argument_vars: false
+      block:
+        - name: Ensure the backup directory exists
+          ansible.builtin.command:
+            argv: "{{ _backup_prefix + ['mkdir', '-p', '--', _backup_dir] }}"
+          changed_when: false
 
-    # Checkmk rejects host renames with HTTP 409 while changes such as new folders
-    # are still pending activation.
-    - name: Activate folder changes before migrating hosts
-      checkmk.general.activation:
-        validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_folders_activation', tls_validate_certs_default | default(true)) | bool }}"
-        server_url: "{{ checkmk_server_url }}"
-        site: "{{ checkmk_site }}"
-        automation_user: "{{ checkmk_api_user }}"
-        automation_secret: "{{ checkmk_api_password }}"
-        sites: ["{{ checkmk_site }}"]
-        redirect: true
-        force_foreign_changes: false
-      no_log: true
+        - name: Create a private working directory for the backup
+          ansible.builtin.command:
+            argv: "{{ _backup_prefix + ['mktemp', '-d', _backup_dir ~ '/.checkmk-backup.XXXXXXXX'] }}"
+          register: _backup_workspace
+          changed_when: true
 
-    - name: Migrate Checkmk hosts one at a time
-      ansible.builtin.include_tasks: tasks/rename_host.yml
-      loop: "{{ checkmk_migration.mappings }}"
-      loop_control:
-        loop_var: migration
-        label: "{{ migration.source }} -> {{ migration.target_checkmk_hostname }}"
+        - name: Publish the archive only after verification
+          block:
+            - name: Back up the site using OMD
+              ansible.builtin.command:
+                argv: "{{ _backup_prefix + ['omd', 'backup', checkmk_site, _backup_temp] }}"
+              changed_when: true
 
-    - name: Reconcile the folder, IP address and alias for all Checkmk targets
-      checkmk.general.host:
-        validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_attributes', tls_validate_certs_default | default(true)) | bool }}"
-        server_url: "{{ checkmk_server_url }}"
-        site: "{{ checkmk_site }}"
-        automation_user: "{{ checkmk_api_user }}"
-        automation_secret: "{{ checkmk_api_password }}"
-        name: "{{ item.checkmk_hostname }}"
-        folder: "{{ item.folder }}"
-        update_attributes:
-          ipaddress: "{{ item.ipaddress }}"
-          alias: "{{ item.alias }}"
-        state: present
-      loop: "{{ checkmk_migration.targets }}"
-      loop_control:
-        label: "{{ item.checkmk_hostname }}"
-      no_log: true
+            - name: Restrict archive permissions
+              ansible.builtin.command:
+                argv: "{{ _backup_prefix + ['chmod', '0600', _backup_temp] }}"
+              changed_when: false
 
-    - name: Activate Checkmk changes
-      checkmk.general.activation:
-        validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_final_activation', tls_validate_certs_default | default(true)) | bool }}"
-        server_url: "{{ checkmk_server_url }}"
-        site: "{{ checkmk_site }}"
-        automation_user: "{{ checkmk_api_user }}"
-        automation_secret: "{{ checkmk_api_password }}"
-        sites: ["{{ checkmk_site }}"]
-        redirect: true
-        force_foreign_changes: false
-      no_log: true
+            - name: Verify the compressed tar archive
+              ansible.builtin.command:
+                argv: "{{ _backup_prefix + ['tar', '-tzf', _backup_temp] }}"
+              changed_when: false
+
+            - name: Record the final archive path
+              ansible.builtin.set_fact:
+                checkmk_backup_file: >-
+                  {{ _backup_dir }}/{{ checkmk_site }}-pre-host-migration-{{ now(utc=true, fmt='%Y%m%dT%H%M%SZ') }}-{{ _backup_workspace.stdout.split('.') | last }}.tar.gz
+
+            - name: Move the verified archive into place
+              ansible.builtin.command:
+                argv: "{{ _backup_prefix + ['mv', '--', _backup_temp, checkmk_backup_file] }}"
+              register: _published_backup
+              changed_when: true
+
+          always:
+            - name: Remove any incomplete archive
+              ansible.builtin.command:
+                argv: "{{ _backup_prefix + ['rm', '-f', '--', _backup_temp] }}"
+              changed_when: false
+
+            - name: Remove the private working directory
+              ansible.builtin.command:
+                argv: "{{ _backup_prefix + ['rmdir', '--', _backup_workspace.stdout] }}"
+              changed_when: false
+
+    - name: Report the verified backup path
+      ansible.builtin.debug:
+        msg: "Checkmk backup ({{ checkmk_backup_target_host }} / {{ _backup_mode }}): {{ checkmk_backup_file }}"
+
+    - name: Apply the plan after publishing the verified backup
+      when: (_published_backup.rc | default(-1)) == 0
+      block:
+        - name: Ensure the target Checkmk folders exist
+          checkmk.general.folder:
+            validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_folders', tls_validate_certs_default | default(true)) | bool }}"
+            server_url: "{{ checkmk_server_url }}"
+            site: "{{ checkmk_site }}"
+            automation_user: "{{ checkmk_api_user }}"
+            automation_secret: "{{ checkmk_api_password }}"
+            path: "{{ item.path }}"
+            name: "{{ item.name }}"
+            state: present
+          loop: "{{ checkmk_folders }}"
+          loop_control:
+            label: "{{ item.path }}"
+          no_log: true
+
+        # Checkmk rejects host renames with HTTP 409 while changes such as new folders
+        # are still pending activation.
+        - name: Activate folder changes before migrating hosts
+          checkmk.general.activation:
+            validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_folders_activation', tls_validate_certs_default | default(true)) | bool }}"
+            server_url: "{{ checkmk_server_url }}"
+            site: "{{ checkmk_site }}"
+            automation_user: "{{ checkmk_api_user }}"
+            automation_secret: "{{ checkmk_api_password }}"
+            sites: ["{{ checkmk_site }}"]
+            redirect: true
+            force_foreign_changes: false
+          no_log: true
+
+        - name: Migrate Checkmk hosts one at a time
+          ansible.builtin.include_tasks: tasks/rename_host.yml
+          loop: "{{ checkmk_migration.mappings }}"
+          loop_control:
+            loop_var: migration
+            label: "{{ migration.source }} -> {{ migration.target_checkmk_hostname }}"
+
+        - name: Reconcile the folder, IP address and alias for all Checkmk targets
+          checkmk.general.host:
+            validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_attributes', tls_validate_certs_default | default(true)) | bool }}"
+            server_url: "{{ checkmk_server_url }}"
+            site: "{{ checkmk_site }}"
+            automation_user: "{{ checkmk_api_user }}"
+            automation_secret: "{{ checkmk_api_password }}"
+            name: "{{ item.checkmk_hostname }}"
+            folder: "{{ item.folder }}"
+            update_attributes:
+              ipaddress: "{{ item.ipaddress }}"
+              alias: "{{ item.alias }}"
+            state: present
+          loop: "{{ checkmk_migration.targets }}"
+          loop_control:
+            label: "{{ item.checkmk_hostname }}"
+          no_log: true
+
+        - name: Activate Checkmk changes
+          checkmk.general.activation:
+            validate_certs: "{{ (tls_validate_certs | default({})).get('checkmk_migration_final_activation', tls_validate_certs_default | default(true)) | bool }}"
+            server_url: "{{ checkmk_server_url }}"
+            site: "{{ checkmk_site }}"
+            automation_user: "{{ checkmk_api_user }}"
+            automation_secret: "{{ checkmk_api_password }}"
+            sites: ["{{ checkmk_site }}"]
+            redirect: true
+            force_foreign_changes: false
+          no_log: true

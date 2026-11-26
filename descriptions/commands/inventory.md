@@ -20,6 +20,8 @@ Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
 
+Bei direktem Skriptaufruf wählt `--root` oder `ANSIBLE_PROJECT_ROOT` das Projekt. Der Generator veröffentlicht Inventory und `x/reports/inventory_report.yml` als zusammengehörige Aktualisierung innerhalb dieses Verzeichnisses. Die Sicherungen liegen unter `x/backups`.
+
 ```json
 {
   "schema_version": 1,
@@ -40,22 +42,14 @@ Vertrauliche Werte werden nicht dokumentiert.
   "i18n": {
     "de": {
       "title": "Proxmox-Inventory aktualisieren",
-      "description": "# Proxmox-Inventory aktualisieren\n\nProxmox-Inventory aktualisieren\n\nAufruf: `bin/control inventory [Optionen]`.\n\nVorhandene Kurzformen: `inv-update`, `inventory`.\n\nFeature: proxmox. Die aktuelle Aktivierung prueft weiterhin Control.\n\nKeine vollstaendige strukturierte Parameterbeschreibung im Bestand. Den bestehenden Terminalablauf und dessen Hilfe verwenden; keine Optionen erfinden.\n\nVoraussetzungen laut Registry:\n- `lib/control/helpers.sh`\n- `scripts/update_inventory.sh`\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `bin/control.d/inventory.json`\n- `bin/control.d/inventory.sh`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.",
+      "description": "# Proxmox-Inventory aktualisieren\n\nProxmox-Inventory aktualisieren\n\nAufruf: `bin/control inventory [Optionen]`.\n\nVorhandene Kurzformen: `inv-update`, `inventory`.\n\nFeature: proxmox. Die aktuelle Aktivierung prueft weiterhin Control.\n\nKeine vollstaendige strukturierte Parameterbeschreibung im Bestand. Den bestehenden Terminalablauf und dessen Hilfe verwenden; keine Optionen erfinden.\n\nVoraussetzungen laut Registry:\n- `lib/control/helpers.sh`\n- `scripts/update_inventory.sh`\n\n## Parameter und maschinenlesbarer Vertrag\n\nDie Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind\nals solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.\nVertrauliche Werte werden nicht dokumentiert.\n\n## Quellen und Pflege\n\n- `bin/control.d/inventory.json`\n- `bin/control.d/inventory.sh`\n\nDiese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen\nBeschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.\n\nBei direktem Skriptaufruf wählt `--root` oder `ANSIBLE_PROJECT_ROOT` das Projekt. Der Generator veröffentlicht Inventory und `x/reports/inventory_report.yml` als zusammengehörige Aktualisierung innerhalb dieses Verzeichnisses. Die Sicherungen liegen unter `x/backups`.",
       "fields": {}
     },
     "en": {
       "title": "Refresh the Proxmox inventory",
-      "description": "# Refresh the Proxmox inventory\n\nRefresh the Proxmox inventory\n\nRun: `bin/control inventory [options]`.\n\nAliases: `inv-update`, `inventory`.\n\nFeature: proxmox. Control checks availability at runtime.\n\nNo structured parameter list is available. Use the existing terminal workflow and its help.\n\nRegistry prerequisites:\n- `lib/control/helpers.sh`\n- `scripts/update_inventory.sh`\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `bin/control.d/inventory.json`\n- `bin/control.d/inventory.sh`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.",
+      "description": "# Refresh the Proxmox inventory\n\nRefresh the Proxmox inventory\n\nRun: `bin/control inventory [options]`.\n\nAliases: `inv-update`, `inventory`.\n\nFeature: proxmox. Control checks availability at runtime.\n\nNo structured parameter list is available. Use the existing terminal workflow and its help.\n\nRegistry prerequisites:\n- `lib/control/helpers.sh`\n- `scripts/update_inventory.sh`\n\n## Parameters\n\nThe listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.\n\n## Sources and maintenance\n\n- `bin/control.d/inventory.json`\n- `bin/control.d/inventory.sh`\n\nMaintain this description and its source hashes together when the code changes. The database stores a cache.\n\nWhen calling the script directly, `--root` or `ANSIBLE_PROJECT_ROOT` selects the project. The generator publishes the inventory and `x/reports/inventory_report.yml` together inside that directory. It saves backups in `x/backups`.",
       "fields": {}
     }
   }
 }
 ```
-
-## Quellen und Pflege
-
-- `bin/control.d/inventory.json`
-- `bin/control.d/inventory.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.

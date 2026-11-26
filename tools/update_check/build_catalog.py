@@ -13,7 +13,7 @@ def build(package,template,home):
     (examples/'settings/all_settings.example.yml').write_text('# Neutrale Nachschlagewerte; keine aktive Konfiguration.\n# Werte mit example.invalid sind Platzhalter und werden nicht automatisch uebernommen.\n'+yaml.safe_dump(base,sort_keys=False,allow_unicode=True))
     contract=json.loads((package/'update_check/settings_contract.json').read_text())
     sources={};data={}
-    files=['settings/all_settings.example.yml','checkmk/settings.example.yml','checkmk/plugins.example.yml','access/host_access.example.yml','access/credentials.example.yml','bootstrap/settings.example.yml','tls/settings.example.yml']
+    files=['settings/all_settings.example.yml','checkmk/settings.example.yml','checkmk/plugins.example.yml','access/host_access.example.yml','access/credentials.example.yml','bootstrap/settings.example.yml','tls/settings.example.yml','settings/controller_paths.example.yml']
     if home:files.append('homelab/settings.example.yml')
     for rel in files:
         p=examples/rel;values=yaml.safe_load(p.read_text()) or {}
@@ -81,6 +81,16 @@ def build(package,template,home):
         if key=='rsyslog_protocol':info['choices']=['tcp','udp']
         if key=='ansible_auth_mode':info['choices']=['password_all','key_only','password_users_only']
         if key=='managed_access_default_become_method':info['choices']=['sudo','su']
+        if rule.get('choices'):
+            info['choices'] = rule['choices']
+        if info.get('source') == 'examples/settings/controller_paths.example.yml':
+            # This file only describes public path names and feature defaults.
+            info['example'] = data[key][0]
+            if key in ('docker_deploy_pause_summary','checkmk_backup_mode','apache_certificate_directory') or key.endswith('_filename'):
+                info.update(default=data[key][0], example_only=False)
+            else:
+                info.pop('default', None)
+                info['example_only'] = True
         fields[key]=info
     order=['site_id','site_name','site_managed_by','features','ansible_auth_mode','auth_method_description','managed_access_default_user','managed_access_default_port','managed_access_default_become','managed_access_default_become_method','managed_access_default_become_user','managed_host_access','bootstrap_targets','bootstrap_public_key_file','bootstrap_disable_password_auth_after_key','tls_validate_certs_default','tls_validate_certs']
     order += [key for key in base if key not in order]

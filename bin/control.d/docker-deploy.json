@@ -11,7 +11,8 @@
         "playbooks/docker/deploy_docker_networks.yaml",
         "playbooks/docker/deploy_docker_stacks.yml",
         "playbooks/docker/deploy_docker_users.yml",
-        "playbooks/docker/prepare_deployment.yml"
+        "playbooks/docker/prepare_deployment.yml",
+        "playbooks/docker/vars/paths.yml"
       ],
       "aliases": [
         {

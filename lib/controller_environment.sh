@@ -1,4 +1,5 @@
 # Set by entry points after resolving their project directory.
+export ANSIBLE_PROJECT_ROOT="$ROOT_DIR"
 if [[ -x "$ROOT_DIR/.venv/bin/python3" ]]; then
   export PATH="$ROOT_DIR/.venv/bin:$PATH"
 fi
