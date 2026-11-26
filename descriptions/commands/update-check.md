@@ -454,7 +454,7 @@ Für die Erstmigration mit einem älteren Checker steht der private Brücken-Che
   "source_hashes": {
     "bin/control.d/update-check.json": "adb0a79c424f87249ca66e73d2256bc2f477017e3ce4ebc906364678a95b3177",
     "bin/control.d/update-check.sh": "7cc1fc9287cff92e352ad038519366d7dfd04d4efe99d1c70d980de0c62ac807",
-    "update_check/check.py": "8d8534ddff81408dc8fdc8a0e3a0e4a2562816302d269af371c67375c9026000",
+    "update_check/check.py": "890f0b01367f27d240f86dfbdbed7cd40bac372997a40d4c8a80c00b293c7d53",
     "update_check/configure.py": "2c7e913b78c703326eb4116bbb2f6a3ea7402903357eb12ba977bb988e2e22b7",
     "update_check/probes.py": "3ef5592956d6f9e7072310b39b3a9cdf5e38057b194faa4790a30ea38c01fa70",
     "update_check/cleanup.py": "ef0fd75326697b291b075104c0d4408030aa89fad020193671758a4759121738",

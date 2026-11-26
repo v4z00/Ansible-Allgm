@@ -1,5 +1,9 @@
 # Changelog
 
+## s0.8.2 – Controller-Prüfer 1.5.3
+
+Die Prüfungen für Updates, Bereinigung und Feature-Schalter sind leichter zu pflegen. Befehle, Exitcodes und die Struktur der JSON-Berichte bleiben kompatibel. Eine Konfigurationsmigration ist für diesen Patch nicht nötig.
+
 ## s0.8.1 – Developer guides / Entwicklerleitfäden
 
 English and German guides cover the controller architecture, custom commands, profiles, Git add-ons and local packages. Add-on authors can create and verify their Git manifests with `addon-index` and `addon-verify`.

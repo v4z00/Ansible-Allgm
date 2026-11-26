@@ -1,17 +1,17 @@
 {
   "schema": 1,
   "id": "version_pruefer",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "scope": "Lokaler Versionspruefer",
   "version_files": [
     "update_check/VERSION.txt"
   ],
   "files": {
-    "update_check/check.py": "8d8534ddff81408dc8fdc8a0e3a0e4a2562816302d269af371c67375c9026000",
+    "update_check/check.py": "890f0b01367f27d240f86dfbdbed7cd40bac372997a40d4c8a80c00b293c7d53",
     "update_check/check.sh": "7a70c071c39ed3ec710c0b37af0bc438f8a0296f1e0eb7fb966a42e63e4c9d85",
     "update_check/configure.py": "2c7e913b78c703326eb4116bbb2f6a3ea7402903357eb12ba977bb988e2e22b7",
     "update_check/probes.py": "3ef5592956d6f9e7072310b39b3a9cdf5e38057b194faa4790a30ea38c01fa70",
-    "update_check/VERSION.txt": "ded1b601e81d31ca1f65c4f3ccf2ebd7992b6390e37bc2a86f3837282f1e00cf",
+    "update_check/VERSION.txt": "c03e3824001f39b9518249b8d6522422fc4de7227e12a568c0164662b03b7758",
     "update_check/tests/test_check.py": "0acd1d021c3fde1f64e782f565b9897a74bc6d34702bdbb650d52d28b05dea03",
     "bin/control.d/update-check.json": "adb0a79c424f87249ca66e73d2256bc2f477017e3ce4ebc906364678a95b3177",
     "bin/control.d/update-check.sh": "7cc1fc9287cff92e352ad038519366d7dfd04d4efe99d1c70d980de0c62ac807",
