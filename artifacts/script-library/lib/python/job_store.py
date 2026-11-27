@@ -78,6 +78,10 @@ CREATE TABLE IF NOT EXISTS deliveries(report_id TEXT NOT NULL,channel TEXT NOT N
  PRIMARY KEY(report_id,channel),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
 CREATE TABLE IF NOT EXISTS report_health(report_id TEXT NOT NULL,source TEXT NOT NULL,status TEXT NOT NULL,message TEXT NOT NULL,
  PRIMARY KEY(report_id,source),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS run_observations(
+ source TEXT NOT NULL,epoch TEXT NOT NULL,run_id TEXT NOT NULL,kind TEXT NOT NULL,
+ PRIMARY KEY(source,epoch,run_id),
+ FOREIGN KEY(source,epoch,run_id) REFERENCES runs ON DELETE CASCADE);
 CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
 ''')
         with self.transaction():
@@ -191,6 +195,8 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
                 if run['status'] not in STATUSES or run['category'] not in ('general','vzdump','ansible','administration'):raise ValueError('Invalid event status')
                 key=(source,epoch,run['run_id'])
                 self.db.execute('INSERT OR REPLACE INTO runs(source,epoch,run_id,job,category,status,started,activity,finished,exit_code,summary,duration_seconds) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',(*key,safe_text(run['job'],160),run['category'],run['status'],float(run['started']),float(run['activity']),run['finished'],run['exit_code'],safe_text(run['summary']),run.get('duration_seconds')))
+                if event.get('kind') == 'systemd-observation':
+                    self.db.execute('INSERT OR REPLACE INTO run_observations VALUES(?,?,?,?)', (*key, 'systemd'))
                 for item in payload.get('items',[]):
                     if item['status'] not in STATUSES:raise ValueError('Invalid item status')
                     self.db.execute('INSERT OR REPLACE INTO items VALUES(?,?,?,?,?,?,?)',(*key,safe_text(item['item_id'],160),item['status'],safe_text(item['message']),float(item['updated'])))
@@ -258,6 +264,16 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
                 prepare_channels(report['id'])
                 return report
             params=list(cats);where='r.category IN ('+','.join('?'*len(cats))+') AND r.status!=?';params.append('running')
+            # Service snapshots remain queryable, but healthy/optional inactive
+            # units are not completed jobs. Use their recorded provenance, not
+            # unit/job names (profiles may assign arbitrary observation names).
+            where += """ AND NOT (
+                r.status IN ('success','skipped')
+                AND EXISTS(SELECT 1 FROM run_observations o WHERE o.source=r.source
+                    AND o.epoch=r.epoch AND o.run_id=r.run_id AND o.kind='systemd')
+                AND NOT EXISTS(SELECT 1 FROM items i WHERE i.source=r.source
+                    AND i.epoch=r.epoch AND i.run_id=r.run_id AND i.status IN ('failed','warning'))
+            )"""
             if run_id:where+=' AND r.run_id=?';params.append(run_id)
             rows=[dict(r) for r in self.db.execute('SELECT r.* FROM runs r WHERE '+where+' AND NOT EXISTS(SELECT 1 FROM report_runs p WHERE p.source=r.source AND p.epoch=r.epoch AND p.run_id=r.run_id) ORDER BY r.started LIMIT 2001',params)]
             health=[dict(r) for r in self.db.execute("SELECT h.source,h.status FROM collection_health h LEFT JOIN meta m ON m.key='health_category:'||h.source WHERE h.status!='ok' AND COALESCE(m.value,'general')=? ORDER BY h.source",(category,))]
@@ -433,6 +449,7 @@ class Systemd:
                 store.db.execute('INSERT INTO runs(source,epoch,run_id,job,category,status,started,activity,finished,exit_code,summary,duration_seconds) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
                                  (*key, row['name'], 'general', row['status'], now, now, now,
                                   1 if row['status'] == 'failed' else 0, row['summary'], 0))
+                store.db.execute('INSERT INTO run_observations VALUES(?,?,?,?)', (*key, 'systemd'))
                 store._event(run, 'systemd-observation')
         store.prune(90)
         return rows

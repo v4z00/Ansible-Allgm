@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "48732179dae488fe78e7210c84f94a44cc6913283f845d7d978302f20750f8f8",
+      "sha256": "414f2b8d3ed8f7c983632c4765179167948b1519b0cfc3596c68db66c9617dc3",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -111,7 +111,7 @@
       "mode": "0644"
     },
     "artifacts/script-library/lib/python/job_store.py": {
-      "sha256": "951a7e29be285a417dc61a1bebf97f1fd40f03998db793a85cdb64bf8abaab85",
+      "sha256": "17a4ecd89bd8de5129adc282ff38908b6babf6ce12ed90e5c2ccf4b03045e459",
       "mode": "0644"
     },
     "bin/control": {
@@ -639,11 +639,11 @@
       "mode": "0644"
     },
     "descriptions/commands/docker-deploy-all.md": {
-      "sha256": "ba2f3b0c55809a0fdedb012cc84e8cd2040eb709ab5c140147f4e50e20497cb0",
+      "sha256": "c931ac9d4e0259428a353fc8eef3b64dc42cb4e7b2977cbe3a5858d35d51675b",
       "mode": "0644"
     },
     "descriptions/commands/docker-deploy.md": {
-      "sha256": "ceea07d0fe76487c0edff38846277d4552149fda49c5274c19d430f5e89fdeb4",
+      "sha256": "3bdf514444e128ff183f3d11eb9d715918d8e8db50139cd2d9264cb9cde77670",
       "mode": "0644"
     },
     "descriptions/commands/docker-ips.md": {
@@ -659,7 +659,7 @@
       "mode": "0644"
     },
     "descriptions/commands/docker-update.md": {
-      "sha256": "32c0b9738eb431030b3980b03c80208f63233e0570b98a731e1f23bd40c5fd13",
+      "sha256": "04c1014650d30433c050725a5da1cccf2b4e1cb641180a7e357e78d78cd81b57",
       "mode": "0644"
     },
     "descriptions/commands/docker-users-export.md": {
@@ -695,7 +695,7 @@
       "mode": "0644"
     },
     "descriptions/commands/jobs-summary.md": {
-      "sha256": "cbb3ba82a3ef80ff5283a7a9977115f53291f67f043f4bd57823fff55e3f56df",
+      "sha256": "5f5f38a5d52830d44d9da7d9804cf4b41a0855ba4d20e80e37be6219a89610c7",
       "mode": "0644"
     },
     "descriptions/commands/jobs.md": {
@@ -807,7 +807,7 @@
       "mode": "0644"
     },
     "descriptions/configurations/script_jobs.md": {
-      "sha256": "53cbc838887931fd83e4543e5c211109053a11b76951b470b031ce9f3e4af943",
+      "sha256": "ae74ec1cc4232b2a605182081cb90acee3c4505fb5f2df332ee67f05bae0bece",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-deployment.md": {
@@ -815,7 +815,7 @@
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-status.md": {
-      "sha256": "8e3d9796426590c7c8f41dd5c445e3aa419728cbcc392836b8103c960ac93791",
+      "sha256": "7ce91f229d13a127ec2d32311d37036bf39a9b5845facecb1308eb35ea272e5e",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-script-discovery.md": {
@@ -863,7 +863,7 @@
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__deploy_docker_stacks.md": {
-      "sha256": "b1b0858a382db81629c6a83ed84453b3d8f08a430bf9cef5e2b5cc91bc0f6751",
+      "sha256": "8ee6763526d4197af40d793f6dd850f1bef974eae866d10379b41fbc7ee9fdfa",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__deploy_docker_users.md": {
@@ -891,7 +891,7 @@
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__docker__update_containers.md": {
-      "sha256": "a5d200389faef7382f4334c739239cf30271dd82bb041398fb4a2b1b491a2b89",
+      "sha256": "41409fb2177d9366ac7f8257e5c8ae552d6ed248cc7981503cca7c332951cc92",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__identity__configure_kerberos.md": {
@@ -1027,7 +1027,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "8166990d5721e3baa816f06e392eff1066bbdd4616b6d448e13ee23fa93874da",
+      "sha256": "a69465418f730a960385f841bd6a4891b53ddf816d9b7ba9ee9c0b671b8422b7",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1091,7 +1091,7 @@
       "mode": "0644"
     },
     "descriptions/roles/script_jobs.md": {
-      "sha256": "89cbc0144516791f0e34fa41ab30e0e3b305fec9a4b940157c4d59c7498ddb17",
+      "sha256": "83619fc08ac7ac7153d7f0dd0d29311c5317d6ab8991bae658e35655462c9632",
       "mode": "0644"
     },
     "descriptions/roles/script_jobs_controller.md": {
@@ -1219,7 +1219,7 @@
       "mode": "0644"
     },
     "playbooks/docker/deploy_docker_stacks.yml": {
-      "sha256": "0112aa0183804d870d3d981dc5f16e13ca146e2c3b2b338de32e75b80ba39f82",
+      "sha256": "144a79d60d9d3859df9c456489c4e4c686b1f244b6e5275e1936c19eace0dded",
       "mode": "0644"
     },
     "playbooks/docker/deploy_docker_users.yml": {
@@ -1259,7 +1259,7 @@
       "mode": "0644"
     },
     "playbooks/docker/update_containers.yml": {
-      "sha256": "907a3eb0c9767a739cfb36c5f274ba557d6912a3899ec1c39bd48ae3d3f80f48",
+      "sha256": "e066d2bb216623960332be7d82b20505011daa4630617e23c01a18ca923e9147",
       "mode": "0644"
     },
     "playbooks/docker/vars/paths.yml": {
@@ -1759,7 +1759,7 @@
       "mode": "0644"
     },
     "tools/job_tests/test_summary.py": {
-      "sha256": "6a995ff3c356bb25c22d2c2b51a1d467a8ddeae8e3705b0903e8fd2263a39838",
+      "sha256": "36b1dad95353908671c9cfdcc58616a08b0320f1a6eb628e791148cbe1caba8a",
       "mode": "0644"
     },
     "tools/job_tests/test_systemd_discovery.py": {
@@ -1767,7 +1767,7 @@
       "mode": "0644"
     },
     "tools/job_tests/test_systemd_status.py": {
-      "sha256": "1ab2de190a8a464f735461d8d44e1016dca3d73b03051567fbe9dad5fe4f39ea",
+      "sha256": "bb77b751cbb99b6e26a5c5d149a3ad33836167ad9abec0cc3429173e3cb3e898",
       "mode": "0644"
     },
     "tools/local_callbacks/extension_receipt.py": {
@@ -1823,7 +1823,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "a369e483f5cc72031777e025901980f374668fd6c3da0519b06f52fbf03a7416",
+      "sha256": "f1d0f53c10c987f6b05b59c83f2d4e0d88e16aa6f1231b9f56cde7f3f41ed909",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1839,7 +1839,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "18317f264bf8c0f368ca1e459c03430283660c485a8f4ca302fb80e9469193d7",
+      "sha256": "7a3c26f431da4af27f6f3209e3b1bac1c98aa67b28eb7050ff34bc7f122d38da",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1847,7 +1847,7 @@
       "mode": "0644"
     },
     "update_check/manifests/script_jobs.json": {
-      "sha256": "9467b25bb8d1e6f3a7979d04c401e8ab0cdee42a7d482577e568e798266393ca",
+      "sha256": "7398a5cd6512cffd7b50d39e6ebe1a699ea00a239c37fff071d79b51533bda07",
       "mode": "0644"
     },
     "update_check/manifests/tls_tasks.json": {
@@ -1867,7 +1867,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "0b85cfcbe6713cc517d1f2dc38f3bbe15eefa05ed2e16509461313ee0d1a7601",
+      "sha256": "7e98288963e436a567922b130cb95f145baaa8aa95efeeab4948c8f65aabc501",
       "mode": "0644"
     },
     "update_check/rollout.py": {
@@ -1920,6 +1920,10 @@
     },
     "update_check/tests/test_description_languages.py": {
       "sha256": "c6b855394fc414959c9e76cf577beca2d45c00da9fe861a6a45e466f45b8e071",
+      "mode": "0644"
+    },
+    "update_check/tests/test_docker_build.py": {
+      "sha256": "7cff898fbd696fa63704ab059687889f16b07d61c37fef473fb59380ba430e60",
       "mode": "0644"
     },
     "update_check/tests/test_docker_deploy.py": {

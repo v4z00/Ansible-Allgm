@@ -88,9 +88,8 @@ class SystemdStatus(unittest.TestCase):
             batch = state.export()
             self.assertEqual(len(batch['events']), 1)
             controller.ingest('alpha', batch)
-            report = controller.report(reserve=False)
-            self.assertIn('Alpha Dienst fixture ✅', report['body'])
-            self.assertNotIn(sample, report['body'])
+            self.assertIsNone(controller.report(reserve=False))
+            self.assertEqual(controller.latest()[0]['status'], 'success')
             state.close(); controller.close()
 
     def test_status_query_does_not_create_database_and_record_requires_existing_store(self):
@@ -132,8 +131,8 @@ class SystemdCollection(unittest.TestCase):
             controller = Store(root / 'controller/jobs.db', 'controller')
             rows = job_console.collect(controller, root, 'alpha')
             self.assertTrue(all(row['status'] == 'ok' for row in rows), rows)
-            report = controller.report(reserve=False)
-            self.assertIn('Alpha Dienst fixture ✅', report['body'])
+            self.assertIsNone(controller.report(reserve=False))
+            self.assertEqual(controller.latest()[0]['status'], 'success')
             self.assertNotIn('synthetic_NEVER_EXPORT', json.dumps(controller.export()) + str(rows))
             # A stale deployed profile must block an old green import.
             config.write_text('[]')

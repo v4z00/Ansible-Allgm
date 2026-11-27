@@ -32,8 +32,39 @@
           - (compose_files.files | map(attribute='path') | map('dirname') | unique | length) == compose_files.matched
         fail_msg: Each stack requires exactly one Compose file. Check the Compose directories and file patterns.
 
-    - name: Update images and wait for running or healthy services
+    - name: Pull registry images with bounded retries before changing containers
       ansible.builtin.command:
+        argv: [docker, compose, --file, "{{ item.path }}", pull, --ignore-buildable]
+        expand_argument_vars: false
+        chdir: "{{ item.path | dirname }}"
+      environment:
+        COMPOSE_PARALLEL_LIMIT: '1'
+      loop: "{{ compose_files.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      register: stack_pull
+      until: stack_pull.rc == 0
+      retries: 4
+      delay: 20
+      changed_when: false
+
+    - name: Build locally defined images before changing containers
+      ansible.builtin.command:
+        argv: [docker, compose, --file, "{{ item.path }}", build, --pull]
+        expand_argument_vars: false
+        chdir: "{{ item.path | dirname }}"
+      environment:
+        COMPOSE_PARALLEL_LIMIT: '1'
+      loop: "{{ compose_files.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      when: docker_compose_build | default(true) | bool
+      no_log: true
+      changed_when: false
+
+    - name: Update containers and wait for running or healthy services
+      ansible.builtin.command:
+        expand_argument_vars: false
         argv:
           - docker
           - compose
@@ -42,7 +73,8 @@
           - up
           - --detach
           - --pull
-          - always
+          - never
+          - --no-build
           - --wait
           - --wait-timeout
           - "180"

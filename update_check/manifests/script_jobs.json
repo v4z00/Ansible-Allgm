@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "script_jobs",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "files": {
     "artifacts/script-library/bin/job-status": "48e59321a3f8cd7e907205e00fbf48fa4a4c42d4ffa6c0165f3243fdf202bbf0",
     "artifacts/script-library/bin/script-jobs": "77dd5d1c4a4dd0184fe01edfc9d3b1b4d9ec41ea5e5f0fd64ece86bc361933b4",
@@ -29,7 +29,7 @@
     "artifacts/script-library/lib/python/job_expectations.py": "42eae30f5859be67498a930ba8dc24582c08d1b18fa236912dfb47ca13bab9b8",
     "artifacts/script-library/lib/python/job_notify.py": "340b63932a5e0437a2d923b335aab2348f95784c589fb3e931622910c487e65b",
     "artifacts/script-library/lib/python/job_report.py": "503decb394ef887363fffbb0c6981276d24da2ef548d6f6b411b29ac8ee94e69",
-    "artifacts/script-library/lib/python/job_store.py": "951a7e29be285a417dc61a1bebf97f1fd40f03998db793a85cdb64bf8abaab85",
+    "artifacts/script-library/lib/python/job_store.py": "17a4ecd89bd8de5129adc282ff38908b6babf6ce12ed90e5c2ccf4b03045e459",
     "bin/control.d/jobs-last.json": "23289315b66e43d636fa55911b55ecd2fdde7c2117d340b9a6ef32aae8111960",
     "bin/control.d/jobs-last.sh": "7e9f939cf794e78873b987de31cb193f6572ba5c8f0ea5bc923ab5c10e09a644",
     "bin/control.d/jobs-summary.json": "cd3547b41629df5f3397605610bdc437c8ccfd521afcd43539f9dc0def260705",
@@ -37,7 +37,7 @@
     "bin/control.d/jobs.json": "24dcd5c94d8d2bb818f3b3100d74f2b294d8ff07479395dc4273307a61384c68",
     "bin/control.d/jobs.sh": "7247b8df4c0662e5a92338d005fac347d9632ce52f3f2bfc84217b363702293e",
     "descriptions/configurations/systemd-job-deployment.md": "654aec99b4cde6b6fa19f5124d1321bee5a8f7b71de4b2d014a6c3e1ea259ae2",
-    "descriptions/configurations/systemd-job-status.md": "8e3d9796426590c7c8f41dd5c445e3aa419728cbcc392836b8103c960ac93791",
+    "descriptions/configurations/systemd-job-status.md": "7ce91f229d13a127ec2d32311d37036bf39a9b5845facecb1308eb35ea272e5e",
     "descriptions/playbooks/playbooks__scripts__deploy_systemd.md": "00adc6bff151b44af5c81b27167e34920578c5d6f4d261a00a0fc4b940e309a1",
     "playbooks/scripts/deploy_jobs.yml": "2130e09fdf591f239dce5959d61e3f3a5642625dc93e61f0f94e7b0738c5da1c",
     "playbooks/scripts/deploy_systemd.yml": "3cc77b91dbce76b62264d2d50e25f67382d0f7f5fabead1e346ab1dc1511742f",
@@ -70,9 +70,9 @@
     "tools/job_tests/test_jobs.py": "90ee93bc941b1665be032ffda0eb4ddb552020ec17c01aa296a559b6e00e9784",
     "tools/job_tests/test_profile_deployment.py": "88ce18367b0093c75c21acbedcfa6b5074b5805f1ac1222b27522e141cfb822f",
     "tools/job_tests/test_recovery.py": "2832dfbfcc61ad4107d18509bfa63a63065abfdf8ec187cb40f196527dbaeade",
-    "tools/job_tests/test_summary.py": "6a995ff3c356bb25c22d2c2b51a1d467a8ddeae8e3705b0903e8fd2263a39838",
+    "tools/job_tests/test_summary.py": "36b1dad95353908671c9cfdcc58616a08b0320f1a6eb628e791148cbe1caba8a",
     "tools/job_tests/test_systemd_discovery.py": "9a59dd8568021e2f05e5fcf74dab5199608561596ca0f01675f56eb8d0339894",
-    "tools/job_tests/test_systemd_status.py": "1ab2de190a8a464f735461d8d44e1016dca3d73b03051567fbe9dad5fe4f39ea"
+    "tools/job_tests/test_systemd_status.py": "bb77b751cbb99b6e26a5c5d149a3ad33836167ad9abec0cc3429173e3cb3e898"
   },
   "scope": "Neutrale Library und generische Jobverwaltung; keine produktiven Skripte oder Hostwerte",
   "version_files": [],
