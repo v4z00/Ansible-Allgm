@@ -25,6 +25,27 @@ def relative(value):
     return value
 
 
+def code_files(root):
+    """Inventory explicit code without opening private JSON/YAML/configuration files."""
+    root=Path(root).absolute()
+    if not root.is_dir() or any(p.is_symlink() for p in (root,*root.parents)):
+        raise ValueError('Regular code root required')
+    entries=[]
+    for current, dirs, files in os.walk(root,followlinks=False):
+        current=Path(current)
+        for name in dirs:
+            if (current/name).is_symlink():raise ValueError('Code directory symlink refused')
+        dirs[:]=sorted(d for d in dirs if not d.startswith('.') and d.lower() not in ('config','private','secrets','logs','state','archive','old'))
+        for name in sorted(files):
+            source=current/name
+            if source.suffix.lower() not in ('.ps1','.psm1','.psd1','.ps1xml'):continue
+            if source.is_symlink():raise ValueError('Code file symlink refused')
+            path=relative(source.relative_to(root).as_posix())
+            entries.append({'source':str(source),'path':path,'sha256':hashlib.sha256(source.read_bytes()).hexdigest()})
+    if not entries:raise ValueError('No PowerShell code in selected root')
+    return sorted(entries,key=lambda row:row['path'])
+
+
 def source_files(library):
     """Only the public Windows code tree and two declared shared data files."""
     result=[]
@@ -126,17 +147,19 @@ def verify(directory,expected):
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
     prepare_args=sub.add_parser('prepare');group=prepare_args.add_mutually_exclusive_group(required=True)
-    group.add_argument('--library',type=Path);group.add_argument('--manifest',type=Path)
+    group.add_argument('--library',type=Path);group.add_argument('--manifest',type=Path);group.add_argument('--code-root',type=Path)
     prepare_args.add_argument('--certificate',type=Path,required=True);prepare_args.add_argument('--cache',type=Path,required=True)
     prepare_args.add_argument('--timestamp-server',default='')
     verify_args=sub.add_parser('verify');verify_args.add_argument('--directory',type=Path,required=True);verify_args.add_argument('--expected',type=Path,required=True)
     cert_args=sub.add_parser('certificate');cert_args.add_argument('--path',type=Path,required=True)
+    inventory_args=sub.add_parser('inventory');inventory_args.add_argument('--code-root',type=Path,required=True)
     args=parser.parse_args();os.umask(0o077)
     if args.command=='prepare':
-        entries=source_files(args.library) if args.library else json.loads(args.manifest.read_text())
+        entries=source_files(args.library) if args.library else code_files(args.code_root) if args.code_root else json.loads(args.manifest.read_text())
         print(json.dumps(prepare(entries,args.certificate,args.cache,args.timestamp_server)))
     elif args.command=='verify':
         verify(args.directory,json.loads(args.expected.read_text()));print('{"verified":true}')
+    elif args.command=='inventory':print(json.dumps(code_files(args.code_root)))
     else:print(json.dumps(certificate_info(args.path)))
     return 0
 

@@ -1,0 +1,19 @@
+# Private group/host variables; choose your own single management host.
+windows_gpo_enabled: true
+windows_gpo_management_host: INVENTORY_HOST
+windows_gpo_prefix: 'Ansible: '
+windows_gpo_domain: ''  # Discover the domain of the management session.
+windows_gpo_server: ''  # Discover its PDC emulator; pin all operations to that DC.
+windows_gpo_adopt_existing: false
+windows_gpo_profiles:
+  - id: security
+    name: Security
+    settings:
+      winrm_basic: false
+      winrm_unencrypted: false
+      smb_client_signing: true
+      smb_server_signing: true
+      ntlm_outgoing: audit
+# Missing/null switches are unmanaged and retain previous/manual values.
+# NTLM deny requires a separately verified non-NTLM management path.
+# There are no automatic links and no automatic client policy refresh.

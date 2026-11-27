@@ -1,0 +1,46 @@
+- name: Require an explicit single GPO management host and opt-in switch
+  ansible.builtin.assert:
+    that:
+    - windows_gpo_enabled is boolean
+    - windows_gpo_adopt_existing is boolean
+    - windows_gpo_management_host | length > 0
+    - inventory_hostname == windows_gpo_management_host
+    - ansible_play_hosts_all | length == 1
+    - ansible_limit | default('') | trim | length > 0
+    - windows_gpo_enabled
+    fail_msg: Select exactly the configured GPO management host and explicitly enable GPO management.
+- name: Compile the selected neutral policy switches
+  ansible.builtin.set_fact:
+    windows_gpo_effective_plan: '{{ windows_gpo_profiles | windows_gpo_plan(windows_gpo_prefix, ansible_winrm_transport
+      | default(''ntlm'')) }}'
+- name: Protect local GPO recovery backups
+  ansible.builtin.include_role:
+    name: windows_private_paths
+  vars:
+    windows_private_paths:
+    - '{{ windows_gpo_backup_root }}'
+  when: windows_gpo_effective_plan.profiles | length > 0
+- name: Create unlinked topic GPOs and update only the selected registry values
+  ansible.windows.win_powershell:
+    script: '{{ lookup(''ansible.builtin.template'', ''manage.ps1.j2'') }}'
+    parameters:
+      Plan: '{{ windows_gpo_effective_plan | to_json }}'
+      Domain: '{{ windows_gpo_domain }}'
+      Server: '{{ windows_gpo_server }}'
+      BackupRoot: '{{ windows_gpo_backup_root }}'
+      AdoptExisting: '{{ windows_gpo_adopt_existing }}'
+  become: true
+  become_method: runas
+  become_user: '{{ ansible_user }}'
+  vars:
+    ansible_become_password: '{{ ansible_password }}'
+  when: windows_gpo_effective_plan.profiles | length > 0
+  no_log: true
+  register: windows_gpo_result
+- name: Show the bounded plan and recovery references without credentials
+  ansible.builtin.debug:
+    msg:
+      changes: '{{ windows_gpo_result.result.changes | default([]) }}'
+      backups: '{{ windows_gpo_result.result.backups | default([]) }}'
+      links_managed: false
+  when: windows_gpo_effective_plan.profiles | length > 0

@@ -1,0 +1,9 @@
+---
+windows_gpo_enabled: false
+windows_gpo_management_host: ''
+windows_gpo_domain: ''
+windows_gpo_server: ''
+windows_gpo_prefix: 'Ansible: '
+windows_gpo_adopt_existing: false
+windows_gpo_profiles: []
+windows_gpo_backup_root: 'C:\ProgramData\AnsibleGpo\Backups'

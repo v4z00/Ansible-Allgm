@@ -2,6 +2,12 @@
 
 ## s0.9.0 – Windows foundation and immediate host security alerts
 
+The Windows foundation now also includes grouped, unlinked GPO registry hardening
+with explicit switches, check-mode comparison and protected recovery backups. The
+central signing pipeline accepts independent code bundles for add-ons; CoreDC is
+maintained in its own repository and update module. No private host scripts or
+SYSVOL exports are published. Native Windows/AD/logon pilots remain outstanding.
+
 Staging source preview: WinRM HTTPS access preparation, separate Windows bootstrap,
 portable PowerShell/SQLite APIs, shared schema/mail mapping, Windows event collection,
 read-only job/Checkmk views and optional Windows Checkmk MSI rollout. Existing Linux

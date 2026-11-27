@@ -43,7 +43,7 @@
     "tests/test_controller_paths.py": "8af9fe08f6fb7bad654b06c7395cbe22f335dc8b2d82e5a003bd19fa8226a015",
     "tests/test_docker_deploy.py": "342a0d17096e0f524bfdf9289c7d632e7aad7c61d1dccfe365866cd5adb8fb29",
     "tests/test_extending_examples.py": "0d578e96af415cddf2479bbcde5923d9b35c5e53d72b178e83886bdb1d68fec5",
-    "manifests/windows_foundation.json": "7383d2c1f6055f84c8aa1fce4a506e8b401004507a8ec1372fed4d071f99b5dc"
+    "manifests/windows_foundation.json": "36442a9ba8f6e343780cf1ad9c673f6cd006db4ad0bc94b14a8650b339a78568"
   },
   "trust": "Lokale Sollwerte, keine Signatur. Nicht aus veraenderten Live-Dateien automatisch neu erzeugen."
 }

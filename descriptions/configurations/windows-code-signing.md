@@ -29,6 +29,14 @@ PS1, PSM1, PSD1 and PS1XML are covered. Unchanged valid batches are reused; sour
 certificate rotation or timestamp-service changes produce a different batch identity.
 No recursive signing of unknown host files occurs. All environment values remain variables.
 
+Add-ons can call `windows_code_signing` with `tasks_from: bundle`, an explicit
+`windows_signing_source_kind` (`code-root` or `manifest`) and absolute
+`windows_signing_source_path`. The role returns `windows_signed_bundle_root` and
+`windows_signing_bundle`; the execution role still verifies signatures before use.
+A code-root inventory skips configuration/private/state/archive directories before
+reading files and accepts PowerShell code only. It never scans an execution host.
+The common library entry remains `tasks_from: library`.
+
 The central task calls the same Set-AuthenticodeSignature mechanism as a local signer.
 Timestamping is optional and explicit. Signatures without a timestamp need certificate
 lifetime/rotation planning. A check-mode run performs no key import or signing. Portable
@@ -89,33 +97,35 @@ und die echte Vertrauenskette dieser Umgebung müssen noch im Pilot bestätigt w
   "fields": [],
   "constraints": [],
   "sources": [
-    "scripts/windows_signing_bundle.py",
     "playbooks/windows/setup_signing.yml",
+    "roles/windows_code_signing/defaults/main.yml",
+    "roles/windows_code_signing/tasks/bundle.yml",
     "roles/windows_code_signing/tasks/import_key.yml",
-    "roles/windows_code_signing/tasks/trust.yml",
-    "roles/windows_code_signing/tasks/validate.yml",
     "roles/windows_code_signing/tasks/library.yml",
     "roles/windows_code_signing/tasks/main.yml",
-    "roles/windows_code_signing/defaults/main.yml",
+    "roles/windows_code_signing/tasks/trust.yml",
+    "roles/windows_code_signing/tasks/validate.yml",
     "roles/windows_code_signing/templates/setup-probe.ps1.j2",
-    "roles/windows_code_signing/templates/sign-bundle.ps1.j2"
+    "roles/windows_code_signing/templates/sign-bundle.ps1.j2",
+    "scripts/windows_signing_bundle.py"
   ],
   "source_hashes": {
-    "scripts/windows_signing_bundle.py": "3b19e106845668b800c40349ba449430cf2023bc351e4b61ca0b46b539564d8e",
     "playbooks/windows/setup_signing.yml": "0a93ad178f50e1b83c7517cb288792d8bb3ec78940611f785e19a5d213c84152",
+    "roles/windows_code_signing/defaults/main.yml": "92d0cdbf367bd8cb656fae8c1fa1290feda6f6839b507e37ea700b3a53b2b5d3",
+    "roles/windows_code_signing/tasks/bundle.yml": "e775be347cc7d6171e950db49cf8046e7428fe1a56229c39a89446f86b658ed5",
     "roles/windows_code_signing/tasks/import_key.yml": "56d61a10e6cd9460d903cd87266c9daad3ee319bfef847ed287cd605227ff527",
+    "roles/windows_code_signing/tasks/library.yml": "d400ec9b4fe88ccd1419f3077bd748882d44753d98ac61afb5c2b6dca9c020db",
+    "roles/windows_code_signing/tasks/main.yml": "c915df95c8ae0caef55b6d4761636b3d278d8709a3f69b3934d4c631f41e9400",
     "roles/windows_code_signing/tasks/trust.yml": "ccc08ce7cca2d4d7d9a95b8506d56fcb10589ec268cd97ff56b939cbd9255ef5",
     "roles/windows_code_signing/tasks/validate.yml": "5be4f9f3e025759c01bdbafeb2f5615a961e40e911e7fcd597850660cfa268f8",
-    "roles/windows_code_signing/tasks/library.yml": "51d3c2d29eac9238cc4dcec0d9250663eefd6dadf01fca79091c07efbd554c77",
-    "roles/windows_code_signing/tasks/main.yml": "c915df95c8ae0caef55b6d4761636b3d278d8709a3f69b3934d4c631f41e9400",
-    "roles/windows_code_signing/defaults/main.yml": "92d0cdbf367bd8cb656fae8c1fa1290feda6f6839b507e37ea700b3a53b2b5d3",
     "roles/windows_code_signing/templates/setup-probe.ps1.j2": "f91f0e18a978f0aa02b8ae5c5470ed702c74d8013597a4e128350957b6743a25",
-    "roles/windows_code_signing/templates/sign-bundle.ps1.j2": "1e877235ae59edbeb06b3d198d97b3afa6e9106f8656252b42dfec9e45b574e3"
+    "roles/windows_code_signing/templates/sign-bundle.ps1.j2": "1e877235ae59edbeb06b3d198d97b3afa6e9106f8656252b42dfec9e45b574e3",
+    "scripts/windows_signing_bundle.py": "ff6560e44f4ab816a6564c9169bd35db351100fd9ba4c114ee170e8739207338"
   },
   "i18n": {
     "en": {
       "title": "Sign Windows code on a configured central host",
-      "description": "# Sign Windows code on a configured central host\n\nSet `windows_script_signing.enabled: true` in private environment settings. Configure\nhost, public_certificate_src, store_location, work_root and optional timestamp_server.\nNo environment host, domain, subject or private key is embedded in the shared code.\nOther environments can disable the signing integration. An existing AllSigned policy\nstill blocks unsigned deployment; the switch does not weaken Windows policy.\n\nProvision the selected signer first with `ansible-playbook playbooks/windows/setup_signing.yml\n--limit signer-example`. An optional pfx_src/pfx_password imports the existing key only\non that host, under SYSTEM/runas, with key_exportable false. An existing key can be used\nwithout a PFX source. The one-use PFX transport is removed even on failure. No key or\npassword is exported to execution hosts, SYSVOL, drop-ins, Git or SQLite.\n\nThe public certificate selects the exact thumbprint. Setup checks code-signing EKU,\nvalidity/private-key availability and signs a temporary probe. The configured store is\nLocalMachine by default; CurrentUser under SYSTEM means SYSTEM's user store. Prepare\nthat context deliberately. Existing keys are not silently migrated between stores.\n\nExecution hosts receive the public publisher certificate. Root trust is separate:\ntrust_self_signed_certificate is an explicit self-issued leaf exception; otherwise\ntrusted_root_certificates contains explicitly supplied CA roots. Certificate files are\nvalidated as public X.509 before transport. No PFX is accepted by the artifact builder.\n\nLibrary rollout prepares an explicit code manifest, signs on the chosen host under a\nper-batch mutex, fetches the signed bytes, and checks source-to-signed SHA mappings.\nAuthenticode is checked on the signer and again on the execution host before import.\nPS1, PSM1, PSD1 and PS1XML are covered. Unchanged valid batches are reused; source changes,\ncertificate rotation or timestamp-service changes produce a different batch identity.\nNo recursive signing of unknown host files occurs. All environment values remain variables.\n\nThe central task calls the same Set-AuthenticodeSignature mechanism as a local signer.\nTimestamping is optional and explicit. Signatures without a timestamp need certificate\nlifetime/rotation planning. A check-mode run performs no key import or signing. Portable\ntests mock Authenticode; the native Windows test script uses only a synthetic certificate. Automated\nCI publication is not configured with the current GitHub access. Real WinRM/runas/PFX and the environment trust chain still need a pilot.",
+      "description": "# Sign Windows code on a configured central host\n\nSet `windows_script_signing.enabled: true` in private environment settings. Configure\nhost, public_certificate_src, store_location, work_root and optional timestamp_server.\nNo environment host, domain, subject or private key is embedded in the shared code.\nOther environments can disable the signing integration. An existing AllSigned policy\nstill blocks unsigned deployment; the switch does not weaken Windows policy.\n\nProvision the selected signer first with `ansible-playbook playbooks/windows/setup_signing.yml\n--limit signer-example`. An optional pfx_src/pfx_password imports the existing key only\non that host, under SYSTEM/runas, with key_exportable false. An existing key can be used\nwithout a PFX source. The one-use PFX transport is removed even on failure. No key or\npassword is exported to execution hosts, SYSVOL, drop-ins, Git or SQLite.\n\nThe public certificate selects the exact thumbprint. Setup checks code-signing EKU,\nvalidity/private-key availability and signs a temporary probe. The configured store is\nLocalMachine by default; CurrentUser under SYSTEM means SYSTEM's user store. Prepare\nthat context deliberately. Existing keys are not silently migrated between stores.\n\nExecution hosts receive the public publisher certificate. Root trust is separate:\ntrust_self_signed_certificate is an explicit self-issued leaf exception; otherwise\ntrusted_root_certificates contains explicitly supplied CA roots. Certificate files are\nvalidated as public X.509 before transport. No PFX is accepted by the artifact builder.\n\nLibrary rollout prepares an explicit code manifest, signs on the chosen host under a\nper-batch mutex, fetches the signed bytes, and checks source-to-signed SHA mappings.\nAuthenticode is checked on the signer and again on the execution host before import.\nPS1, PSM1, PSD1 and PS1XML are covered. Unchanged valid batches are reused; source changes,\ncertificate rotation or timestamp-service changes produce a different batch identity.\nNo recursive signing of unknown host files occurs. All environment values remain variables.\n\nAdd-ons can call `windows_code_signing` with `tasks_from: bundle`, an explicit\n`windows_signing_source_kind` (`code-root` or `manifest`) and absolute\n`windows_signing_source_path`. The role returns `windows_signed_bundle_root` and\n`windows_signing_bundle`; the execution role still verifies signatures before use.\nA code-root inventory skips configuration/private/state/archive directories before\nreading files and accepts PowerShell code only. It never scans an execution host.\nThe common library entry remains `tasks_from: library`.\n\nThe central task calls the same Set-AuthenticodeSignature mechanism as a local signer.\nTimestamping is optional and explicit. Signatures without a timestamp need certificate\nlifetime/rotation planning. A check-mode run performs no key import or signing. Portable\ntests mock Authenticode; the native Windows test script uses only a synthetic certificate. Automated\nCI publication is not configured with the current GitHub access. Real WinRM/runas/PFX and the environment trust chain still need a pilot.",
       "fields": {}
     },
     "de": {

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "commands": [
+    {
+      "name": "windows-gpo",
+      "description": "Preview or update unlinked, managed GPO topic objects",
+      "handler": "bin/control.d/windows-gpo.sh",
+      "feature": null,
+      "requires": [
+        "lib/control/helpers.sh",
+        "playbooks/windows/gpo.yml"
+      ],
+      "aliases": []
+    }
+  ]
+}

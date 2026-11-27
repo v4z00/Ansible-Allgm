@@ -1,0 +1,67 @@
+[CmdletBinding(SupportsShouldProcess)]
+param([string]$Plan,[string]$Domain,[string]$Server,[string]$BackupRoot,[bool]$AdoptExisting)
+$ErrorActionPreference = 'Stop'
+{{ lookup('ansible.builtin.file', role_path ~ '/files/Read-GpoPolicyString.ps1', rstrip=False) }}
+{{ lookup('ansible.builtin.file', role_path ~ '/files/Read-GpoRegistryPolicy.ps1', rstrip=False) }}
+{{ lookup('ansible.builtin.file', role_path ~ '/files/Get-GpoRegistrySnapshot.ps1', rstrip=False) }}
+Import-Module GroupPolicy -ErrorAction Stop
+Import-Module ActiveDirectory -ErrorAction Stop
+$domainObject = if ($Domain) { Get-ADDomain -Identity $Domain } else { Get-ADDomain }
+$Domain = $domainObject.DNSRoot
+if (-not $Server) { $Server = $domainObject.PDCEmulator }
+$context = @{Domain=$Domain;Server=$Server;ErrorAction='Stop'}
+$spec = $Plan | ConvertFrom-Json
+if ($spec.schema -ne 1) { throw 'Unsupported GPO plan.' }
+$changed = New-Object 'System.Collections.Generic.List[object]'
+$backups = New-Object 'System.Collections.Generic.List[object]'
+$mutex = New-Object Threading.Mutex($false,'Global\AnsibleAllgmGpoProfiles')
+$held = $false
+try {
+    try { $held = $mutex.WaitOne(30000) } catch [Threading.AbandonedMutexException] { $held=$true }
+    if (-not $held) { throw 'Another GPO deployment is still running.' }
+    # Read all identities first. Access failures must not become New-GPO calls.
+    $existing = @(Get-GPO -All @context)
+    $work = @()
+    foreach ($profile in $spec.profiles) {
+        $found = @($existing | Where-Object DisplayName -eq $profile.name)
+        if ($found.Count -gt 1) { throw 'GPO name is ambiguous; use a distinct topic name.' }
+        $gpo = if ($found.Count) { $found[0] } else { $null }
+        $marker = '[Ansible-Allgm:' + $profile.id + ']'
+        if ($gpo -and -not ([string]$gpo.Description).Contains($marker) -and -not $AdoptExisting) {
+            throw 'A GPO with this name already exists and has not been adopted explicitly.'
+        }
+        $snapshot = @{}
+        if ($gpo) {
+            $root = '\\' + $Server + '\SYSVOL\' + $Domain + '\Policies\{' + $gpo.Id.ToString().ToUpperInvariant() + '}'
+            $snapshot = Get-GpoRegistrySnapshot -Root $root
+        }
+        $pending = @($profile.values | Where-Object {
+            $key = ($_.key + '\' + $_.name).ToLowerInvariant()
+            -not $snapshot.ContainsKey($key) -or $snapshot[$key] -ne $_.value
+        })
+        if (-not $gpo -or $pending.Count) {
+            $changed.Add(@{profile=$profile.id;name=$profile.name;settings=@($pending.feature)})
+            $work += @{Profile=$profile;Gpo=$gpo;Marker=$marker;Pending=$pending}
+        }
+    }
+    $Ansible.Changed = $changed.Count -gt 0
+    if (-not $Ansible.CheckMode) {
+        foreach ($item in $work) {
+            $gpo = $item.Gpo
+            if ($gpo) {
+                # A full backup is a recovery artifact, never an import over manual contents.
+                $backup = Backup-GPO -Guid $gpo.Id -Path $BackupRoot @context
+                $backups.Add(@{profile=$item.Profile.id;backup_id=$backup.Id.ToString()})
+            }
+            else {
+                # New-GPO creates an unlinked object. No OU/domain/site action follows.
+                $gpo = New-GPO -Name $item.Profile.name -Comment ($item.Marker + ' Managed registry values; manual contents preserved.') @context
+            }
+            foreach ($value in $item.Pending) {
+                $null = Set-GPRegistryValue -Guid $gpo.Id -Key $value.key -ValueName $value.name -Type DWord -Value ([uint32]$value.value) @context
+            }
+        }
+    }
+    $Ansible.Result = @{schema=1;changes=@($changed.ToArray());backups=@($backups.ToArray());links_managed=$false}
+}
+finally { if ($held) { $mutex.ReleaseMutex() }; $mutex.Dispose() }

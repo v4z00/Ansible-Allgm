@@ -686,6 +686,14 @@
       "sha256": "6ee135270ec378cfad418d3eba806d41a9df322be10b8ef48cc2a7e2375e3aae",
       "mode": "0755"
     },
+    "bin/control.d/windows-gpo.json": {
+      "sha256": "44b49d43fb875fe8d27c6121313c62cfb59c2fa75d2da39a3294c68657b5a2bd",
+      "mode": "0644"
+    },
+    "bin/control.d/windows-gpo.sh": {
+      "sha256": "421ce77a02e8414f37c00887a9e708d7c49c99295c28369ba36f30c897aa6200",
+      "mode": "0755"
+    },
     "bin/control.d/windows-setup.json": {
       "sha256": "0094eb1c264ac928085f2d6cb97b4172870ee6fc0a796665a473569a05ee60a8",
       "mode": "0644"
@@ -942,6 +950,10 @@
       "sha256": "d52d15bf82624a6ee1a592c8023eb217debad0b804bed343f0bad40107f8978e",
       "mode": "0644"
     },
+    "descriptions/commands/windows-gpo.md": {
+      "sha256": "d55b7b90ebd011cfe1e371941eefe84bc68a97b022160507aa3f6cd0f56dee41",
+      "mode": "0644"
+    },
     "descriptions/commands/windows-setup.md": {
       "sha256": "fd818634d3c1734b2c6a19cfe6ac48adcbcdf1ea5424b80411429126a0ef6a1e",
       "mode": "0644"
@@ -987,7 +999,7 @@
       "mode": "0644"
     },
     "descriptions/configurations/windows-code-signing.md": {
-      "sha256": "1e05244f2caeffca02dab890ca2a7835a05d7a41f1718d8c65c259350ff38b66",
+      "sha256": "fb685130dd5b53be9c062db29cc6fd5cbe78e768998adc5574180ba55366245b",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__base.md": {
@@ -1199,7 +1211,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "2b5c4e4af64e1a929623bcc83ba6d045d9eafa3ec8f38edd46c4fbc7758ab1c9",
+      "sha256": "00fea18b5b300e3ab6d6a9acdd958e4af5235d6f71bf5b467a8783228e0b3d9d",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1586,6 +1598,10 @@
       "sha256": "f8bccb41c827a11736eb146db420babe8c998686e5e7163eec965daf56f2a353",
       "mode": "0644"
     },
+    "playbooks/windows/gpo.yml": {
+      "sha256": "9dceb81219751dc0f58e542cd03a5ea3b98ffd2d68a22116c587e00d5c4e22e1",
+      "mode": "0644"
+    },
     "playbooks/windows/setup_signing.yml": {
       "sha256": "0a93ad178f50e1b83c7517cb288792d8bb3ec78940611f785e19a5d213c84152",
       "mode": "0644"
@@ -1870,12 +1886,16 @@
       "sha256": "92d0cdbf367bd8cb656fae8c1fa1290feda6f6839b507e37ea700b3a53b2b5d3",
       "mode": "0644"
     },
+    "roles/windows_code_signing/tasks/bundle.yml": {
+      "sha256": "e775be347cc7d6171e950db49cf8046e7428fe1a56229c39a89446f86b658ed5",
+      "mode": "0644"
+    },
     "roles/windows_code_signing/tasks/import_key.yml": {
       "sha256": "56d61a10e6cd9460d903cd87266c9daad3ee319bfef847ed287cd605227ff527",
       "mode": "0644"
     },
     "roles/windows_code_signing/tasks/library.yml": {
-      "sha256": "51d3c2d29eac9238cc4dcec0d9250663eefd6dadf01fca79091c07efbd554c77",
+      "sha256": "d400ec9b4fe88ccd1419f3077bd748882d44753d98ac61afb5c2b6dca9c020db",
       "mode": "0644"
     },
     "roles/windows_code_signing/tasks/main.yml": {
@@ -1896,6 +1916,34 @@
     },
     "roles/windows_code_signing/templates/sign-bundle.ps1.j2": {
       "sha256": "1e877235ae59edbeb06b3d198d97b3afa6e9106f8656252b42dfec9e45b574e3",
+      "mode": "0644"
+    },
+    "roles/windows_gpo/defaults/main.yml": {
+      "sha256": "959e9af437de883ff792b95f0e7b88c01f93e2244289d9a94f240f1062726748",
+      "mode": "0644"
+    },
+    "roles/windows_gpo/files/Get-GpoRegistrySnapshot.ps1": {
+      "sha256": "e878e71709a985b0aa2cf4d6bb9138d87403206f75c57726b372c9a68ce5e518",
+      "mode": "0644"
+    },
+    "roles/windows_gpo/files/Read-GpoPolicyString.ps1": {
+      "sha256": "040111e1c864b8b31385d10444fac4e38eb3d2eb0ce140c6376e37f6ebcb2905",
+      "mode": "0644"
+    },
+    "roles/windows_gpo/files/Read-GpoRegistryPolicy.ps1": {
+      "sha256": "18039c42061fa0df67c0909214ba486dbad3500d77222f9c3e271ac1075bae2a",
+      "mode": "0644"
+    },
+    "roles/windows_gpo/filter_plugins/gpo_plan.py": {
+      "sha256": "13a5d1c6c73144c236245254c6a8615d2a54279ba40bffb51afc506537b9d6f1",
+      "mode": "0644"
+    },
+    "roles/windows_gpo/tasks/main.yml": {
+      "sha256": "3297962ae4c1dfba6d558a60cfa51491aaedba30b9c88ebf65a66d850e0c0495",
+      "mode": "0644"
+    },
+    "roles/windows_gpo/templates/manage.ps1.j2": {
+      "sha256": "cc921f320ebd1586ea6859ab1e5a9a6de50cfd70c0af0debc826e17bd88dd0f8",
       "mode": "0644"
     },
     "roles/windows_private_paths/defaults/main.yml": {
@@ -2023,7 +2071,7 @@
       "mode": "0755"
     },
     "scripts/windows_signing_bundle.py": {
-      "sha256": "3b19e106845668b800c40349ba449430cf2023bc351e4b61ca0b46b539564d8e",
+      "sha256": "ff6560e44f4ab816a6564c9169bd35db351100fd9ba4c114ee170e8739207338",
       "mode": "0644"
     },
     "templates/lynis_summary.j2": {
@@ -2138,6 +2186,10 @@
       "sha256": "ac7985f562317c402b9d70888822d3c3faab85994d849d1526ef538766510b53",
       "mode": "0644"
     },
+    "tools/windows_tests/gpo_fixture.ps1": {
+      "sha256": "9060cdaf1c206cbd488d7c7798bad29ac71e320e56d173c3e8b966daa323e6cb",
+      "mode": "0644"
+    },
     "tools/windows_tests/signing_fixture.ps1": {
       "sha256": "4c447aca789218d0cb27c1c8caa87bf330284a0e459971ca9512f60d4aa16a82",
       "mode": "0644"
@@ -2154,8 +2206,12 @@
       "sha256": "fe3e3f92c8625305ab86f8fe91f0ff71f1919244c5541cb74def0f9c7b97a58b",
       "mode": "0644"
     },
+    "tools/windows_tests/test_windows_gpo.py": {
+      "sha256": "d227167c1c3c85286f0e15db96fb7e3fa6b7971195b7b1825851fbbfd30d73da",
+      "mode": "0644"
+    },
     "tools/windows_tests/test_windows_signing.py": {
-      "sha256": "f01d3f64ccdad6aba1f910761586ee0652b08eec393fa500c02f2f0c936f4ca7",
+      "sha256": "be832c5f5b1b8ad3a17c63961069957edd47e2944bf96b6e104ce1d2ffad4cc7",
       "mode": "0644"
     },
     "tools/windows_tests/test_windows_store.py": {
@@ -2187,7 +2243,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "611b098993ae7222d8a5c5a2e770f49460622a2dd43669ee1e8fdd70b563d269",
+      "sha256": "8246522570ae4e0e87d2155721aabdb5a4469b9bb8c203bb1e9bc24170e985ad",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -2223,7 +2279,7 @@
       "mode": "0644"
     },
     "update_check/manifests/windows_foundation.json": {
-      "sha256": "7383d2c1f6055f84c8aa1fce4a506e8b401004507a8ec1372fed4d071f99b5dc",
+      "sha256": "36442a9ba8f6e343780cf1ad9c673f6cd006db4ad0bc94b14a8650b339a78568",
       "mode": "0644"
     },
     "update_check/probes.py": {

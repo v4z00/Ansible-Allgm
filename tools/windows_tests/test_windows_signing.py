@@ -45,6 +45,16 @@ class Signing(unittest.TestCase):
         self.assertNotEqual(first['batch_id'],third['batch_id'])
         self.assertTrue(bundle.certificate_info(self.certificate)['code_signing'])
         self.assertTrue(bundle.certificate_info(self.certificate)['self_issued'])
+    def test_code_inventory_skips_private_configuration_before_reading(self):
+        root=self.root/'suite';root.mkdir();(root/'start.ps1').write_text('Write-Output 1')
+        private=root/'config';private.mkdir();(private/'credentials.ps1').write_text('do not read')
+        (root/'settings.json').write_text('do not read')
+        original=Path.read_bytes
+        def read(path):
+            if path.parent.name=='config' or path.suffix=='.json':self.fail('Private file opened by code inventory')
+            return original(path)
+        with patch.object(Path,'read_bytes',read):rows=bundle.code_files(root)
+        self.assertEqual([row['path'] for row in rows],['start.ps1'])
     def test_pfx_is_not_read_by_artifact_preparation(self):
         private=self.root/'key.pfx';private.write_bytes(b'synthetic placeholder')
         original=Path.read_bytes

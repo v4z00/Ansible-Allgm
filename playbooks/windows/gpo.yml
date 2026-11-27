@@ -1,0 +1,8 @@
+---
+- name: Manage unlinked GPO topic objects on one explicitly selected host
+  hosts: all_windows_systems
+  gather_facts: false
+  become: false
+  roles:
+    - windows_gpo
+  tags: [windows, gpo, hardening]

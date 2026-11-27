@@ -55,3 +55,5 @@ Ich programmiere nur selten selbst und entwickle das Projekt mit KI-Unterstützu
 ## Windows in der aktuellen Staging-Vorschau
 
 Mit [Windows-Zugang](descriptions/commands/windows-setup.md) und [lesendem Verbindungscheck](descriptions/commands/windows-check.md) beginnen. Neu sind die PowerShell-/SQLite-Basis, getrennte Windows-Bootstrap-/Checkmk-Pfade und [direkte Sicherheitsalarme](descriptions/configurations/security-alerts.md). Echte Windows-Piloten und private Skript-/SYSVOL-Migration stehen noch aus; der [Staging-Änderungstext](descriptions/releases/allgm.md) nennt die Grenzen.
+
+Die generische Windows-Vorschau umfasst [GPO-Basishardening](descriptions/commands/windows-gpo.md) ohne automatische Verknuepfungen. [Windows-Core-DC](https://github.com/v4z00/Windows-Core-DC) bleibt ein eigenstaendiges, zusaetzlich installierbares Add-on mit eigener Updatequelle. Private Hostskripte werden nicht veroeffentlicht.

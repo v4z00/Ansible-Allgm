@@ -48,6 +48,7 @@ No migration is needed to keep German. To try English for a single command, run 
 
 - [Ansible-Homelab](https://github.com/v4z00/Ansible-Homelab) adds a site profile with backup, storage and OpenWrt playbooks.
 - [Ansible-TUI](https://github.com/v4z00/Ansible-TUI) presents the installed controller’s commands and descriptions in a terminal interface.
+- [Windows-Core-DC](https://github.com/v4z00/Windows-Core-DC) is an independent Server Core console and optional controller add-on.
 - [Ansible-SSS](https://github.com/v4z00/Ansible-SSS) splits recovery material into shares. It runs on its own or as a controller add-on.
 
 I use AI to help write and maintain this project. I do little of the implementation by hand. If a workflow behaves differently on your system, an issue with the command, version and expected result helps me reproduce it. [Issues](https://github.com/v4z00/Ansible-Allgm/issues) · [MIT licence](LICENSE)
@@ -55,3 +56,5 @@ I use AI to help write and maintain this project. I do little of the implementat
 ## Windows in the current staging preview
 
 Start with [Windows access](descriptions/commands/windows-setup.md) and the [read-only connection check](descriptions/commands/windows-check.md). The preview adds shared SQLite/PowerShell primitives, separate Windows bootstrap and Checkmk paths, and [direct security alerts](descriptions/configurations/security-alerts.md). Real Windows pilots and private script/SYSVOL migration remain pending; see the [staging release notes](descriptions/releases/allgm.md).
+
+Grouped [GPO hardening](descriptions/commands/windows-gpo.md) is an explicit preview: selected registry settings, backups and no automatic links.
