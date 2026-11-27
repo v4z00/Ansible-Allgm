@@ -1,6 +1,6 @@
 # Changelog
 
-## s0.8.13 – Quiet service observations and Compose builds
+## 0.8.13 – Quiet service observations and Compose builds
 
 Job module 0.5.5 keeps healthy and intentionally inactive systemd snapshots out of new job summaries while retaining status/history and all service problems. Observation provenance is stored additively on import; host configurations and running services do not need changes.
 
