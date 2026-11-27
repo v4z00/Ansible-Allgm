@@ -1,5 +1,11 @@
 # Changelog
 
+## s0.8.13 – Quiet service observations and Compose builds
+
+Job module 0.5.5 keeps healthy and intentionally inactive systemd snapshots out of new job summaries while retaining status/history and all service problems. Observation provenance is stored additively on import; host configurations and running services do not need changes.
+
+Docker deployment builds local Compose images by default (boolean `docker_compose_build`, optional false). Docker updates pull registry images with bounded retries before building local images and waiting for healthy/running containers. Failed preparation prevents container changes. Existing mandatory checks remain. Private build output is hidden.
+
 ## 0.8.12 – English documentation and language selection
 
 The English README now walks through a maintenance run. Catalog pages open in English and include the German text. New installations suggest a language from the locale and accept an explicit choice. Existing controllers without a language preference still use German. The optional `tools/set-controller-language.py` changes just the local language setting and saves a backup.

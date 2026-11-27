@@ -392,13 +392,11 @@
           }}
 
     - name: "TASK 6.3: Deploy critical stacks"
-      ansible.builtin.shell: |
-        set -e
-        echo "Starting critical stack: {{ item.path | dirname }}"
-        cd "{{ item.path | dirname }}"
-        docker compose up -d --remove-orphans
-      args:
+      ansible.builtin.command:
+        argv: "{{ ['docker', 'compose', '--file', item.path, 'up', '--detach', '--remove-orphans', '--build' if (docker_compose_build | default(true) | bool) else '--no-build'] }}"
+        expand_argument_vars: false
         chdir: "{{ item.path | dirname }}"
+      no_log: true
       loop: "{{ critical_compose_projects }}"
       when: item.path | dirname | basename in critical_stacks
       register: critical_deploy
@@ -414,13 +412,11 @@
         - critical_deploy.results | default([]) | length > 0
 
     - name: "TASK 6.5: Deploy standard stacks"
-      ansible.builtin.shell: |
-        set -e
-        echo "Starting standard stack: {{ item.path | dirname }}"
-        cd "{{ item.path | dirname }}"
-        docker compose up -d --remove-orphans
-      args:
+      ansible.builtin.command:
+        argv: "{{ ['docker', 'compose', '--file', item.path, 'up', '--detach', '--remove-orphans', '--build' if (docker_compose_build | default(true) | bool) else '--no-build'] }}"
+        expand_argument_vars: false
         chdir: "{{ item.path | dirname }}"
+      no_log: true
       loop: "{{ standard_compose_projects }}"
       when: item.path | dirname | basename not in critical_stacks
       register: standard_deploy

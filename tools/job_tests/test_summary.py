@@ -50,6 +50,33 @@ class Summary(unittest.TestCase):
         self.assertIn('Docker01 Backup ❌\n  Zeitlimit erreicht (Exitcode 124).', body)
         self.assertNotIn('line 20', body)
 
+    def test_healthy_service_snapshots_do_not_create_reports_or_fill_the_backlog(self):
+        rows = [(self.store.host, self.store.epoch, 'observation-' + str(i), 'custom-daemon',
+                 'general', 'skipped' if i % 2 else 'success', i, i, i, 0, 'Observed')
+                for i in range(2001)]
+        self.store.db.executemany('INSERT INTO runs(source,epoch,run_id,job,category,status,started,activity,finished,exit_code,summary) VALUES(?,?,?,?,?,?,?,?,?,?,?)', rows)
+        self.store.db.executemany('INSERT INTO run_observations VALUES(?,?,?,?)',
+                                 [(r[0], r[1], r[2], 'systemd') for r in rows])
+        self.assertIsNone(self.store.report())
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM runs').fetchone()[0], 2001)
+        self.finish()
+        body = self.store.report(reserve=False)['body']
+        self.assertEqual(body, 'Job-Zusammenfassung\n\nDocker01 Backup ✅')
+
+    def test_service_failures_and_warnings_survive_a_later_healthy_snapshot(self):
+        for status in ('failed', 'warning', 'success'):
+            run = self.finish('custom-daemon', status, summary='Dienst pruefen')
+            with self.store.transaction():
+                self.store.db.execute('INSERT INTO run_observations VALUES(?,?,?,?)', (*self.store._key(run), 'systemd'))
+        body = self.store.report(reserve=False)['body']
+        self.assertIn('Docker01 Custom daemon ❌', body)
+        self.assertIn('Dienst pruefen', body)
+        self.assertEqual(body.count('Docker01 Custom daemon'), 1)
+
+    def test_service_looking_names_are_not_filtered_without_observation_provenance(self):
+        self.finish('systemd:real-backup')
+        self.assertIn('Docker01 Dienst real backup ✅', self.store.report(reserve=False)['body'])
+
     def test_failed_objects_below_status_success_objects_stay_in_database(self):
         run = self.store.begin('weekly', 'vzdump')
         self.store.update(run, 'success', 'complete', item='101')
