@@ -1,6 +1,6 @@
 # Changelog
 
-## s0.8.12 – English documentation and language selection
+## 0.8.12 – English documentation and language selection
 
 The English README now walks through a maintenance run. Catalog pages open in English and include the German text. New installations suggest a language from the locale and accept an explicit choice. Existing controllers without a language preference still use German. The optional `tools/set-controller-language.py` changes just the local language setting and saves a backup.
 
