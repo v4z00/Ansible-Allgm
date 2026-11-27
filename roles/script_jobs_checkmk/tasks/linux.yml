@@ -1,0 +1,29 @@
+---
+- name: Create selected Linux local-check directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop: [/usr/local/lib/script-jobs, "{{ script_jobs_checkmk_linux_local_dir }}"]
+- name: Install the Linux read-only SQLite check
+  ansible.builtin.copy:
+    src: "{{ role_path }}/../../scripts/job_local_check.py"
+    dest: /usr/local/lib/script-jobs/job_local_check.py
+    mode: '0755'
+- name: Create the private check configuration directory
+  ansible.builtin.file:
+    path: /etc/script-jobs
+    state: directory
+    mode: '0700'
+- name: Render non-secret job check thresholds
+  ansible.builtin.copy:
+    content: "{{ {'database': script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3'), 'jobs': script_jobs_checkmk_effective, 'security_outbox': script_jobs_checkmk_security_outbox | bool} | to_nice_json }}"
+    dest: /etc/script-jobs/checkmk.json
+    mode: '0600'
+- name: Install the Checkmk entry point without replacing other local checks
+  ansible.builtin.copy:
+    content: "#!/bin/sh\nexec /usr/bin/python3 /usr/local/lib/script-jobs/job_local_check.py --config /etc/script-jobs/checkmk.json\n"
+    dest: "{{ script_jobs_checkmk_linux_local_dir }}/script_jobs"
+    mode: '0755'

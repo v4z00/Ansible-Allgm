@@ -1,0 +1,4 @@
+script_jobs_checkmk_jobs: []
+script_jobs_checkmk_security_outbox: "{{ script_security_enabled | default(false) }}"
+script_jobs_checkmk_linux_local_dir: /usr/lib/check_mk_agent/local
+script_jobs_checkmk_windows_local_dir: 'C:\ProgramData\checkmk\agent\local'

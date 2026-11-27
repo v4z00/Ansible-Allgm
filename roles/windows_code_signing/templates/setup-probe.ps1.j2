@@ -1,0 +1,13 @@
+param([string]$Thumbprint,[string]$StoreLocation,[string]$Root)
+$ErrorActionPreference = 'Stop'
+{{ lookup('ansible.builtin.file', role_path ~ '/../../artifacts/script-library/windows/lib/functions/Get-JobSigningCertificate.ps1', rstrip=False) }}
+$certificate = Get-JobSigningCertificate -Thumbprint $Thumbprint -StoreLocation $StoreLocation
+$probe = Join-Path $Root ([Guid]::NewGuid().ToString('N') + '.ps1')
+try {
+    [IO.File]::WriteAllText($probe, '# Code-signing probe', (New-Object Text.UTF8Encoding($false)))
+    $signature = Set-AuthenticodeSignature -LiteralPath $probe -Certificate $certificate -HashAlgorithm SHA256 -ErrorAction Stop
+    if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint -ne $certificate.Thumbprint) { throw 'Signing-key probe failed.' }
+    $Ansible.Changed = $false
+    $Ansible.Result = @{ ready=$true }
+}
+finally { if (Test-Path -LiteralPath $probe) { Remove-Item -LiteralPath $probe -Force } }

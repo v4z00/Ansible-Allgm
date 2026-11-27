@@ -1,0 +1,46 @@
+---
+# Merge these keys into the existing private group_vars/all/settings.yml.
+# Enter the account locally. Never put real credentials in this example.
+windows_access:
+  user: ''
+  password: ''
+  transport: ntlm
+  port: 5986
+  certificate_validation: validate
+  ca_trust_path: ''
+windows_host_access: {}
+windows_script_root: 'C:\Scripte'
+windows_state_root: 'C:\ProgramData\ScriptJobs'
+windows_timezone: 'W. Europe Standard Time'
+windows_firewall_rules: []
+
+# Ordinary jobs remain centrally summarized. Enable host alarms deliberately.
+script_security_enabled: false
+script_security_channels: [mail, telegram]
+# Reuse existing telegram_bot_token / telegram_chat_id / script_jobs_mail_to.
+script_jobs_smtp:
+  host: ''
+  port: 587
+  sender: ''
+  tls: starttls
+  auth: none
+  username: ''
+  password: ''
+# For the designated plaintext internal relay choose tls: none and its explicit port.
+# Windows SMTP supports none/starttls; no silent encryption downgrade.
+script_jobs_checkmk_jobs: []
+script_jobs_checkmk_security_outbox: false
+
+# All environment-specific signing values stay private; no fixed signing host.
+windows_script_signing:
+  enabled: false
+  host: ''
+  public_certificate_src: ''
+  pfx_src: ''
+  pfx_password: ''
+  store_location: LocalMachine
+  trust_self_signed_certificate: false
+  trusted_root_certificates: []
+  timestamp_server: ''
+  work_root: 'C:\ProgramData\ScriptSigning'
+  # cache_root defaults to the controller's private .local/code-signing directory.

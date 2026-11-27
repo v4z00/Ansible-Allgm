@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "${CONTROL_PROJECT_ROOT:?}/lib/control/helpers.sh"
-python3 scripts/run_bootstrap.py "$@"
+python3 scripts/run_platform_bootstrap.py "$@"

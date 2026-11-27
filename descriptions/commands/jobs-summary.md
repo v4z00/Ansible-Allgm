@@ -131,7 +131,7 @@ Gesunde oder absichtlich inaktive systemd-Beobachtungen bleiben in SQLite und jo
     "bin/control.d/jobs-summary.json": "cd3547b41629df5f3397605610bdc437c8ccfd521afcd43539f9dc0def260705",
     "bin/control.d/jobs-summary.sh": "74416561b388b1d008581f335039243daff4241be88a850e9bcb26f2f974e853",
     "scripts/job_summary.py": "b5a50589306ad0445faa0faea158925da781e121b72dd8cd256525bfea9c601f",
-    "playbooks/scripts/summary_jobs.yml": "ac6fbab4e7add7ba5625df407c92492db49d0e068359539fb34ba8f7eba4ab7f"
+    "playbooks/scripts/summary_jobs.yml": "bc1ff0dda2931384fe8cc72cefa2ba08f3f3fb6636108c37691d703d24bcde58"
   },
   "i18n": {
     "de": {
@@ -147,4 +147,5 @@ Gesunde oder absichtlich inaktive systemd-Beobachtungen bleiben in SQLite und jo
   }
 }
 ```
+
 </details>

@@ -1,0 +1,8 @@
+---
+- name: Stage the common Windows library without scheduling private jobs
+  hosts: all_windows_systems
+  gather_facts: false
+  become: false
+  roles:
+    - windows_script_library
+  tags: [windows, scripts, library]

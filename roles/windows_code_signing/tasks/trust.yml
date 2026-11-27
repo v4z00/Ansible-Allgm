@@ -1,0 +1,59 @@
+---
+- name: Create protected public-certificate staging directories
+  ansible.builtin.include_role:
+    name: windows_private_paths
+  vars:
+    windows_private_paths:
+      - "{{ windows_signing_effective.work_root }}"
+      - "{{ windows_signing_effective.work_root }}\\certificates"
+- name: Stage only the public publisher certificate on execution hosts
+  ansible.windows.win_copy:
+    src: "{{ windows_signing_effective.public_certificate_src }}"
+    dest: "{{ windows_signing_effective.work_root }}\\certificates\\publisher.cer"
+- name: Read the public certificate identity without private keys
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding(SupportsShouldProcess)]
+      param([string]$Path)
+      $Ansible.Changed = $false
+      $certificate = New-Object Security.Cryptography.X509Certificates.X509Certificate2($Path)
+      try {
+          $Ansible.Result = @{ thumbprint=$certificate.Thumbprint; self_issued=($certificate.Subject -eq $certificate.Issuer) }
+      }
+      finally { $certificate.Dispose() }
+    parameters:
+      Path: "{{ windows_signing_effective.work_root }}\\certificates\\publisher.cer"
+  register: windows_publisher_certificate
+  when: not ansible_check_mode
+- name: Trust only the selected publisher certificate
+  ansible.windows.win_certificate_store:
+    path: "{{ windows_signing_effective.work_root }}\\certificates\\publisher.cer"
+    store_location: LocalMachine
+    store_name: TrustedPublisher
+    state: present
+  when: not ansible_check_mode
+- name: Require a self-issued certificate before explicit leaf/root trust
+  ansible.builtin.assert:
+    that: windows_publisher_certificate.result.self_issued
+    fail_msg: A non-self-issued leaf must use its explicitly configured CA chain instead of leaf/root trust.
+  when: windows_signing_effective.trust_self_signed_certificate and not ansible_check_mode
+- name: Trust the self-issued publisher as a root only when explicitly configured
+  ansible.windows.win_certificate_store:
+    path: "{{ windows_signing_effective.work_root }}\\certificates\\publisher.cer"
+    store_location: LocalMachine
+    store_name: Root
+    state: present
+  when: windows_signing_effective.trust_self_signed_certificate and not ansible_check_mode
+- name: Stage explicitly supplied CA certificates
+  ansible.windows.win_copy:
+    src: "{{ item }}"
+    dest: "{{ windows_signing_effective.work_root }}\\certificates\\{{ item | hash('sha256') }}.cer"
+  loop: "{{ windows_signing_effective.trusted_root_certificates }}"
+- name: Install only the explicitly supplied trusted roots
+  ansible.windows.win_certificate_store:
+    path: "{{ windows_signing_effective.work_root }}\\certificates\\{{ item | hash('sha256') }}.cer"
+    store_location: LocalMachine
+    store_name: Root
+    state: present
+  loop: "{{ windows_signing_effective.trusted_root_certificates }}"
+  when: not ansible_check_mode

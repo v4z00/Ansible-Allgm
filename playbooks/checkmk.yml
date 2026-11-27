@@ -34,14 +34,14 @@
 
 - name: Manage Checkmk agents and hosts
   hosts: checkmk_managed_hosts
-  become: true
+  become: "{{ ansible_connection | default('ssh') not in ['winrm','psrp'] }}"
   gather_facts: true
   roles:
     - role: checkmk_agent
       when: features.checkmk | bool
       tags: [monitoring, checkmk]
 
-- name: Register non-Linux hosts in Checkmk
+- name: Register hosts without managed agents in Checkmk
   hosts: checkmk_inventory_hosts:!checkmk_managed_hosts
   connection: local
   gather_facts: false

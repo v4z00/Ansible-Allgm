@@ -1,0 +1,16 @@
+---
+- name: Ensure the Windows job library is installed
+  ansible.builtin.include_role:
+    name: windows_script_library
+- name: Create the Windows local-check directory
+  ansible.windows.win_file:
+    path: "{{ script_jobs_checkmk_windows_local_dir }}"
+    state: directory
+- name: Write non-secret thresholds in the protected state directory
+  ansible.windows.win_copy:
+    content: "{{ {'database': windows_job_database | default('C:\\ProgramData\\ScriptJobs\\jobs.sqlite3'), 'jobs': script_jobs_checkmk_effective, 'security_outbox': script_jobs_checkmk_security_outbox | bool} | to_nice_json }}"
+    dest: "{{ windows_state_root | default('C:\\ProgramData\\ScriptJobs') }}\\config\\checkmk-jobs.json"
+- name: Install the Windows Checkmk entry point
+  ansible.windows.win_template:
+    src: script_jobs.ps1.j2
+    dest: "{{ script_jobs_checkmk_windows_local_dir }}\\script_jobs.ps1"

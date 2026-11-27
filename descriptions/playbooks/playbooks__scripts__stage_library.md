@@ -33,7 +33,7 @@ Eine explizite Hostauswahl mit `--limit` ist erforderlich.
   ],
   "source_hashes": {
     "playbooks/scripts/stage_library.yml": "cee843513e8779c47c3121a540bb03702cb2a66336d4e75316cb02ffbee25a39",
-    "roles/script_library/tasks/main.yml": "5c8ea369955cff8e1b6be81a22a7a581ed0b791c029929149c0fb9ad206cc357"
+    "roles/script_library/tasks/main.yml": "3bf8e5b0ab4f2a4b63e3ece3dec8945866970fb78ccb25d1e54525ad38a04839"
   },
   "i18n": {
     "de": {

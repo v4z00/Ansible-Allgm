@@ -1,0 +1,14 @@
+---
+# This resolver belongs only to group_vars/all_windows_systems/access.yml.
+windows_effective_access: "{{ (windows_access | default({})) | combine((windows_host_access | default({})).get(inventory_hostname, {})) }}"
+ansible_connection: winrm
+ansible_shell_type: powershell
+ansible_user: "{{ windows_effective_access.get('user', '') }}"
+ansible_password: "{{ windows_effective_access.get('password', '') }}"
+ansible_port: "{{ windows_effective_access.get('port', 5986) | int }}"
+ansible_become: false
+ansible_winrm_scheme: https
+ansible_winrm_transport: "{{ windows_effective_access.get('transport', 'ntlm') }}"
+ansible_winrm_server_cert_validation: "{{ windows_effective_access.get('certificate_validation', 'validate') }}"
+ansible_winrm_ca_trust_path: "{{ windows_effective_access.get('ca_trust_path') or none }}"
+ansible_winrm_connection_timeout: 60

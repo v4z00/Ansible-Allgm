@@ -1,0 +1,14 @@
+---
+- name: Validate the explicit job checks before changing files
+  ansible.builtin.set_fact:
+    script_jobs_checkmk_effective: "{{ script_jobs_checkmk_jobs | script_jobs_checkmk_entries }}"
+    script_jobs_checkmk_windows: "{{ ansible_connection | default('ssh') in ['winrm','psrp'] or inventory_hostname in groups.get('all_windows_systems', []) }}"
+- name: Require explicit targets
+  ansible.builtin.assert:
+    that: ansible_limit | default('') | trim | length > 0
+- name: Install Linux read-only checks
+  ansible.builtin.include_tasks: linux.yml
+  when: not script_jobs_checkmk_windows
+- name: Install Windows read-only checks
+  ansible.builtin.include_tasks: windows.yml
+  when: script_jobs_checkmk_windows

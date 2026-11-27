@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "414f2b8d3ed8f7c983632c4765179167948b1519b0cfc3596c68db66c9617dc3",
+      "sha256": "9d8c94f1ad3ea96b1e2ac4914fda4cb93c76b4a3e0d8cc6dd8976d6c0b227d15",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -11,7 +11,7 @@
       "mode": "0755"
     },
     "artifacts/script-library/bin/script-jobs": {
-      "sha256": "77dd5d1c4a4dd0184fe01edfc9d3b1b4d9ec41ea5e5f0fd64ece86bc361933b4",
+      "sha256": "1c7a95f4da9943070bb8b44675f4b67244b3d7b3baa2f77e6965d1add700aab8",
       "mode": "0755"
     },
     "artifacts/script-library/lib/common/hm_check_mount.sh": {
@@ -62,6 +62,10 @@
       "sha256": "f8b3be38a79437cc62e0aa03e4c5776081da3db65c390e47a1c071483b784e69",
       "mode": "0644"
     },
+    "artifacts/script-library/lib/common/hm_security_alert.sh": {
+      "sha256": "c49632199db5fd4fda2acd123108aa926d024fc525683c538b982bdc33dd8579",
+      "mode": "0644"
+    },
     "artifacts/script-library/lib/common/hm_send_mail.sh": {
       "sha256": "09b009a2402f3cd8005a5eec836124559f9e1ae0056246354469bd5f72e9643f",
       "mode": "0644"
@@ -90,6 +94,10 @@
       "sha256": "361b7d0a9aa88021893f53b53b6b581588b85b3becf68abef1e45fc43c06dca5",
       "mode": "0644"
     },
+    "artifacts/script-library/lib/data/job-schema.sql": {
+      "sha256": "8cd66fa31d7537ace543c8176165892b2129f183a9ef7b7ed5edba83f43811f1",
+      "mode": "0644"
+    },
     "artifacts/script-library/lib/data/mail-translations.json": {
       "sha256": "096a0b685ea912fe192d7550114a200d7f42f7bcf94105c110d6f82bfb1125ac",
       "mode": "0644"
@@ -103,15 +111,139 @@
       "mode": "0644"
     },
     "artifacts/script-library/lib/python/job_notify.py": {
-      "sha256": "340b63932a5e0437a2d923b335aab2348f95784c589fb3e931622910c487e65b",
+      "sha256": "193b7dd2684f9f4bba059032328be8c6dfd2020a72b62807c481b30268558f96",
       "mode": "0644"
     },
     "artifacts/script-library/lib/python/job_report.py": {
       "sha256": "503decb394ef887363fffbb0c6981276d24da2ef548d6f6b411b29ac8ee94e69",
       "mode": "0644"
     },
+    "artifacts/script-library/lib/python/job_security.py": {
+      "sha256": "c46d4a7fe0fa1c3c3452472b829a6d1df5c6a142cc5a450d2e3c400bbd1fdc40",
+      "mode": "0644"
+    },
     "artifacts/script-library/lib/python/job_store.py": {
-      "sha256": "17a4ecd89bd8de5129adc282ff38908b6babf6ce12ed90e5c2ccf4b03045e459",
+      "sha256": "dd41c5f758e6a3539fd3b64e0324dd0c93f27c90de9ffbe9c3641424ed2b9881",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/bin/job-status.ps1": {
+      "sha256": "079b16b49a9465be181c91d9d7dccf104dbffc06435420815297e31fdcf78203",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/bin/script-jobs.ps1": {
+      "sha256": "8e974b7c6db7d6bf50678816ddd3a9fc4ed3e9be4b22ebfcc9ff0d8813d4ecb1",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/ScriptLibrary.psm1": {
+      "sha256": "7a0686547fdbeff443c849792b439b4f49314ab4e0b923653d244530983ec2a9",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Assert-JobPrivatePath.ps1": {
+      "sha256": "d7e169bf3c1f3920259dbbcf28985e1e3b15bbe3b662653a0bf98a1d397670ba",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Complete-ScriptJob.ps1": {
+      "sha256": "bc57772e978fd3e5087458a42ecb52e198b301a1be972e6186c1b43b7ee47061",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/ConvertTo-JobAsciiMail.ps1": {
+      "sha256": "bc02f170c1380984dd85abd57cd508bfbdf061f7c3a9d62d95de4082b292ebe8",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/ConvertTo-JobSafeText.ps1": {
+      "sha256": "77472536a6cd062113e14aa3cf63f7dbf8f9f383b30c386f974d885fb4ec0492",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/ConvertTo-JobSqlLiteral.ps1": {
+      "sha256": "e5af539dbf6faec3564f60b9dad418bf96f6287b09caa6aaf8bc2d576a863865",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Export-JobEvents.ps1": {
+      "sha256": "e9755c57a7e2c3777dc148f06999e0d80c72d75f5623c5d12712d4b786263bf5",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Get-JobConfig.ps1": {
+      "sha256": "56185172007601302e15c6b041e72e7f26da77533b0f93ce88957a4eee3b54ed",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Get-JobEventSql.ps1": {
+      "sha256": "6d9216447874dfc9017ee9439bd615eed6118275acaa02485701f26fb042a49e",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Get-JobLocalCheck.ps1": {
+      "sha256": "57596b81a186589c17a85e517bd12bb4cb4052e01eb3a5fe7e89ca5853e64af1",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Get-JobSigningCertificate.ps1": {
+      "sha256": "7e83f3d5b2666caee4f14264afad2ff31c625114ac6d20d1201ca3d6f45b6d53",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Get-JobState.ps1": {
+      "sha256": "3571b2af49e1189d5635e835da9ab286ae70274c63abeb95990f47dd52ca4e52",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Get-JobTimestamp.ps1": {
+      "sha256": "91eb07d1ef9a5158235856a499cf7b8aca9cba8200101e3d1728104aa8493aea",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Get-SecurityAlertChannels.ps1": {
+      "sha256": "dd8d156c56d8b797a49523b4ec8cc8af81b6e19a549e7eb6b35045e3f5a49b33",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Invoke-JobSql.ps1": {
+      "sha256": "f816f97ad5ea31bd44b50fddbad8638b8bbee3b168e37a5808b554d8677c4d5d",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Invoke-ScriptJob.ps1": {
+      "sha256": "8d617feff1e61e82201d3b4cb17073057372b1bf4c814ef527fde622042cc3e3",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/New-JobStore.ps1": {
+      "sha256": "b1e503dca715fb152767174442d9fbce0393715df62b3d5b206ff27a9a758fb3",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Open-JobStore.ps1": {
+      "sha256": "59169a5aeffe8b1191e0f92b28744c6f6577153af0700962a38ae206bbe74afe",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Remove-JobHistory.ps1": {
+      "sha256": "dd8ae68986e4abe61f6ea29a9d2b695e568903b93341d6dca1d9306d564a4009",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Resolve-JobSigningPath.ps1": {
+      "sha256": "8e08b9a5aaeba6b1ddbfaa6cfd3f41aea8b1139967b7c4c6f203406d071634c1",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Save-SecurityAlert.ps1": {
+      "sha256": "a91e7523373313b32a2074447b113a69c948acab8516e6d9d938dbb8ae2674cc",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Send-JobNotification.ps1": {
+      "sha256": "ff68e6ccd0873fcf0505f25599a86688ba27e88bc40d38dbf1b5f1565bf14a45",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Send-SecurityAlert.ps1": {
+      "sha256": "eab2b302ec1e18d8e815680693e3a5763f3217d8e851ec414543f2528fe58814",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Send-SecurityAlertQueue.ps1": {
+      "sha256": "e547903e615b5feaeec29ddfb718d41c276b1a2d28cdc475295e92838ca891f2",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Set-JobItem.ps1": {
+      "sha256": "c30018cf1a93cdbb21a8d9bad9ecb13a79c426b0fb346d03a4d40649590d42a5",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Set-JobScriptSignature.ps1": {
+      "sha256": "9ade56aa77a85d65b2e497ef134548c7df3869d846e3afa372ba1fed46117434",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Start-ScriptJob.ps1": {
+      "sha256": "fbedfb018f998f38f4453232f5b926d17fcb3752cb6452d571291b4f5cc644ab",
+      "mode": "0644"
+    },
+    "artifacts/script-library/windows/lib/functions/Test-JobSignedBundle.ps1": {
+      "sha256": "18d13c41b9db94484a17d8759057da44f9acc98cfeb64c82b05e6e760cdee8a4",
       "mode": "0644"
     },
     "bin/control": {
@@ -139,11 +271,11 @@
       "mode": "0755"
     },
     "bin/control.d/bootstrap.json": {
-      "sha256": "6658fd49d960fd8db800c65d6b2d5abf8d5c0b0d0adc532a2b04020be35bffb5",
+      "sha256": "1282ad2c0e9e4618a7c81f2113b0d680eb43061ef18c9c24a149f29d20436d1f",
       "mode": "0644"
     },
     "bin/control.d/bootstrap.sh": {
-      "sha256": "a3938ada49e2ca3b1961571ef25d4cdca5179f5c954bda2b86c69f16a9a2ec9c",
+      "sha256": "cdd6bdc25caa2802e4c1ad5f360c98329ca18fbfae16375e2f67c76000cb2067",
       "mode": "0755"
     },
     "bin/control.d/ca-distribute.json": {
@@ -167,7 +299,7 @@
       "mode": "0644"
     },
     "bin/control.d/checkmk-download.sh": {
-      "sha256": "9d6fa7c79982948e84952cb37d9b3afcd187bbaa98f89d2649fc9610b429cab9",
+      "sha256": "ac3731d5aee2840a0c88b4cc59a58405ddc0101769e0d4a2965574e34b255408",
       "mode": "0755"
     },
     "bin/control.d/checkmk-migration-apply.json": {
@@ -546,6 +678,22 @@
       "sha256": "76a2718860aae610b66ad961e52aaafff5639db9dc3ef603c0d1faada28fbe18",
       "mode": "0755"
     },
+    "bin/control.d/windows-check.json": {
+      "sha256": "bda7e4cc2266c2d5faddc366a29050469cbbbdb34c3cd73eae71b09296e6aea7",
+      "mode": "0644"
+    },
+    "bin/control.d/windows-check.sh": {
+      "sha256": "6ee135270ec378cfad418d3eba806d41a9df322be10b8ef48cc2a7e2375e3aae",
+      "mode": "0755"
+    },
+    "bin/control.d/windows-setup.json": {
+      "sha256": "0094eb1c264ac928085f2d6cb97b4172870ee6fc0a796665a473569a05ee60a8",
+      "mode": "0644"
+    },
+    "bin/control.d/windows-setup.sh": {
+      "sha256": "e836be47701c88a7ec783ac09c1886fc50234a89022cdfbfbb2102722fca3949",
+      "mode": "0755"
+    },
     "bin/install-controller": {
       "sha256": "606db45311631b739dcae6e717c4ea46c8fec10a35d71f835d9d3a6fa8311a56",
       "mode": "0755"
@@ -587,7 +735,7 @@
       "mode": "0644"
     },
     "descriptions/commands/bootstrap.md": {
-      "sha256": "a6b8e3e06866c2cbff56ff61c7e49d0c555346716983008faf831d632d84ec83",
+      "sha256": "c956a42ba3654eaf8348921e4066b8ad6facb7df86d52901096de4398763ede1",
       "mode": "0644"
     },
     "descriptions/commands/ca-distribute.md": {
@@ -599,7 +747,7 @@
       "mode": "0644"
     },
     "descriptions/commands/checkmk-download.md": {
-      "sha256": "7eafeee9acdfed759a7880a6e074d7e6a647b2ab491c12bea0729211b5b21022",
+      "sha256": "ad305bc5c2ec1b0f79aebb436cbe3abe28fe0cd88dff634ae241a66aa4e36353",
       "mode": "0644"
     },
     "descriptions/commands/checkmk-migration-apply.md": {
@@ -691,15 +839,15 @@
       "mode": "0644"
     },
     "descriptions/commands/jobs-last.md": {
-      "sha256": "fea4e172cd972337f938f3d79da4ec4aeea030b5c5c595f80e8b29a8dd815234",
+      "sha256": "4e4727248ea62a40365898f4a53481a08a86dc697bd653c6e62496cf436606ed",
       "mode": "0644"
     },
     "descriptions/commands/jobs-summary.md": {
-      "sha256": "5f5f38a5d52830d44d9da7d9804cf4b41a0855ba4d20e80e37be6219a89610c7",
+      "sha256": "a9361af89875436a6f3aaeadbaf30a973aa24b6ca34b36639ce2419ed6dbafa1",
       "mode": "0644"
     },
     "descriptions/commands/jobs.md": {
-      "sha256": "cd15ff03e13588a76482fb9e9718f0f02000dc768f8fc177becfd0ab010b63c5",
+      "sha256": "90c3e10bb081d4465dc02a05742b69cc5ee038d6cfd9c1b7e0de873f895b38d7",
       "mode": "0644"
     },
     "descriptions/commands/keytabs.md": {
@@ -779,7 +927,7 @@
       "mode": "0644"
     },
     "descriptions/commands/update-check.md": {
-      "sha256": "7a5dc72c2d42aba60bb0b5a794186d618465fc8cd873011453f316e5ad0ff9df",
+      "sha256": "ce1742b9205db825d5f615f88db116c768bf5e5281bec3f35407bae09d2e2b78",
       "mode": "0644"
     },
     "descriptions/commands/updates.md": {
@@ -788,6 +936,14 @@
     },
     "descriptions/commands/wan-check.md": {
       "sha256": "51b0c0aff3fdeb4727393265873b31aff4d9d303e1a37985129806710ab5e987",
+      "mode": "0644"
+    },
+    "descriptions/commands/windows-check.md": {
+      "sha256": "d52d15bf82624a6ee1a592c8023eb217debad0b804bed343f0bad40107f8978e",
+      "mode": "0644"
+    },
+    "descriptions/commands/windows-setup.md": {
+      "sha256": "fd818634d3c1734b2c6a19cfe6ac48adcbcdf1ea5424b80411429126a0ef6a1e",
       "mode": "0644"
     },
     "descriptions/configurations/group_vars__all__host_credentials.example.md": {
@@ -799,7 +955,11 @@
       "mode": "0644"
     },
     "descriptions/configurations/installation-allgm.md": {
-      "sha256": "a63fef630b987fa534d9801d3a6b4f9d68d050d555b92850a8880ae7789fa915",
+      "sha256": "99ee9c2e112d101e9ba129f37671fee1a56b8a38d08c8895485a8c6224454001",
+      "mode": "0644"
+    },
+    "descriptions/configurations/job-local-checks.md": {
+      "sha256": "b83b2363d14961e4b5d8336f4ee3e53e3e6a400d487138271310941c68b7a827",
       "mode": "0644"
     },
     "descriptions/configurations/script-library.md": {
@@ -807,7 +967,11 @@
       "mode": "0644"
     },
     "descriptions/configurations/script_jobs.md": {
-      "sha256": "ae74ec1cc4232b2a605182081cb90acee3c4505fb5f2df332ee67f05bae0bece",
+      "sha256": "450a7fc7d68337c41ad0aad4185a95d904810e7e83fffb552e16f7ca81780014",
+      "mode": "0644"
+    },
+    "descriptions/configurations/security-alerts.md": {
+      "sha256": "7b1e22296f85481805212640089e673df68e427ee2d4082968c70761d4da916e",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-deployment.md": {
@@ -815,11 +979,15 @@
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-status.md": {
-      "sha256": "7ce91f229d13a127ec2d32311d37036bf39a9b5845facecb1308eb35ea272e5e",
+      "sha256": "6c33c98e3b22c0e98eedf9afbace5381cc1308388a4bf9d43057547b79b79128",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-script-discovery.md": {
       "sha256": "dd4e4cabd707ac7071c2fe6fc73dc97afa15977cebb24a70ce43f1ff540d03fe",
+      "mode": "0644"
+    },
+    "descriptions/configurations/windows-code-signing.md": {
+      "sha256": "1e05244f2caeffca02dab890ca2a7835a05d7a41f1718d8c65c259350ff38b66",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__base.md": {
@@ -835,7 +1003,7 @@
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__checkmk.md": {
-      "sha256": "e5ca381a805a10046b83a8a48048c66f5b1950dccccc71457b8e886847dd4ce6",
+      "sha256": "fb348eb4d36c4090150ca7e9ffa7e544aaf9d7920315c07f53b47ef726ee1e40",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__checkmk__migrate_hosts.md": {
@@ -1007,15 +1175,15 @@
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__show_status.md": {
-      "sha256": "c376f72cc073eb4a53b0dbc0ce0daf36b3cd828e095c5b1a1b857582f1bc4a91",
+      "sha256": "9f57a6af14dccdaba50ce539a603a11364276db4f9b38b6f161944d3a89edd47",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__stage_library.md": {
-      "sha256": "13395afc66ec8593b889d372268edc1614d038d4f1766bc155c466f4355640b8",
+      "sha256": "6a33004113f58987624d33d5d3522e0fefbfdfddb62379be7d6e254a7a263812",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__summary_jobs.md": {
-      "sha256": "bae5d248241dd879b30e91067d940ea28fad0114ba5d0d9081c7f76ed3c6cf5f",
+      "sha256": "cae66bf7a4156c3c55a5eb6fdbc3c3dfc9836d32bd5485d701a2ed8375c98793",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__security__proxmox_stack_hardening.md": {
@@ -1026,8 +1194,12 @@
       "sha256": "721b0b108a389db6d09a6ef86aa4cf367dccaa36e8c7c12aff37175c668d8ee6",
       "mode": "0644"
     },
+    "descriptions/playbooks/playbooks__windows__stage_library.md": {
+      "sha256": "813031471789017d40167a3945378efaab79a23b8fdd032242eb88d0d16c3d6d",
+      "mode": "0644"
+    },
     "descriptions/releases/allgm.md": {
-      "sha256": "a69465418f730a960385f841bd6a4891b53ddf816d9b7ba9ee9c0b671b8422b7",
+      "sha256": "2b5c4e4af64e1a929623bcc83ba6d045d9eafa3ec8f38edd46c4fbc7758ab1c9",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1047,7 +1219,7 @@
       "mode": "0644"
     },
     "descriptions/roles/roles__checkmk_agent.md": {
-      "sha256": "d5b567e20942ad7adf10484d28b4fcf3183497d7fa76b3b7ed394df865b422e5",
+      "sha256": "989222c45bea44f5e95b54fb4249f298b37dccc2af81bd3bd7a98777dfce4173",
       "mode": "0644"
     },
     "descriptions/roles/roles__fail2ban.md": {
@@ -1091,7 +1263,7 @@
       "mode": "0644"
     },
     "descriptions/roles/script_jobs.md": {
-      "sha256": "83619fc08ac7ac7153d7f0dd0d29311c5317d6ab8991bae658e35655462c9632",
+      "sha256": "d9cfc72fe41fd724d01dbde3b9014be0c48d27035f9bccb0222c5b731e0fd083",
       "mode": "0644"
     },
     "descriptions/roles/script_jobs_controller.md": {
@@ -1099,7 +1271,7 @@
       "mode": "0644"
     },
     "descriptions/roles/script_library.md": {
-      "sha256": "2840a3cbffc4129d8668e0475dcbeac6aa6bb55e8b543023836a161cd060e225",
+      "sha256": "c30b19bf8fc6a41a7f108fabef8f5bb99b9f7073ba3cca54fa133451259db69c",
       "mode": "0644"
     },
     "install.sh": {
@@ -1179,7 +1351,7 @@
       "mode": "0644"
     },
     "playbooks/checkmk.yml": {
-      "sha256": "0c256095a4982713aea2890075150b26a794f19416612115aebd847f495300a1",
+      "sha256": "de3ba3fbc4b5062e096841d927f18c9e7aba041582d249c43b5c8e81d8d9436e",
       "mode": "0644"
     },
     "playbooks/checkmk/migrate_hosts.yml": {
@@ -1366,6 +1538,10 @@
       "sha256": "7a7011c25897687e6a72d9f568065d524180c612050bd9a595629430fba4cff0",
       "mode": "0644"
     },
+    "playbooks/scripts/checkmk_jobs.yml": {
+      "sha256": "d90bc0f376cca1bf9131dbe09299007805f337bdcaae5c2784d2fe03eb8b562c",
+      "mode": "0644"
+    },
     "playbooks/scripts/deploy_jobs.yml": {
       "sha256": "2130e09fdf591f239dce5959d61e3f3a5642625dc93e61f0f94e7b0738c5da1c",
       "mode": "0644"
@@ -1374,12 +1550,16 @@
       "sha256": "3cc77b91dbce76b62264d2d50e25f67382d0f7f5fabead1e346ab1dc1511742f",
       "mode": "0644"
     },
+    "playbooks/scripts/security_alerts.yml": {
+      "sha256": "6a4826a77dbb4f8c6b05997f9ae8c44b5da14b65f30afba5a0451b8059f65a08",
+      "mode": "0644"
+    },
     "playbooks/scripts/setup_controller.yml": {
       "sha256": "7d6e336721b80f30686c4eb87e412a7343142edf2ade81182471c68d275d66c8",
       "mode": "0644"
     },
     "playbooks/scripts/show_status.yml": {
-      "sha256": "095511f8fbdfa648be533dd9541079d839ca6972cc0cf4fdb2f16597ab1e777f",
+      "sha256": "5b6b3cd0d08dac47374cbe39619d2d6c7153ab01fc0839daac3c11702fde08c5",
       "mode": "0644"
     },
     "playbooks/scripts/stage_library.yml": {
@@ -1387,7 +1567,7 @@
       "mode": "0644"
     },
     "playbooks/scripts/summary_jobs.yml": {
-      "sha256": "ac6fbab4e7add7ba5625df407c92492db49d0e068359539fb34ba8f7eba4ab7f",
+      "sha256": "bc1ff0dda2931384fe8cc72cefa2ba08f3f3fb6636108c37691d703d24bcde58",
       "mode": "0644"
     },
     "playbooks/security/proxmox_stack_hardening.yml": {
@@ -1398,8 +1578,24 @@
       "sha256": "a1370917868ac4cb7aa2118cf0211e6d21a817d6d13fc41793bf079d1b48d325",
       "mode": "0644"
     },
+    "playbooks/windows/bootstrap.yml": {
+      "sha256": "b4a87046013c89827d98bcc07cda098b81fe1767c83b64dd9efd8afce885b3a4",
+      "mode": "0644"
+    },
+    "playbooks/windows/check.yml": {
+      "sha256": "f8bccb41c827a11736eb146db420babe8c998686e5e7163eec965daf56f2a353",
+      "mode": "0644"
+    },
+    "playbooks/windows/setup_signing.yml": {
+      "sha256": "0a93ad178f50e1b83c7517cb288792d8bb3ec78940611f785e19a5d213c84152",
+      "mode": "0644"
+    },
+    "playbooks/windows/stage_library.yml": {
+      "sha256": "1c95dca690bc7a5203140ba695c6c041301baa83764246f2b27bbf4e058238c3",
+      "mode": "0644"
+    },
     "requirements-controller.txt": {
-      "sha256": "1b2833493fbc444c46467095ffe46b5d7c537fc7c5ed9b3143b6451085151abb",
+      "sha256": "92b45f0f86ee004501da7bce75c83c751dc4e8ee321fa93a96612cdf2bf1f641",
       "mode": "0644"
     },
     "requirements-extra.yml": {
@@ -1407,7 +1603,7 @@
       "mode": "0644"
     },
     "requirements.yml": {
-      "sha256": "8083b3518550b7947f8861bae274474d61f8f1f7cc097d762f79d06fbdfa92f3",
+      "sha256": "681964fa47e5d0c1d959412ae6eaf3bf38482a77e94654684b328489e2ee7671",
       "mode": "0644"
     },
     "roles/accounting/handlers/main.yml": {
@@ -1435,11 +1631,19 @@
       "mode": "0644"
     },
     "roles/checkmk_agent/defaults/main.yml": {
-      "sha256": "3ac93cd4a2232d3e47a3e797cd5a0ca3db1b7343af439291fb90d5935adbdfaf",
+      "sha256": "422897957fc27c7ba1ed404f0cf20ea170bd2780150e0f1c68f80a704c32f910",
+      "mode": "0644"
+    },
+    "roles/checkmk_agent/tasks/linux.yml": {
+      "sha256": "8aa1d752862aa41512a2024dbe7ee15c90a6d0360708f5f97c839cc40353d4e8",
       "mode": "0644"
     },
     "roles/checkmk_agent/tasks/main.yml": {
-      "sha256": "2d0e3ec06ab7581d66810710deca8c77ec835322d9e38278801fab785f33ea0f",
+      "sha256": "de2fe6270bda944bea360070650949668ace1dc1aa4e5b67b58909d165ea1319",
+      "mode": "0644"
+    },
+    "roles/checkmk_agent/tasks/windows.yml": {
+      "sha256": "245499dae7f3bdea3854e53e11b8391e6f1b9392b27b17133cf82aca03babc4f",
       "mode": "0644"
     },
     "roles/fail2ban/defaults/main.yml": {
@@ -1554,6 +1758,30 @@
       "sha256": "d1b8a0089c4c4d1cefbf09a7511bc12861353c4b7e66be0fe2a2f3f27d571b8c",
       "mode": "0644"
     },
+    "roles/script_jobs_checkmk/defaults/main.yml": {
+      "sha256": "09a50c65d8d4b08745fe2df006c1625d3669b81db0bd5e8de0d5d5c48a3f555c",
+      "mode": "0644"
+    },
+    "roles/script_jobs_checkmk/filter_plugins/checks.py": {
+      "sha256": "cf7777c13774bbbe3a3213c7eeeb895916095003f47f933b6597d7312b98cde8",
+      "mode": "0644"
+    },
+    "roles/script_jobs_checkmk/tasks/linux.yml": {
+      "sha256": "1da9580d2d105a26bc8eacf7724794084f0a16dddf843f0fe9dcc7317aeb9d8d",
+      "mode": "0644"
+    },
+    "roles/script_jobs_checkmk/tasks/main.yml": {
+      "sha256": "261b4e9fb6a40586b75d6e19cef3a26a7a2773b945cde5bff946b611a214b29a",
+      "mode": "0644"
+    },
+    "roles/script_jobs_checkmk/tasks/windows.yml": {
+      "sha256": "0cef2f6a3ca11be733e52baab9b1fb20a4aad38d44ca59d5341308c3ec48a499",
+      "mode": "0644"
+    },
+    "roles/script_jobs_checkmk/templates/script_jobs.ps1.j2": {
+      "sha256": "607417cde68fc33d578bb5fbd929d5c95efb20b78cae4b918a669c75464adaad",
+      "mode": "0644"
+    },
     "roles/script_jobs_controller/defaults/main.yml": {
       "sha256": "6ed7c2a5fc02ca90ca0f0b3a36e81ec81ec5f3edd50952c8f170ef57db040cba",
       "mode": "0644"
@@ -1567,7 +1795,27 @@
       "mode": "0644"
     },
     "roles/script_library/tasks/main.yml": {
-      "sha256": "5c8ea369955cff8e1b6be81a22a7a581ed0b791c029929149c0fb9ad206cc357",
+      "sha256": "3bf8e5b0ab4f2a4b63e3ece3dec8945866970fb78ccb25d1e54525ad38a04839",
+      "mode": "0644"
+    },
+    "roles/script_security_alerts/defaults/main.yml": {
+      "sha256": "8afb61f1708df82384b6c9f1f3983cc96fd663684e3fb65c435c6e2433bf27b0",
+      "mode": "0644"
+    },
+    "roles/script_security_alerts/filter_plugins/security_config.py": {
+      "sha256": "ad19715118643aca33470cd58855c440708b59e7c50a672e0e3e34d2659613d7",
+      "mode": "0644"
+    },
+    "roles/script_security_alerts/tasks/linux.yml": {
+      "sha256": "16befe4c45e6d877e1572bf249f47442a19172df900cb1fe8b662bed0804ee97",
+      "mode": "0644"
+    },
+    "roles/script_security_alerts/tasks/main.yml": {
+      "sha256": "f2e652061739bc5bee61a9c77228f7bb2fa33eb04b196799cf4c2be07dbc0add",
+      "mode": "0644"
+    },
+    "roles/script_security_alerts/tasks/windows.yml": {
+      "sha256": "7ee74697d6cbd47da24531b808afdb60d418a110897005794024afa15c33a62e",
       "mode": "0644"
     },
     "roles/security_base/tasks/main.yml": {
@@ -1606,6 +1854,66 @@
       "sha256": "74bd10f95cb0eb562b7b8342b9f4dc9676c0f881ba6165e447639bd974be719e",
       "mode": "0644"
     },
+    "roles/windows_bootstrap/defaults/main.yml": {
+      "sha256": "b37cf34e0fa01608147c3e264558d2452b45920946243fa49f0dc4054271c8d6",
+      "mode": "0644"
+    },
+    "roles/windows_bootstrap/tasks/firewall.yml": {
+      "sha256": "e8e043ff5cc2cf57fd3205b1b2dcf7d81d98b77ad34c13298288ca6a782c087d",
+      "mode": "0644"
+    },
+    "roles/windows_bootstrap/tasks/main.yml": {
+      "sha256": "b31b49ba141dfcb87b544cf4a105a66392a41dd1f9bc3e50cff87093cb378742",
+      "mode": "0644"
+    },
+    "roles/windows_code_signing/defaults/main.yml": {
+      "sha256": "92d0cdbf367bd8cb656fae8c1fa1290feda6f6839b507e37ea700b3a53b2b5d3",
+      "mode": "0644"
+    },
+    "roles/windows_code_signing/tasks/import_key.yml": {
+      "sha256": "56d61a10e6cd9460d903cd87266c9daad3ee319bfef847ed287cd605227ff527",
+      "mode": "0644"
+    },
+    "roles/windows_code_signing/tasks/library.yml": {
+      "sha256": "51d3c2d29eac9238cc4dcec0d9250663eefd6dadf01fca79091c07efbd554c77",
+      "mode": "0644"
+    },
+    "roles/windows_code_signing/tasks/main.yml": {
+      "sha256": "c915df95c8ae0caef55b6d4761636b3d278d8709a3f69b3934d4c631f41e9400",
+      "mode": "0644"
+    },
+    "roles/windows_code_signing/tasks/trust.yml": {
+      "sha256": "ccc08ce7cca2d4d7d9a95b8506d56fcb10589ec268cd97ff56b939cbd9255ef5",
+      "mode": "0644"
+    },
+    "roles/windows_code_signing/tasks/validate.yml": {
+      "sha256": "5be4f9f3e025759c01bdbafeb2f5615a961e40e911e7fcd597850660cfa268f8",
+      "mode": "0644"
+    },
+    "roles/windows_code_signing/templates/setup-probe.ps1.j2": {
+      "sha256": "f91f0e18a978f0aa02b8ae5c5470ed702c74d8013597a4e128350957b6743a25",
+      "mode": "0644"
+    },
+    "roles/windows_code_signing/templates/sign-bundle.ps1.j2": {
+      "sha256": "1e877235ae59edbeb06b3d198d97b3afa6e9106f8656252b42dfec9e45b574e3",
+      "mode": "0644"
+    },
+    "roles/windows_private_paths/defaults/main.yml": {
+      "sha256": "837dd13bfcadd8e9aa90d307c16f693d50f98c30665bdf007cf28d653713a2a0",
+      "mode": "0644"
+    },
+    "roles/windows_private_paths/tasks/main.yml": {
+      "sha256": "339efbc5858ac5acb1fbd2a53a988be36e60d03aa6f47bc19a80f3b0a9fdb38e",
+      "mode": "0644"
+    },
+    "roles/windows_script_library/defaults/main.yml": {
+      "sha256": "498c646175a7f392295d6cb65a15b36c9326837c1cc5b837d360a90238d933f5",
+      "mode": "0644"
+    },
+    "roles/windows_script_library/tasks/main.yml": {
+      "sha256": "b18cfd83ff4dfd76bf517317ecf1992c46dff2a9392daeacec2ac2e0f1018808",
+      "mode": "0644"
+    },
     "scripts/apache_certificate_files.py": {
       "sha256": "cab3219c00b8801e0791442e8632a36e723cd6fdbb09d526ecc68087c4966990",
       "mode": "0644"
@@ -1635,7 +1943,11 @@
       "mode": "0755"
     },
     "scripts/download_checkmk_artifacts.sh": {
-      "sha256": "84b960c4956dcdf8ea3a6baabc00e0f440fdb2e72f74186267effd4f840893c1",
+      "sha256": "d8e84ccf2ca1f4a235e9081de370884d8e4bb624aa18914ac88014a3585da1c7",
+      "mode": "0755"
+    },
+    "scripts/download_windows_sqlite.py": {
+      "sha256": "9e54ffc684d76230e1b79af158fb98cea1eee7f19bd0c812ec391c3390598a62",
       "mode": "0755"
     },
     "scripts/export_docker_users.py": {
@@ -1651,7 +1963,7 @@
       "mode": "0644"
     },
     "scripts/generate_inventory.py": {
-      "sha256": "adba46bd0de0c2385a7fbba2915eb62a362b90e084c968c431eab879ecd9523c",
+      "sha256": "59884a06584dd700b3235e07a0e804005edae6ffbcd88e51ce7d0e2cba0bc6a9",
       "mode": "0644"
     },
     "scripts/get_systemd_scripts.py": {
@@ -1659,12 +1971,16 @@
       "mode": "0644"
     },
     "scripts/job_console.py": {
-      "sha256": "03c27d3957d2f9df811175ca3bf5fc22434554585471379d9ae249cef46e513d",
+      "sha256": "2629de658c1f3d32164c360175f68d24058fe31404b030403c3ecbf3f8eca3c9",
       "mode": "0644"
     },
     "scripts/job_cron_guard.py": {
       "sha256": "c34ea1082b716021447fcff3869c73d9dfac808775118d3d38cde965543457d2",
       "mode": "0644"
+    },
+    "scripts/job_local_check.py": {
+      "sha256": "1e9f40f91816d17442ec2f1e6f261ddb820e46b9deeea65472dd69f2ab38fede",
+      "mode": "0755"
     },
     "scripts/job_profile_apply.py": {
       "sha256": "e3a395bc8fb887e1c0bcab45d496e7aa86f3bba084d41e298b1b534f8fe3b429",
@@ -1694,9 +2010,21 @@
       "sha256": "907ec1084b094638150eba988a79c8c5dc0e6f5b0e1a901a95e4451ad3f21086",
       "mode": "0755"
     },
+    "scripts/run_platform_bootstrap.py": {
+      "sha256": "207b53757399c2e60ebb6135a10bc1d34889f410675708c9c65bdaa22f90b420",
+      "mode": "0755"
+    },
+    "scripts/setup_windows.py": {
+      "sha256": "d16c348172b04a6dcb1660563937bbbb36da9db366b0d7fc0ce95e098d0bf8f5",
+      "mode": "0755"
+    },
     "scripts/update_inventory.sh": {
       "sha256": "bd39b44766a96c970dd50ef2f90c4fa59243ff3b4dba1b9da845911e997357ad",
       "mode": "0755"
+    },
+    "scripts/windows_signing_bundle.py": {
+      "sha256": "3b19e106845668b800c40349ba449430cf2023bc351e4b61ca0b46b539564d8e",
+      "mode": "0644"
     },
     "templates/lynis_summary.j2": {
       "sha256": "84f883ec672667db44fba0e38ea6a69a8ce60837fcdb185d9c1506b0f6a97d10",
@@ -1727,7 +2055,7 @@
       "mode": "0644"
     },
     "tools/install_controller.py": {
-      "sha256": "aeb10dd2e8d48e6e1d5a9ee045bc8c2188df6790aa0d233ca0b63deefb59d87d",
+      "sha256": "ba99175981bf232f640cea854b3c26ab5d9f02a7e7f2c9a885603c1098277e8e",
       "mode": "0644"
     },
     "tools/job_tests/test_ansible_jobs.py": {
@@ -1750,12 +2078,20 @@
       "sha256": "90ee93bc941b1665be032ffda0eb4ddb552020ec17c01aa296a559b6e00e9784",
       "mode": "0644"
     },
+    "tools/job_tests/test_local_checks.py": {
+      "sha256": "148f61859d878dfc17888072183e3eee340d7ba80d2050155428e5d2e95abfec",
+      "mode": "0644"
+    },
     "tools/job_tests/test_profile_deployment.py": {
       "sha256": "88ce18367b0093c75c21acbedcfa6b5074b5805f1ac1222b27522e141cfb822f",
       "mode": "0644"
     },
     "tools/job_tests/test_recovery.py": {
       "sha256": "2832dfbfcc61ad4107d18509bfa63a63065abfdf8ec187cb40f196527dbaeade",
+      "mode": "0644"
+    },
+    "tools/job_tests/test_security_alerts.py": {
+      "sha256": "f116118938864b2cb83a48e79a9261de1663063fade9039f07181eff5088ca04",
       "mode": "0644"
     },
     "tools/job_tests/test_summary.py": {
@@ -1798,8 +2134,36 @@
       "sha256": "dbddc143054ee044afcc0c774347545c3fd34d6a92975bc5cf2fd2d370c92e8f",
       "mode": "0644"
     },
+    "tools/windows_tests/Test-NativeWindows.ps1": {
+      "sha256": "ac7985f562317c402b9d70888822d3c3faab85994d849d1526ef538766510b53",
+      "mode": "0644"
+    },
+    "tools/windows_tests/signing_fixture.ps1": {
+      "sha256": "4c447aca789218d0cb27c1c8caa87bf330284a0e459971ca9512f60d4aa16a82",
+      "mode": "0644"
+    },
+    "tools/windows_tests/store_fixture.ps1": {
+      "sha256": "86e2b0e4af5967888e8b33a8a3e3fbd969cc64dbf5a5ca81e6220d9a4400ea1c",
+      "mode": "0644"
+    },
+    "tools/windows_tests/test_windows_connection.py": {
+      "sha256": "150ebf1bc80ebd8867353cbdcce7bf0844e15c1f6f1c1b5a2329ea8d85b87364",
+      "mode": "0644"
+    },
+    "tools/windows_tests/test_windows_deployment.py": {
+      "sha256": "fe3e3f92c8625305ab86f8fe91f0ff71f1919244c5541cb74def0f9c7b97a58b",
+      "mode": "0644"
+    },
+    "tools/windows_tests/test_windows_signing.py": {
+      "sha256": "f01d3f64ccdad6aba1f910761586ee0652b08eec393fa500c02f2f0c936f4ca7",
+      "mode": "0644"
+    },
+    "tools/windows_tests/test_windows_store.py": {
+      "sha256": "c54fad0e5faefbe5de01b72e9a2fc8781f56c21285587e2033b63997f0b64cf8",
+      "mode": "0644"
+    },
     "update_check/VERSION.txt": {
-      "sha256": "879a67a197446479e783c8e22a58681fed324f09eac1ce808f6a5a4c5e1894ad",
+      "sha256": "04c93b7e7635a43d0cb6d097f9af0a72a9973041d11847e521cc682f1668c605",
       "mode": "0644"
     },
     "update_check/check.py": {
@@ -1823,7 +2187,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "f1d0f53c10c987f6b05b59c83f2d4e0d88e16aa6f1231b9f56cde7f3f41ed909",
+      "sha256": "611b098993ae7222d8a5c5a2e770f49460622a2dd43669ee1e8fdd70b563d269",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -1835,11 +2199,11 @@
       "mode": "0644"
     },
     "update_check/manifests/bootstrap.json": {
-      "sha256": "97bd4601f582b8656e50720730c2217283942992ae94383803eff58b4d8c59c5",
+      "sha256": "51ca216536f6003237a46b62d4c480722b851178f135db85df23fa8febd79488",
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "7a3c26f431da4af27f6f3209e3b1bac1c98aa67b28eb7050ff34bc7f122d38da",
+      "sha256": "14213e925968853aff084197d9a4c73d82a8d567ee9b3e08552f67eaea0ded5c",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -1847,15 +2211,19 @@
       "mode": "0644"
     },
     "update_check/manifests/script_jobs.json": {
-      "sha256": "7398a5cd6512cffd7b50d39e6ebe1a699ea00a239c37fff071d79b51533bda07",
+      "sha256": "e2e03d0f1e0f1def043a3bbd7d7276ed914d53f6f81e39da3c045c3fbd0e7448",
       "mode": "0644"
     },
     "update_check/manifests/tls_tasks.json": {
-      "sha256": "5a06cd5b99a50dadd6da547a30ed5c11b3a36262b48d47a8ad880dfc74be61da",
+      "sha256": "6a29da84f482f5075c30cf10c76deeeec164c578eb44b430144b18a09c623a43",
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
-      "sha256": "95b1732a469e8ca5bead5754239fd53864de3d715fac3372da89047a1b4cdc8a",
+      "sha256": "8ab494118d1e08203bbbc14d260865427d6649fd67e2ab36a18d91b74b9952c7",
+      "mode": "0644"
+    },
+    "update_check/manifests/windows_foundation.json": {
+      "sha256": "7383d2c1f6055f84c8aa1fce4a506e8b401004507a8ec1372fed4d071f99b5dc",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -1867,7 +2235,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "7e98288963e436a567922b130cb95f145baaa8aa95efeeab4948c8f65aabc501",
+      "sha256": "814639eb2c8e2344439747b8fd443d59ad16d838e5c2832358d6976548876c1d",
       "mode": "0644"
     },
     "update_check/rollout.py": {
@@ -1883,7 +2251,7 @@
       "mode": "0644"
     },
     "update_check/staging_manifest.py": {
-      "sha256": "9f400e659f5c2f252212467d6d1f85dbadabac04ed7af22cea96a8334d98d6e9",
+      "sha256": "613b305ea18aaecdcbb10310803916e01796598328551baff749f34ecc5e199d",
       "mode": "0644"
     },
     "update_check/tests/test_addons.py": {

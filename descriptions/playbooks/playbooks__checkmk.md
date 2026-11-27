@@ -94,7 +94,7 @@ verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Overrid
     "playbooks/checkmk.yml"
   ],
   "source_hashes": {
-    "playbooks/checkmk.yml": "0c256095a4982713aea2890075150b26a794f19416612115aebd847f495300a1"
+    "playbooks/checkmk.yml": "de3ba3fbc4b5062e096841d927f18c9e7aba041582d249c43b5c8e81d8d9436e"
   },
   "i18n": {
     "de": {

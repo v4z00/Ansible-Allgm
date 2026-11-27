@@ -1,0 +1,51 @@
+---
+- name: Check Windows access and read system identity
+  hosts: all_windows_systems
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Require an explicit Windows target selection
+      ansible.builtin.assert:
+        that: ansible_limit | default('') | trim | length > 0
+    - name: Require the configured HTTPS Windows connection
+      ansible.builtin.assert:
+        that:
+          - ansible_connection == 'winrm'
+          - ansible_winrm_scheme | default('') == 'https'
+          - ansible_winrm_transport | default('') in ['ntlm', 'kerberos']
+          - ansible_winrm_server_cert_validation | default('validate') in ['validate', 'ignore']
+          - ansible_user | default('') | length > 0
+        fail_msg: Configure the Windows resolver and private windows_access settings first.
+      no_log: true
+      tags: [always]
+
+    - name: Test authenticated Windows remoting
+      ansible.windows.win_ping:
+      no_log: true
+      tags: [windows, connection, winrm]
+
+    - name: Read operating system and domain without configuration contents
+      ansible.windows.win_powershell:
+        script: |
+          $Ansible.Changed = $false
+          $computer = Get-CimInstance -ClassName Win32_ComputerSystem
+          $system = Get-CimInstance -ClassName Win32_OperatingSystem
+          $Ansible.Result = @{
+              hostname = $computer.Name
+              domain = $computer.Domain
+              domain_joined = [bool]$computer.PartOfDomain
+              domain_controller = $computer.DomainRole -in @(4, 5)
+              operating_system = $system.Caption
+              powershell = $PSVersionTable.PSVersion.ToString()
+              effective_execution_policy = [string](Get-ExecutionPolicy)
+              code_signing_certificates = @(Get-ChildItem Cert:\LocalMachine\My -CodeSigningCert | Where-Object HasPrivateKey).Count
+          }
+      register: windows_identity
+      no_log: true
+      tags: [windows, identity, domain]
+
+    - name: Show only the selected system identity fields
+      ansible.builtin.debug:
+        msg: "{{ windows_identity.result }}"
+      when: windows_identity.result is defined
+      tags: [windows, identity, domain]

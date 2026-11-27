@@ -1,0 +1,67 @@
+---
+- name: Resolve environment signing settings without exposing credentials
+  ansible.builtin.set_fact:
+    windows_signing_effective: "{{ windows_code_signing_defaults | combine(windows_script_signing, recursive=True) }}"
+  no_log: true
+- name: Validate the signing switch
+  ansible.builtin.assert:
+    that: windows_signing_effective.enabled is boolean
+  no_log: true
+- name: Validate an explicitly enabled signing environment
+  ansible.builtin.assert:
+    that:
+      - windows_signing_effective.host | length > 0
+      - windows_signing_effective.host in hostvars
+      - windows_signing_effective.public_certificate_src is match('^/[^\r\n]+\.(cer|crt|pem)$')
+      - windows_signing_effective.store_location in ['LocalMachine','CurrentUser']
+      - windows_signing_effective.trust_self_signed_certificate is boolean
+      - windows_signing_effective.trusted_root_certificates | type_debug == 'list'
+      - windows_signing_effective.trusted_root_certificates | select('match', '^/[^\r\n]+\.(cer|crt|pem)$') | list | length == windows_signing_effective.trusted_root_certificates | length
+      - windows_signing_effective.work_root is match('^[A-Za-z]:\\\\[^\r\n]+$')
+      - windows_signing_effective.cache_root is match('^/[^\r\n]+$')
+      - windows_signing_effective.cache_root != '/'
+    fail_msg: Configure an explicit signing host, public certificate, store and private work/cache directories.
+  when: windows_signing_effective.enabled
+  no_log: true
+- name: Validate the public certificate before any host receives it
+  ansible.builtin.command:
+    argv: ["{{ ansible_playbook_python }}", "{{ role_path }}/../../scripts/windows_signing_bundle.py", certificate, --path, "{{ windows_signing_effective.public_certificate_src }}"]
+  delegate_to: localhost
+  become: false
+  vars:
+    ansible_connection: local
+    ansible_become: false
+    ansible_shell_type: sh
+  register: windows_signing_public_info
+  changed_when: false
+  check_mode: false
+  when: windows_signing_effective.enabled
+  no_log: true
+- name: Require a code-signing publisher certificate
+  ansible.builtin.assert:
+    that:
+      - (windows_signing_public_info.stdout | from_json).code_signing
+      - not windows_signing_effective.trust_self_signed_certificate or (windows_signing_public_info.stdout | from_json).self_issued
+  when: windows_signing_effective.enabled
+  no_log: true
+- name: Validate declared root files as public certificates before transport
+  ansible.builtin.command:
+    argv: ["{{ ansible_playbook_python }}", "{{ role_path }}/../../scripts/windows_signing_bundle.py", certificate, --path, "{{ item }}"]
+  delegate_to: localhost
+  become: false
+  vars:
+    ansible_connection: local
+    ansible_become: false
+    ansible_shell_type: sh
+  loop: "{{ windows_signing_effective.trusted_root_certificates }}"
+  register: windows_signing_root_info
+  changed_when: false
+  check_mode: false
+  when: windows_signing_effective.enabled
+  no_log: true
+- name: Require CA certificates in the explicit CA root list
+  ansible.builtin.assert:
+    that: (item.stdout | from_json).is_ca
+  loop: "{{ windows_signing_root_info.results | default([]) }}"
+  when: windows_signing_effective.enabled
+  no_log: true

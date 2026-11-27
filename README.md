@@ -51,3 +51,7 @@ No migration is needed to keep German. To try English for a single command, run 
 - [Ansible-SSS](https://github.com/v4z00/Ansible-SSS) splits recovery material into shares. It runs on its own or as a controller add-on.
 
 I use AI to help write and maintain this project. I do little of the implementation by hand. If a workflow behaves differently on your system, an issue with the command, version and expected result helps me reproduce it. [Issues](https://github.com/v4z00/Ansible-Allgm/issues) · [MIT licence](LICENSE)
+
+## Windows in the current staging preview
+
+Start with [Windows access](descriptions/commands/windows-setup.md) and the [read-only connection check](descriptions/commands/windows-check.md). The preview adds shared SQLite/PowerShell primitives, separate Windows bootstrap and Checkmk paths, and [direct security alerts](descriptions/configurations/security-alerts.md). Real Windows pilots and private script/SYSVOL migration remain pending; see the [staging release notes](descriptions/releases/allgm.md).

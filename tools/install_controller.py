@@ -212,6 +212,8 @@ def code_files(checkout, overlay=False):
             "artifacts", "artifacts/script-library", "artifacts/script-library/bin",
             "artifacts/script-library/lib", "artifacts/script-library/lib/common",
             "artifacts/script-library/lib/data", "artifacts/script-library/lib/python",
+            "artifacts/script-library/windows", "artifacts/script-library/windows/bin",
+            "artifacts/script-library/windows/lib", "artifacts/script-library/windows/lib/functions",
         }
     files = {}
     pending = [checkout / name for name in sorted(roots) if os.path.lexists(checkout / name)]

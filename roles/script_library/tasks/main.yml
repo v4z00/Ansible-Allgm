@@ -29,7 +29,7 @@
     owner: "{{ script_library_owner }}"
     group: "{{ script_library_group }}"
     mode: '0600'
-  loop: "{{ [role_path ~ '/../../artifacts/script-library/lib/load.sh'] + lookup('ansible.builtin.fileglob', role_path ~ '/../../artifacts/script-library/lib/common/*.sh', wantlist=True) + lookup('ansible.builtin.fileglob', role_path ~ '/../../artifacts/script-library/lib/python/*.py', wantlist=True) + lookup('ansible.builtin.fileglob', role_path ~ '/../../artifacts/script-library/lib/data/*.json', wantlist=True) }}"
+  loop: "{{ [role_path ~ '/../../artifacts/script-library/lib/load.sh'] + lookup('ansible.builtin.fileglob', role_path ~ '/../../artifacts/script-library/lib/common/*.sh', wantlist=True) + lookup('ansible.builtin.fileglob', role_path ~ '/../../artifacts/script-library/lib/python/*.py', wantlist=True) + lookup('ansible.builtin.fileglob', role_path ~ '/../../artifacts/script-library/lib/data/*.json', wantlist=True) + lookup('ansible.builtin.fileglob', role_path ~ '/../../artifacts/script-library/lib/data/*.sql', wantlist=True) }}"
   loop_control:
     label: "{{ item | basename }}"
 - name: Install the job helpers

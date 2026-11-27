@@ -1,0 +1,52 @@
+---
+- name: Read Windows facts through the selected connection
+  ansible.windows.setup:
+    gather_subset: [min]
+
+- name: Require supported Windows and explicit local directories
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.os_family == 'Windows'
+      - windows_script_root is match('^[A-Za-z]:\\\\[^\r\n]+$')
+      - windows_state_root is match('^[A-Za-z]:\\\\[^\r\n]+$')
+      - windows_script_root | lower != windows_state_root | lower
+    fail_msg: Configure separate absolute Windows code and state directories.
+
+- name: Create code and private state directories
+  ansible.windows.win_file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ windows_script_root }}"
+    - "{{ windows_state_root }}"
+    - "{{ windows_state_root }}\\config"
+    - "{{ windows_state_root }}\\logs"
+
+- name: Protect managed code and state paths with explicit system SIDs
+  ansible.builtin.include_role:
+    name: windows_private_paths
+  vars:
+    windows_private_paths:
+      - "{{ windows_script_root }}"
+      - "{{ windows_state_root }}"
+      - "{{ windows_state_root }}\\config"
+      - "{{ windows_state_root }}\\logs"
+
+- name: Keep the existing WinRM service available
+  ansible.windows.win_service:
+    name: WinRM
+    start_mode: auto
+    state: started
+
+- name: Set the explicitly enabled Windows timezone
+  ansible.windows.win_timezone:
+    timezone: "{{ windows_timezone }}"
+  when: windows_bootstrap_set_timezone | bool
+
+- name: Apply only explicitly declared firewall rules
+  ansible.builtin.include_tasks:
+    file: firewall.yml
+    apply:
+      tags: [windows, firewall]
+  when: windows_firewall_rules | length > 0
+  tags: [windows, firewall]

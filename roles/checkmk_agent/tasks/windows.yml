@@ -1,0 +1,78 @@
+---
+- name: Copy the Windows agent MSI from the controller
+  ansible.windows.win_copy:
+    src: "{{ checkmk_windows_agent_package_src }}"
+    dest: "{{ checkmk_windows_agent_package_tmp }}"
+
+- name: Install the Windows agent with the controller artifact checksum
+  ansible.windows.win_package:
+    path: "{{ checkmk_windows_agent_package_tmp }}"
+    checksum: "{{ checkmk_agent_artifact.stat.checksum }}"
+    checksum_algorithm: sha256
+    state: present
+  register: checkmk_windows_install
+
+- name: Report an installer reboot requirement without rebooting the host
+  ansible.builtin.debug:
+    msg: Checkmk installation requires a separately scheduled Windows reboot.
+  when: checkmk_windows_install.reboot_required | default(false)
+
+- name: Create the Windows plugin directory
+  ansible.windows.win_file:
+    path: "{{ checkmk_windows_plugin_dir }}"
+    state: directory
+
+- name: Validate explicitly selected Windows plugin names
+  ansible.builtin.assert:
+    that: item is match('^[A-Za-z0-9][A-Za-z0-9_.-]*\.(ps1|exe|cmd|bat|vbs)$')
+  loop: "{{ checkmk_windows_plugins }}"
+
+- name: Deploy the selected Windows plugins
+  ansible.windows.win_copy:
+    src: "{{ checkmk_windows_plugins_src_dir }}/{{ item }}"
+    dest: "{{ checkmk_windows_plugin_dir }}\\{{ item }}"
+  loop: "{{ checkmk_windows_plugins }}"
+
+- name: Read the Windows agent registration state
+  ansible.windows.win_command:
+    argv: ["{{ checkmk_windows_agent_controller }}", status, --json]
+  register: cmk_windows_agent_status
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Register the Windows agent with the existing Checkmk settings
+  ansible.windows.win_command:
+    argv:
+      - "{{ checkmk_windows_agent_controller }}"
+      - register
+      - --hostname
+      - "{{ cmk_hostname }}"
+      - --server
+      - "{{ checkmk_server }}"
+      - --site
+      - "{{ checkmk_site }}"
+      - --user
+      - "{{ checkmk_registration_user }}"
+      - --password
+      - "{{ checkmk_registration_password }}"
+      - --trust-cert
+  when: cmk_hostname not in (cmk_windows_agent_status.stdout | default(''))
+  no_log: true
+
+- name: Keep the Windows agent service running
+  ansible.windows.win_service:
+    name: "{{ checkmk_windows_agent_service }}"
+    start_mode: auto
+    state: started
+
+- name: Verify the Windows agent listener after registration
+  ansible.windows.win_wait_for:
+    host: 127.0.0.1
+    port: "{{ checkmk_windows_agent_port }}"
+    timeout: 60
+
+- name: Remove the temporary Windows agent MSI
+  ansible.windows.win_file:
+    path: "{{ checkmk_windows_agent_package_tmp }}"
+    state: absent

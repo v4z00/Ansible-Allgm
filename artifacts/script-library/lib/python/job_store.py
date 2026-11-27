@@ -13,6 +13,7 @@ import uuid
 SCHEMA = 1
 STATUSES = {'running', 'success', 'warning', 'failed', 'skipped'}
 TERMINAL = STATUSES - {'running'}
+CATEGORIES = {'general', 'vzdump', 'ansible', 'administration', 'security'}
 
 def utc():
     return time.time()
@@ -53,37 +54,8 @@ class Store:
                 if attempt==19:raise
                 time.sleep(0.05)
         self.db.execute('PRAGMA foreign_keys=ON')
-        self.db.executescript('''
-CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS runs(
- source TEXT NOT NULL, epoch TEXT NOT NULL, run_id TEXT NOT NULL, job TEXT NOT NULL,
- category TEXT NOT NULL, status TEXT NOT NULL, started REAL NOT NULL, activity REAL NOT NULL,
- finished REAL, exit_code INTEGER, summary TEXT NOT NULL DEFAULT '', duration_seconds REAL,
- PRIMARY KEY(source,epoch,run_id));
-CREATE TABLE IF NOT EXISTS items(
- source TEXT NOT NULL,epoch TEXT NOT NULL,run_id TEXT NOT NULL,item_id TEXT NOT NULL,
- status TEXT NOT NULL,message TEXT NOT NULL,updated REAL NOT NULL,
- PRIMARY KEY(source,epoch,run_id,item_id),
- FOREIGN KEY(source,epoch,run_id) REFERENCES runs ON DELETE CASCADE);
-CREATE TABLE IF NOT EXISTS events(
- id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT NOT NULL,epoch TEXT NOT NULL,
- run_id TEXT NOT NULL,created REAL NOT NULL,kind TEXT NOT NULL,payload TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS cursors(source TEXT PRIMARY KEY,epoch TEXT NOT NULL,last_id INTEGER NOT NULL,updated REAL NOT NULL);
-CREATE TABLE IF NOT EXISTS collection_health(source TEXT PRIMARY KEY,status TEXT NOT NULL,updated REAL NOT NULL,message TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY,category TEXT NOT NULL,created REAL NOT NULL,body TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS report_runs(report_id TEXT NOT NULL,source TEXT NOT NULL,epoch TEXT NOT NULL,run_id TEXT NOT NULL,
- PRIMARY KEY(source,epoch,run_id),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
-CREATE TABLE IF NOT EXISTS deliveries(report_id TEXT NOT NULL,channel TEXT NOT NULL,status TEXT NOT NULL,
- attempts INTEGER NOT NULL DEFAULT 0,lease_until REAL NOT NULL DEFAULT 0,updated REAL NOT NULL,
- PRIMARY KEY(report_id,channel),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
-CREATE TABLE IF NOT EXISTS report_health(report_id TEXT NOT NULL,source TEXT NOT NULL,status TEXT NOT NULL,message TEXT NOT NULL,
- PRIMARY KEY(report_id,source),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
-CREATE TABLE IF NOT EXISTS run_observations(
- source TEXT NOT NULL,epoch TEXT NOT NULL,run_id TEXT NOT NULL,kind TEXT NOT NULL,
- PRIMARY KEY(source,epoch,run_id),
- FOREIGN KEY(source,epoch,run_id) REFERENCES runs ON DELETE CASCADE);
-CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
-''')
+        schema = Path(__file__).resolve().parents[1] / 'data/job-schema.sql'
+        self.db.executescript(schema.read_text(encoding='utf-8'))
         with self.transaction():
             if 'duration_seconds' not in {r[1] for r in self.db.execute('PRAGMA table_info(runs)')}:self.db.execute('ALTER TABLE runs ADD COLUMN duration_seconds REAL')
             self.db.execute('INSERT OR IGNORE INTO meta VALUES(?,?)',('schema',str(SCHEMA)))
@@ -109,7 +81,7 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
         self.db.execute('INSERT INTO events(source,epoch,run_id,created,kind,payload) VALUES(?,?,?,?,?,?)',(*key,utc(),kind,json.dumps(payload)))
     def begin(self,job,category='general'):
         if not re.fullmatch(r'[A-Za-z0-9_.:-]{1,160}',job):raise ValueError('Invalid job name')
-        if category not in ('general','vzdump','ansible','administration'):raise ValueError('Invalid category')
+        if category not in CATEGORIES:raise ValueError('Invalid category')
         run=str(uuid.uuid4());now=utc()
         with self.transaction():
             self.db.execute('INSERT INTO runs(source,epoch,run_id,job,category,status,started,activity) VALUES(?,?,?,?,?,?,?,?)',(*self._key(run),job,category,'running',now,now))
@@ -192,7 +164,7 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
             for event in events:
                 if not isinstance(event['id'],int) or event['id']<=expected:continue
                 payload=event['payload'];run=payload['run']
-                if run['status'] not in STATUSES or run['category'] not in ('general','vzdump','ansible','administration'):raise ValueError('Invalid event status')
+                if run['status'] not in STATUSES or run['category'] not in CATEGORIES:raise ValueError('Invalid event status')
                 key=(source,epoch,run['run_id'])
                 self.db.execute('INSERT OR REPLACE INTO runs(source,epoch,run_id,job,category,status,started,activity,finished,exit_code,summary,duration_seconds) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',(*key,safe_text(run['job'],160),run['category'],run['status'],float(run['started']),float(run['activity']),run['finished'],run['exit_code'],safe_text(run['summary']),run.get('duration_seconds')))
                 if event.get('kind') == 'systemd-observation':
@@ -222,7 +194,7 @@ CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
                 self.db.execute('DELETE FROM events WHERE source=? AND epoch=? AND run_id=?',key)
                 self.db.execute('DELETE FROM report_runs WHERE source=? AND epoch=? AND run_id=?',key)
                 removed+=self.db.execute('DELETE FROM runs WHERE source=? AND epoch=? AND run_id=?',key).rowcount
-            self.db.execute('DELETE FROM reports WHERE created<? AND NOT EXISTS(SELECT 1 FROM report_runs WHERE report_id=reports.id)',(cutoff,))
+            self.db.execute("DELETE FROM reports WHERE created<? AND NOT EXISTS(SELECT 1 FROM report_runs WHERE report_id=reports.id) AND NOT EXISTS(SELECT 1 FROM deliveries WHERE report_id=reports.id AND status!='sent')",(cutoff,))
         for source,epoch,identifier in old:
             if source!=self.host or epoch!=self.epoch:continue
             try:uuid.UUID(identifier)

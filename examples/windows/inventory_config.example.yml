@@ -1,0 +1,6 @@
+---
+# Merge into the private inventory_config.yml, not group_vars settings.
+default_windows_groups: []
+# Keep false until authenticated WinRM and an MSI pilot are confirmed.
+checkmk_manage_windows_agents: false
+# Windows guest discovery also uses dc/domain-controller and app/application-server tags.

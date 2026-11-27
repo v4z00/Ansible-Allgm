@@ -3,7 +3,7 @@
 import argparse
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import shutil
 import subprocess
 import sys
@@ -20,13 +20,15 @@ from job_store import Store
 PLAY='''- name: Read local host job events without executing jobs
   hosts: "{{ job_targets }}"
   gather_facts: false
-  become: true
+  become: "{{ not job_is_windows }}"
   become_user: "{{ script_jobs_owner | default('root') }}"
+  vars:
+    job_is_windows: "{{ ansible_connection | default('ssh') in ['winrm','psrp'] or inventory_hostname in groups.get('all_windows_systems', []) }}"
   tasks:
     - name: Observe explicitly configured systemd services without running jobs
       ansible.builtin.command:
         argv: "{{ [script_jobs_python | default('/usr/bin/python3'), job_source_overrides.get(inventory_hostname, {}).get('root', script_jobs_target_root | default(script_path | default('/scripte'))) ~ '/bin/script-jobs', '--db', job_source_overrides.get(inventory_hostname, {}).get('database', script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3')), 'systemd-record', '--config', (job_source_overrides.get(inventory_hostname, {}).get('database', script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3'))) | dirname ~ '/systemd.json', '--sample', job_systemd_sample, '--expect-profiles', ({'profiles': script_jobs_systemd_profiles | default({}), 'selected': script_jobs_systemd_selected_profiles} | to_json)] }}"
-      when: script_jobs_systemd_selected_profiles | default([]) | length > 0
+      when: not job_is_windows and script_jobs_systemd_selected_profiles | default([]) | length > 0
       register: job_systemd_query
       changed_when: false
       ignore_errors: true
@@ -36,6 +38,7 @@ PLAY='''- name: Read local host job events without executing jobs
       ansible.builtin.command:
         argv: "{{ [script_jobs_python | default('/usr/bin/python3'), job_source_overrides.get(inventory_hostname, {}).get('root', script_jobs_target_root | default(script_path | default('/scripte'))) ~ '/bin/script-jobs', '--db', job_source_overrides.get(inventory_hostname, {}).get('database', script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3')), 'export', '--after', (job_cursors.get(inventory_hostname, {}).get('last_id', 0) | string), '--limit', '100'] + (['--epoch', job_cursors[inventory_hostname]['epoch']] if job_cursors.get(inventory_hostname, {}).get('epoch') else []) }}"
       register: job_query
+      when: not job_is_windows
       changed_when: false
       ignore_errors: true
       ignore_unreachable: true
@@ -43,7 +46,36 @@ PLAY='''- name: Read local host job events without executing jobs
     - name: Refuse stale results after a failed systemd observation
       ansible.builtin.set_fact:
         job_query: "{{ job_query | combine({'rc': 1}) }}"
-      when: not (job_systemd_query.skipped | default(false)) and job_systemd_query.rc | default(255) != 0
+      when: not job_is_windows and not (job_systemd_query.skipped | default(false)) and job_systemd_query.rc | default(255) != 0
+      no_log: true
+    - name: Read Windows SQLite events through the local PowerShell library
+      ansible.windows.win_powershell:
+        script: |
+          param([string]$Root, [string]$Database, [string]$Sqlite, [long]$After, [string]$Epoch)
+          $ErrorActionPreference = 'Stop'
+          $Ansible.Changed = $false
+          Import-Module (Join-Path $Root 'lib/ScriptLibrary.psm1') -DisableNameChecking
+          $store = Open-JobStore -Database $Database -Sqlite $Sqlite
+          $Ansible.Result = Export-JobEvents -Store $store -After $After -Epoch $Epoch -Limit 100
+        parameters:
+          Root: "{{ job_source_overrides.get(inventory_hostname, {}).get('root', windows_script_root | default('C:\\\\Scripte')) }}"
+          Database: "{{ job_source_overrides.get(inventory_hostname, {}).get('database', windows_job_database | default('C:\\\\ProgramData\\\\ScriptJobs\\\\jobs.sqlite3')) }}"
+          Sqlite: "{{ windows_sqlite_exe | default((windows_script_root | default('C:\\\\Scripte')) ~ '\\\\runtime\\\\sqlite3.exe') }}"
+          After: "{{ job_cursors.get(inventory_hostname, {}).get('last_id', 0) }}"
+          Epoch: "{{ job_cursors.get(inventory_hostname, {}).get('epoch', '') }}"
+      become: false
+      when: job_is_windows
+      register: windows_job_query
+      ignore_errors: true
+      ignore_unreachable: true
+      no_log: true
+    - name: Normalize the Windows result for the common importer
+      ansible.builtin.set_fact:
+        job_query:
+          rc: "{{ 0 if not windows_job_query.failed | default(false) and not windows_job_query.unreachable | default(false) else 1 }}"
+          unreachable: "{{ windows_job_query.unreachable | default(false) }}"
+          stdout: "{{ windows_job_query.result | default({}) | to_json }}"
+      when: job_is_windows
       no_log: true
     - name: Transfer only structured job data to temporary local spool
       ansible.builtin.copy:
@@ -162,7 +194,9 @@ def main():
     for host,value in source_overrides.items():
         if not isinstance(value,dict) or set(value)-{'root','database'}:raise ValueError(tr('jobs.source_keys'))
         for path in value.values():
-            if not isinstance(path,str) or not path.startswith('/') or '\n' in path or '..' in Path(path).parts:raise ValueError(tr('jobs.absolute_paths'))
+            windows=PureWindowsPath(path) if isinstance(path,str) else None
+            absolute=isinstance(path,str) and (path.startswith('/') or bool(windows.drive and windows.root and not windows.drive.startswith('\\\\')))
+            if not absolute or any(c in path for c in '\r\n') or '..' in Path(path).parts or '..' in windows.parts:raise ValueError(tr('jobs.absolute_paths'))
     store=Store(a.db)
     try:
         view=a.view

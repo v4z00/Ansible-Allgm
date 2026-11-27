@@ -193,8 +193,8 @@ verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Overrid
     "roles/checkmk_agent/defaults/main.yml"
   ],
   "source_hashes": {
-    "roles/checkmk_agent/defaults/main.yml": "3ac93cd4a2232d3e47a3e797cd5a0ca3db1b7343af439291fb90d5935adbdfaf",
-    "roles/checkmk_agent/tasks/main.yml": "2d0e3ec06ab7581d66810710deca8c77ec835322d9e38278801fab785f33ea0f"
+    "roles/checkmk_agent/defaults/main.yml": "422897957fc27c7ba1ed404f0cf20ea170bd2780150e0f1c68f80a704c32f910",
+    "roles/checkmk_agent/tasks/main.yml": "de2fe6270bda944bea360070650949668ace1dc1aa4e5b67b58909d165ea1319"
   },
   "i18n": {
     "de": {

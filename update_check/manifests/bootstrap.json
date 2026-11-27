@@ -1,17 +1,18 @@
 {
   "schema": 1,
   "id": "bootstrap",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "files": {
-    "bin/control.d/bootstrap.json": "6658fd49d960fd8db800c65d6b2d5abf8d5c0b0d0adc532a2b04020be35bffb5",
-    "bin/control.d/bootstrap.sh": "a3938ada49e2ca3b1961571ef25d4cdca5179f5c954bda2b86c69f16a9a2ec9c",
+    "bin/control.d/bootstrap.json": "1282ad2c0e9e4618a7c81f2113b0d680eb43061ef18c9c24a149f29d20436d1f",
+    "bin/control.d/bootstrap.sh": "cdd6bdc25caa2802e4c1ad5f360c98329ca18fbfae16375e2f67c76000cb2067",
     "playbooks/bootstrap.yml": "871d520b4dd81e93c450714e99afaaa48b1a7d1d4f53f3b418820d807372cbf7",
     "playbooks/bootstrap/root_access.yml": "2849bfd465ea29572683a29bc70404d43f28ece511b70498de3cea98fdbe435a",
     "playbooks/bootstrap/tasks/prepare_target.yml": "2aa203c91abf438d5db671e64b39c6f9b2b8887e2c927c4d2a22bcad7ccb420e",
     "roles/bootstrap_ssh/defaults/main.yml": "ea2e0ef76b455a623e9609948662247fb3dc0e7bda7c8dbe34bfb888a2ec4915",
     "roles/bootstrap_ssh/handlers/main.yml": "873766115e1175bc4a93a7a6af88803d4998e945417b008921b5f4af57bca85a",
     "roles/bootstrap_ssh/tasks/main.yml": "d168265533ba97af5f81e007f50a154e4a788f74ba9543ade1cf100e19df228d",
-    "scripts/run_bootstrap.py": "f3d018a7e0487ded4bd39135cae7d315102befb6721bca68f72c59b95454a85f"
+    "scripts/run_bootstrap.py": "f3d018a7e0487ded4bd39135cae7d315102befb6721bca68f72c59b95454a85f",
+    "scripts/run_platform_bootstrap.py": "207b53757399c2e60ebb6135a10bc1d34889f410675708c9c65bdaa22f90b420"
   },
   "scope": "Gepruefte neutrale Vorlagenquelle, kein Produktivexport",
   "version_files": [],

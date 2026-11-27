@@ -1,0 +1,32 @@
+CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS runs(
+ source TEXT NOT NULL, epoch TEXT NOT NULL, run_id TEXT NOT NULL, job TEXT NOT NULL,
+ category TEXT NOT NULL, status TEXT NOT NULL, started REAL NOT NULL, activity REAL NOT NULL,
+ finished REAL, exit_code INTEGER, summary TEXT NOT NULL DEFAULT '', duration_seconds REAL,
+ PRIMARY KEY(source,epoch,run_id));
+CREATE TABLE IF NOT EXISTS items(
+ source TEXT NOT NULL,epoch TEXT NOT NULL,run_id TEXT NOT NULL,item_id TEXT NOT NULL,
+ status TEXT NOT NULL,message TEXT NOT NULL,updated REAL NOT NULL,
+ PRIMARY KEY(source,epoch,run_id,item_id),
+ FOREIGN KEY(source,epoch,run_id) REFERENCES runs ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS events(
+ id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT NOT NULL,epoch TEXT NOT NULL,
+ run_id TEXT NOT NULL,created REAL NOT NULL,kind TEXT NOT NULL,payload TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS cursors(source TEXT PRIMARY KEY,epoch TEXT NOT NULL,last_id INTEGER NOT NULL,updated REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS collection_health(source TEXT PRIMARY KEY,status TEXT NOT NULL,updated REAL NOT NULL,message TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS reports(id TEXT PRIMARY KEY,category TEXT NOT NULL,created REAL NOT NULL,body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS report_runs(report_id TEXT NOT NULL,source TEXT NOT NULL,epoch TEXT NOT NULL,run_id TEXT NOT NULL,
+ PRIMARY KEY(source,epoch,run_id),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS deliveries(report_id TEXT NOT NULL,channel TEXT NOT NULL,status TEXT NOT NULL,
+ attempts INTEGER NOT NULL DEFAULT 0,lease_until REAL NOT NULL DEFAULT 0,updated REAL NOT NULL,
+ PRIMARY KEY(report_id,channel),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS report_health(report_id TEXT NOT NULL,source TEXT NOT NULL,status TEXT NOT NULL,message TEXT NOT NULL,
+ PRIMARY KEY(report_id,source),FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS run_observations(
+ source TEXT NOT NULL,epoch TEXT NOT NULL,run_id TEXT NOT NULL,kind TEXT NOT NULL,
+ PRIMARY KEY(source,epoch,run_id),
+ FOREIGN KEY(source,epoch,run_id) REFERENCES runs ON DELETE CASCADE);
+CREATE INDEX IF NOT EXISTS runs_latest_job ON runs(source,job,started DESC);
+CREATE TABLE IF NOT EXISTS security_alerts(
+ event_key TEXT PRIMARY KEY,report_id TEXT NOT NULL UNIQUE,
+ FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE);

@@ -1,0 +1,8 @@
+---
+- name: Configure direct host security alarms for an explicit profile
+  hosts: all_linux_systems:all_windows_systems
+  gather_facts: false
+  become: "{{ ansible_connection | default('ssh') not in ['winrm','psrp'] }}"
+  roles:
+    - script_security_alerts
+  tags: [scripts, security]

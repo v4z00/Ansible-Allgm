@@ -735,7 +735,7 @@ Ein Ziel ohne deklarierte Unterstützung der internen Ablage wird bei Update und
     "update_check/cleanup.py": "ef0fd75326697b291b075104c0d4408030aa89fad020193671758a4759121738",
     "update_check/rollout.py": "5fee32129a8d78b1dc85e55e734ebc5845d5fbcde4a5cd92024fa83fd78e45f9",
     "tools/github_https.py": "4939726758123ce18c3558bd22a668052a0bb028b62a1c71534b92ccb89e5bd5",
-    "tools/install_controller.py": "aeb10dd2e8d48e6e1d5a9ee045bc8c2188df6790aa0d233ca0b63deefb59d87d",
+    "tools/install_controller.py": "ba99175981bf232f640cea854b3c26ab5d9f02a7e7f2c9a885603c1098277e8e",
     "tools/migrate_local_extensions.py": "7043675fffecee75166ef62bebe1859a90b27e5ebca38ee4bd6d085003ea43ba",
     "tools/local_extension.py": "7039aef7502b9793aa8105b0ff44b467268cfc3a49b5c05d3c2d721752dc6fe0",
     "update_check/local_extensions.py": "ea5afc8741f12bd72e9b011465f3a4e7c06dbf3f84c4434742582c5fa2827a60"

@@ -1,0 +1,33 @@
+---
+- name: Deploy the shared Linux alarm function
+  ansible.builtin.include_role:
+    name: script_library
+  vars:
+    script_library_root: "{{ script_jobs_target_root | default(script_path | default('/scripte')) }}"
+
+- name: Create the private host alarm configuration directory
+  ansible.builtin.file:
+    path: "{{ script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3') | dirname }}/config"
+    state: directory
+    owner: "{{ script_jobs_owner | default('root') }}"
+    group: "{{ script_jobs_group | default('root') }}"
+    mode: '0700'
+
+- name: Render only local security channel settings
+  ansible.builtin.copy:
+    content: "{{ security_runtime_config | to_nice_json }}"
+    dest: "{{ script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3') | dirname }}/config/security.json"
+    owner: "{{ script_jobs_owner | default('root') }}"
+    group: "{{ script_jobs_group | default('root') }}"
+    mode: '0600'
+  no_log: true
+
+- name: Retry undelivered security channels every minute
+  ansible.builtin.cron:
+    name: script-security-retry
+    user: "{{ script_jobs_owner | default('root') }}"
+    minute: '*'
+    job: >-
+      {{ (script_jobs_target_root | default(script_path | default('/scripte')) ~ '/bin/script-jobs') | quote }}
+      --db {{ script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3') | quote }}
+      security-retry --config {{ ((script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3') | dirname) ~ '/config/security.json') | quote }} >/dev/null 2>&1

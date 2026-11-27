@@ -1,5 +1,29 @@
 # Changelog
 
+## s0.9.0 – Windows foundation and immediate host security alerts
+
+Staging source preview: WinRM HTTPS access preparation, separate Windows bootstrap,
+portable PowerShell/SQLite APIs, shared schema/mail mapping, Windows event collection,
+read-only job/Checkmk views and optional Windows Checkmk MSI rollout. Existing Linux
+SSH and job workflows remain available. Job module 0.6.0; checker 1.5.5.
+
+Security events can use a durable local mail/Telegram outbox with per-channel retry.
+Ordinary jobs keep the central summary. SMTP authentication and TLS are separate;
+an intended internal relay can use authentication none. Enable explicit host security
+profiles and migrate each detector to the alarm API before relying on delivery.
+
+Run bin/setup-runtime for pywinrm. Prepare the pinned SQLite executable separately;
+it is not shipped in Git. First authenticated Windows/ACL/MSI/signing pilots are pending.
+Optional central signing keeps private keys on a configured Windows signer and validates artifacts before execution. AllSigned cannot be bypassed by disabling the integration. Private
+business-script migration, Task Scheduler profiles, SYSVOL background/Blackbox integration
+and grouped GPO managed-content modules are not complete in this foundation checkpoint. GPO links stay manual.
+
+Older updater allowlists reject the new SQL/PowerShell artifact paths. Use the current
+staging checkout installer and its preview/backup/plan-hash flow for the first update;
+a Homelab controller uses the matching Homelab installer with this Allgm checkout.
+Do not install an Allgm-only profile over an existing Homelab controller. No automatic
+host migration, cron replacement or promotion to main is included.
+
 ## 0.8.13 – Quiet service observations and Compose builds
 
 Job module 0.5.5 keeps healthy and intentionally inactive systemd snapshots out of new job summaries while retaining status/history and all service problems. Observation provenance is stored additively on import; host configurations and running services do not need changes.

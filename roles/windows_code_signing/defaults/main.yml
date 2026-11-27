@@ -1,0 +1,14 @@
+---
+windows_script_signing: {}
+windows_code_signing_defaults:
+  enabled: false
+  host: ''
+  public_certificate_src: ''
+  pfx_src: ''
+  pfx_password: ''
+  store_location: LocalMachine
+  trust_self_signed_certificate: false
+  trusted_root_certificates: []
+  timestamp_server: ''
+  work_root: 'C:\ProgramData\ScriptSigning'
+  cache_root: "{{ role_path }}/../../.local/code-signing"

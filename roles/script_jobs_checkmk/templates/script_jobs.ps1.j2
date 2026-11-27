@@ -1,0 +1,11 @@
+$ErrorActionPreference = 'Stop'
+try {
+    $root = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{{ windows_script_root | default("C:\\Scripte") | b64encode }}'))
+    Import-Module (Join-Path $root 'lib/ScriptLibrary.psm1') -DisableNameChecking
+    $state = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{{ windows_state_root | default("C:\\ProgramData\\ScriptJobs") | b64encode }}'))
+    $sqlite = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{{ windows_sqlite_exe | default("C:\\Scripte\\runtime\\sqlite3.exe") | b64encode }}'))
+    $config = Get-JobConfig -Path (Join-Path $state 'config/checkmk-jobs.json')
+    $store = Open-JobStore -Database $config['database'] -Sqlite $sqlite
+    Get-JobLocalCheck -Store $store -Jobs $config['jobs'] -SecurityOutbox:$config['security_outbox']
+}
+catch { '3 "Script jobs data" - Configuration or local database unavailable' }

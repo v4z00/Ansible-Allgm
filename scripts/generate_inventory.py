@@ -236,6 +236,11 @@ def decorate(name, values, cfg, notes):
 
 
 def make_inventory(hosts, cfg, notes):
+    if not isinstance(cfg.get('checkmk_manage_windows_agents',False),bool):
+        raise InventoryError('checkmk_manage_windows_agents must be true or false')
+    windows_groups=cfg.get('default_windows_groups',[])
+    if not isinstance(windows_groups,list) or any(not isinstance(group,str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',group) for group in windows_groups):
+        raise InventoryError('default_windows_groups requires valid inventory group names')
     children = {
         'checkmk_inventory_hosts': {'hosts': {}},
         'checkmk_managed_hosts': {'hosts': {}},
@@ -246,7 +251,7 @@ def make_inventory(hosts, cfg, notes):
         t = decorate(name, values, cfg, notes)
         if not values['checkmk_exclude']:
             member('checkmk_inventory_hosts', name)
-            if values.get('inventory_os_family') == 'linux':
+            if values.get('inventory_os_family') == 'linux' or (values.get('inventory_os_family') == 'windows' and cfg.get('checkmk_manage_windows_agents',False)):
                 member('checkmk_managed_hosts', name)
         for tag in sorted(t):
             member('tag_' + group_slug(tag), name)
@@ -266,6 +271,16 @@ def make_inventory(hosts, cfg, notes):
                 member('dmz_linux_servers', name)
         elif values.get('inventory_os_family') == 'windows':
             member('windows_servers', name)
+            member('all_windows_systems', name)
+            for group in windows_groups:
+                member(group, name)
+            windows_tag_groups = {
+                'windows_domain_controllers': ['domain-controller', 'dc'],
+                'windows_application_servers': ['application-server', 'app'],
+            }
+            for group, accepted in windows_tag_groups.items():
+                if t.intersection(accepted):
+                    member(group, name)
         elif values.get('proxmox_vmid'):
             member('unknown_os', name)
         for group, accepted in TAG_GROUPS.items():

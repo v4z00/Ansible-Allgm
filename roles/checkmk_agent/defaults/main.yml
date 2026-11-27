@@ -2,6 +2,14 @@
 checkmk_agent_package_tmp: /tmp/check-mk-agent.deb
 checkmk_plugin_base_dir: /usr/lib/check_mk_agent/plugins
 checkmk_local_base_dir: /usr/lib/check_mk_agent/local
+checkmk_windows_agent_package_src: "{{ playbook_dir }}/../artifacts/checkmk/check_mk_agent.msi"
+checkmk_windows_agent_package_tmp: 'C:\Windows\Temp\check_mk_agent.msi'
+checkmk_windows_agent_controller: 'C:\Program Files (x86)\checkmk\service\cmk-agent-ctl.exe'
+checkmk_windows_agent_service: CheckmkService
+checkmk_windows_agent_port: 6556
+checkmk_windows_plugin_dir: 'C:\ProgramData\checkmk\agent\plugins'
+checkmk_windows_plugins_src_dir: "{{ playbook_dir }}/../artifacts/checkmk/windows/plugins"
+checkmk_windows_plugins: []
 checkmk_linux_base_plugins:
   - {name: mk_apt, interval: 3600}
   - {name: mk_logwatch.py, interval: null}

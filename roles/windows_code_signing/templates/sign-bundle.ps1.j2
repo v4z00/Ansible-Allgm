@@ -1,0 +1,32 @@
+[CmdletBinding(SupportsShouldProcess)]
+param([string]$Root,[string]$Payload,[string]$StoreLocation,[string]$TimestampServer)
+$ErrorActionPreference = 'Stop'
+{{ lookup('ansible.builtin.file', role_path ~ '/../../artifacts/script-library/windows/lib/functions/Resolve-JobSigningPath.ps1', rstrip=False) }}
+{{ lookup('ansible.builtin.file', role_path ~ '/../../artifacts/script-library/windows/lib/functions/Get-JobSigningCertificate.ps1', rstrip=False) }}
+{{ lookup('ansible.builtin.file', role_path ~ '/../../artifacts/script-library/windows/lib/functions/Test-JobSignedBundle.ps1', rstrip=False) }}
+{{ lookup('ansible.builtin.file', role_path ~ '/../../artifacts/script-library/windows/lib/functions/Set-JobScriptSignature.ps1', rstrip=False) }}
+$bundle = $Payload | ConvertFrom-Json
+if ($bundle.batch_id -notmatch '^[a-f0-9]{64}$') { throw 'Invalid signing batch identity.' }
+$mutex = New-Object Threading.Mutex($false, ('GlobalAnsibleCodeSigning-' + $bundle.batch_id))
+$locked = $false
+try {
+    try { $locked = $mutex.WaitOne(300000) }
+    catch [Threading.AbandonedMutexException] { $locked = $true }
+    if (-not $locked) { throw 'Signing batch is busy.' }
+    $certificate = Get-JobSigningCertificate -Thumbprint $bundle.certificate_thumbprint -StoreLocation $StoreLocation
+    $valid = Test-JobSignedBundle -Root $Root -Files $bundle.files -Thumbprint $certificate.Thumbprint
+    $Ansible.Changed = -not $valid
+    if (-not $valid -and -not $Ansible.CheckMode) {
+        foreach ($file in $bundle.files) {
+            $destination = Resolve-JobSigningPath -Root $Root -RelativePath $file.path -AllowMissing
+            $null = [IO.Directory]::CreateDirectory((Split-Path -Parent $destination))
+            [IO.File]::WriteAllBytes($destination, [Convert]::FromBase64String($file.content_base64))
+        }
+        $null = Set-JobScriptSignature -Root $Root -Files $bundle.files -Certificate $certificate -TimestampServer $TimestampServer
+    }
+    $Ansible.Result = @{ ready=(Test-JobSignedBundle -Root $Root -Files $bundle.files -Thumbprint $certificate.Thumbprint) }
+}
+finally {
+    if ($locked) { $mutex.ReleaseMutex() }
+    $mutex.Dispose()
+}

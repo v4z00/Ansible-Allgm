@@ -77,6 +77,7 @@ collections/
 !/artifacts/script-library/lib/data/
 /artifacts/script-library/lib/data/*
 !/artifacts/script-library/lib/data/mail-translations.json
+!/artifacts/script-library/lib/data/job-schema.sql
 
 # Public SQLite/query backend only; operational scripts and values stay local.
 !/artifacts/script-library/bin/
@@ -89,3 +90,17 @@ collections/
 !/artifacts/script-library/lib/python/job_notify.py
 !/artifacts/script-library/lib/python/job_expectations.py
 !/artifacts/script-library/lib/python/job_report.py
+!/artifacts/script-library/lib/python/job_security.py
+
+# Portable Windows source only. Executables and private configs stay outside Git.
+!/artifacts/script-library/windows/
+/artifacts/script-library/windows/*
+!/artifacts/script-library/windows/lib/
+/artifacts/script-library/windows/lib/*
+!/artifacts/script-library/windows/lib/ScriptLibrary.psm1
+!/artifacts/script-library/windows/lib/functions/
+/artifacts/script-library/windows/lib/functions/*
+!/artifacts/script-library/windows/lib/functions/*.ps1
+!/artifacts/script-library/windows/bin/
+/artifacts/script-library/windows/bin/*
+!/artifacts/script-library/windows/bin/*.ps1

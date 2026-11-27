@@ -27,3 +27,30 @@
       ansible.builtin.assert:
         that: local_job_status.rc | default(255) == 0
         fail_msg: Host nicht erreichbar oder lokale Ergebnisablage/Statushelfer noch nicht verfuegbar.
+
+- name: Read the last Windows job states without executing jobs
+  hosts: all_windows_systems
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Require an explicit Windows target selection
+      ansible.builtin.assert:
+        that: ansible_limit | default('') | trim | length > 0
+    - name: Query the installed read-only Windows status library
+      ansible.windows.win_powershell:
+        script: |
+          param([string]$Root,[string]$Database,[string]$Sqlite)
+          $ErrorActionPreference = 'Stop'
+          $Ansible.Changed = $false
+          Import-Module (Join-Path $Root 'lib/ScriptLibrary.psm1') -DisableNameChecking
+          $store = Open-JobStore -Database $Database -Sqlite $Sqlite
+          $Ansible.Result = @(Get-JobState -Store $store | Select-Object source,job,status,started,exit_code)
+        parameters:
+          Root: "{{ windows_script_root | default('C:\\Scripte') }}"
+          Database: "{{ windows_job_database | default('C:\\ProgramData\\ScriptJobs\\jobs.sqlite3') }}"
+          Sqlite: "{{ windows_sqlite_exe | default('C:\\Scripte\\runtime\\sqlite3.exe') }}"
+      register: local_windows_status
+      no_log: true
+    - name: Show only recorded Windows job identities and states
+      ansible.builtin.debug:
+        msg: "{{ local_windows_status.result }}"

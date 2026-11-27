@@ -1,5 +1,3 @@
-<a id="install-on-debian"></a>
-
 # Install Ansible-Allgm on Debian
 
 ## Quick install

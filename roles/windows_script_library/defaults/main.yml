@@ -1,0 +1,5 @@
+windows_script_root: 'C:\Scripte'
+windows_state_root: 'C:\ProgramData\ScriptJobs'
+windows_job_database: "{{ windows_state_root }}\\jobs.sqlite3"
+windows_sqlite_source: "{{ role_path }}/../../artifacts/sqlite/windows/sqlite3.exe"
+windows_sqlite_exe: "{{ windows_script_root }}\\runtime\\sqlite3.exe"

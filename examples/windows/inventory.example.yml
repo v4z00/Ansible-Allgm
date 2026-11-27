@@ -1,0 +1,17 @@
+---
+all:
+  children:
+    all_windows_systems:
+      children:
+        windows_servers:
+          children:
+            windows_domain_controllers:
+              hosts:
+                dc-example:
+                  ansible_host: dc-example.example.invalid
+                  inventory_os_family: windows
+            windows_application_servers:
+              hosts:
+                app-example:
+                  ansible_host: app-example.example.invalid
+                  inventory_os_family: windows

@@ -1,0 +1,6 @@
+---
+windows_script_root: 'C:\Scripte'
+windows_state_root: 'C:\ProgramData\ScriptJobs'
+windows_timezone: 'W. Europe Standard Time'
+windows_bootstrap_set_timezone: false
+windows_firewall_rules: []

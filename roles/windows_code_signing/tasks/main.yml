@@ -1,0 +1,30 @@
+---
+- name: Validate the selected signing environment
+  ansible.builtin.include_tasks: validate.yml
+- name: Require this explicit host to be the configured central signer
+  ansible.builtin.assert:
+    that:
+      - ansible_limit | default('') | trim | length > 0
+      - windows_signing_effective.enabled
+      - inventory_hostname == windows_signing_effective.host
+    fail_msg: Select only the environment's configured signing host for certificate setup.
+- name: Configure the signer certificate under the built-in system identity
+  block:
+    - name: Configure the public publisher and declared trust chain
+      ansible.builtin.include_tasks: trust.yml
+    - name: Import the declared private signing key only on the configured signer
+      ansible.builtin.include_tasks: import_key.yml
+      when: windows_signing_effective.pfx_src | length > 0
+    - name: Validate the exact signing certificate and code-signing key
+      ansible.windows.win_powershell:
+        script: "{{ lookup('ansible.builtin.template', 'setup-probe.ps1.j2') }}"
+        parameters:
+          Thumbprint: "{{ windows_publisher_certificate.result.thumbprint }}"
+          StoreLocation: "{{ windows_signing_effective.store_location }}"
+          Root: "{{ windows_signing_effective.work_root }}"
+      when: not ansible_check_mode
+      no_log: true
+  vars:
+    ansible_become: true
+    ansible_become_method: runas
+    ansible_become_user: SYSTEM

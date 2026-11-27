@@ -1,0 +1,38 @@
+---
+- name: Deploy the Windows SQL and alarm runtime
+  ansible.builtin.include_role:
+    name: windows_script_library
+
+- name: Render the private Windows alarm configuration
+  ansible.windows.win_copy:
+    content: "{{ security_runtime_config | to_nice_json }}"
+    dest: "{{ windows_state_root | default('C:\\ProgramData\\ScriptJobs') }}\\config\\security.json"
+  no_log: true
+
+- name: Retry Windows alarm channels independently of the controller
+  community.windows.win_scheduled_task:
+    name: SecurityRetry
+    path: '\ScriptJobs\'
+    description: Retry pending local security notifications; do not run business jobs.
+    actions:
+      - path: "{{ windows_powershell_exe }}"
+        arguments: >-
+          -NoLogo -NoProfile -NonInteractive -File "{{ windows_script_root | default('C:\\Scripte') }}\bin\script-jobs.ps1"
+          -Command security-retry -Database "{{ windows_job_database | default('C:\\ProgramData\\ScriptJobs\\jobs.sqlite3') }}"
+          -Sqlite "{{ windows_sqlite_exe | default('C:\\Scripte\\runtime\\sqlite3.exe') }}"
+          -ConfigFile "{{ windows_state_root | default('C:\\ProgramData\\ScriptJobs') }}\config\security.json"
+    triggers:
+      - type: daily
+        start_boundary: '2026-01-01T00:00:00'
+        days_interval: 1
+        repetition:
+          interval: PT1M
+          duration: P1D
+    username: SYSTEM
+    logon_type: service_account
+    run_level: highest
+    multiple_instances: 2
+    execution_time_limit: PT15M
+    start_when_available: true
+    enabled: true
+    state: present

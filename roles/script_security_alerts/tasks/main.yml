@@ -1,0 +1,20 @@
+---
+- name: Require an enabled security profile and explicit target selection
+  ansible.builtin.assert:
+    that:
+      - ansible_limit | default('') | trim | length > 0
+      - script_security_enabled | bool
+
+- name: Resolve only the selected security channel credentials
+  ansible.builtin.set_fact:
+    security_is_windows: "{{ ansible_connection | default('ssh') in ['winrm','psrp'] or inventory_hostname in groups.get('all_windows_systems', []) }}"
+    security_runtime_config: "{{ script_security_config | script_security_config(script_security_channels, ansible_connection | default('ssh') in ['winrm','psrp'] or inventory_hostname in groups.get('all_windows_systems', [])) }}"
+  no_log: true
+
+- name: Configure Linux immediate alarms and persistent retries
+  ansible.builtin.include_tasks: linux.yml
+  when: not security_is_windows
+
+- name: Configure Windows immediate alarms and persistent retries
+  ansible.builtin.include_tasks: windows.yml
+  when: security_is_windows

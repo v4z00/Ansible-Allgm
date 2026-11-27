@@ -1,0 +1,8 @@
+---
+- name: Prepare explicitly selected Windows hosts
+  hosts: all_windows_systems
+  gather_facts: false
+  become: false
+  roles:
+    - role: windows_bootstrap
+      tags: [windows, bootstrap]

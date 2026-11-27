@@ -1,0 +1,8 @@
+---
+- name: Provision the configured Windows signing host only
+  hosts: all_windows_systems
+  gather_facts: false
+  become: false
+  roles:
+    - windows_code_signing
+  tags: [windows, signing, certificates]

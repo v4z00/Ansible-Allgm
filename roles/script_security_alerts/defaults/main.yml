@@ -1,0 +1,15 @@
+script_security_enabled: false
+script_security_channels: [mail, telegram]
+# Existing group_vars/all values remain the defaults; host_vars can override them.
+script_security_config:
+  MAIL_TO: "{{ script_jobs_mail_to | default('') }}"
+  BOT_TOKEN: "{{ telegram_bot_token | default('') }}"
+  CHAT_ID: "{{ telegram_chat_id | default('') }}"
+  SMTP_HOST: "{{ script_jobs_smtp.host | default('') }}"
+  SMTP_PORT: "{{ script_jobs_smtp.port | default(587) }}"
+  SMTP_TLS: "{{ script_jobs_smtp.tls | default('starttls') }}"
+  SMTP_AUTH: "{{ script_jobs_smtp.auth | default('none') }}"
+  SMTP_FROM: "{{ script_jobs_smtp.sender | default('') }}"
+  SMTP_USERNAME: "{{ script_jobs_smtp.username | default('') }}"
+  SMTP_PASSWORD: "{{ script_jobs_smtp.password | default('') }}"
+windows_powershell_exe: 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'

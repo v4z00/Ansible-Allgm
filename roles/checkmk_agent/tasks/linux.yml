@@ -1,0 +1,81 @@
+---
+- name: Copy the Checkmk agent package
+  ansible.builtin.copy:
+    src: "{{ checkmk_agent_package_src }}"
+    dest: "{{ checkmk_agent_package_tmp }}"
+    mode: '0644'
+
+- name: Install the Checkmk agent
+  ansible.builtin.apt:
+    deb: "{{ checkmk_agent_package_tmp }}"
+    state: present
+
+- name: Determine the Checkmk plugin list
+  ansible.builtin.set_fact:
+    checkmk_selected_plugins: >-
+      {{
+        (checkmk_linux_base_plugins if checkmk_enable_base_plugins | default(true) | bool else [])
+        + (checkmk_docker_plugins if checkmk_enable_docker | default(false) | bool else [])
+        + (checkmk_smart_plugins if checkmk_enable_smart | default(false) | bool else [])
+        + (checkmk_cups_plugins if checkmk_enable_cups | default(false) | bool else [])
+        + (checkmk_webserver_plugins if checkmk_enable_webserver | default(false) | bool else [])
+        + (checkmk_database_plugins if checkmk_enable_database | default(false) | bool else [])
+      }}
+
+- name: Create Checkmk plugin directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ checkmk_plugin_base_dir }}"
+    - "{{ checkmk_plugin_base_dir }}/300"
+    - "{{ checkmk_plugin_base_dir }}/3600"
+
+- name: Deploy available Checkmk plugins
+  ansible.builtin.copy:
+    src: "{{ checkmk_plugins_src_dir }}/{{ item.name }}"
+    dest: >-
+      {{ checkmk_plugin_base_dir }}/{{ (item.interval | string ~ '/') if item.interval is not none else '' }}{{ item.name }}
+    mode: '0755'
+  loop: "{{ checkmk_selected_plugins }}"
+
+- name: Read the Checkmk TLS status
+  ansible.builtin.command: cmk-agent-ctl status --json
+  register: cmk_agent_status
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Register the Checkmk agent over TLS
+  ansible.builtin.command:
+    argv:
+      - cmk-agent-ctl
+      - register
+      - --hostname
+      - "{{ cmk_hostname }}"
+      - --server
+      - "{{ checkmk_server }}"
+      - --site
+      - "{{ checkmk_site }}"
+      - --user
+      - "{{ checkmk_registration_user }}"
+      - --password
+      - "{{ checkmk_registration_password }}"
+      - --trust-cert
+  when: cmk_hostname not in (cmk_agent_status.stdout | default(''))
+  changed_when: true
+  no_log: true
+
+- name: Enable the Checkmk agent socket
+  ansible.builtin.systemd:
+    name: check-mk-agent.socket
+    state: started
+    enabled: true
+
+- name: Remove the temporary agent package
+  ansible.builtin.file:
+    path: "{{ checkmk_agent_package_tmp }}"
+    state: absent

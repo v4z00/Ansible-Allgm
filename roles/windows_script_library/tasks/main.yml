@@ -1,0 +1,137 @@
+---
+- name: Require explicit target selection and separate local runtime paths
+  ansible.builtin.assert:
+    that:
+      - ansible_limit | default('') | trim | length > 0
+      - windows_script_root | lower != windows_state_root | lower
+      - windows_job_database | lower == (windows_state_root ~ '\\jobs.sqlite3') | lower
+
+- name: Resolve optional environment signing before deployment
+  ansible.builtin.include_role:
+    name: windows_code_signing
+    tasks_from: validate
+
+- name: Read the effective script-signing policy before changing files
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding(SupportsShouldProcess)]
+      param()
+      $Ansible.Changed = $false
+      $Ansible.Result = [string](Get-ExecutionPolicy)
+  register: windows_script_execution_policy
+
+- name: Keep enforced script signing as a deployment prerequisite
+  ansible.builtin.assert:
+    that: windows_script_execution_policy.result != 'AllSigned' or windows_signing_effective.enabled
+    fail_msg: AllSigned requires an enabled, configured signing environment. The execution policy is never disabled.
+
+- name: Prepare signed library bytes through the configured signer
+  ansible.builtin.include_role:
+    name: windows_code_signing
+    tasks_from: library
+  when: windows_signing_effective.enabled
+
+- name: Resolve the verified code and shared-data sources
+  ansible.builtin.set_fact:
+    windows_library_effective_root: "{{ windows_library_signed_root if windows_signing_effective.enabled and not ansible_check_mode else role_path ~ '/../../artifacts/script-library/windows' }}"
+    windows_library_effective_data: "{{ windows_library_signed_root ~ '/lib/data' if windows_signing_effective.enabled and not ansible_check_mode else role_path ~ '/../../artifacts/script-library/lib/data' }}"
+
+- name: Create protected code and state directories
+  ansible.builtin.include_role:
+    name: windows_private_paths
+  vars:
+    windows_private_paths:
+      - "{{ windows_script_root }}"
+      - "{{ windows_script_root }}\\lib"
+      - "{{ windows_script_root }}\\lib\\functions"
+      - "{{ windows_script_root }}\\lib\\data"
+      - "{{ windows_script_root }}\\bin"
+      - "{{ windows_script_root }}\\runtime"
+      - "{{ windows_state_root }}"
+      - "{{ windows_state_root }}\\config"
+      - "{{ windows_state_root }}\\logs"
+      - "{{ windows_state_root }}\\locks"
+
+- name: Deploy every shared PowerShell function
+  ansible.windows.win_copy:
+    src: "{{ item }}"
+    dest: "{{ windows_script_root }}\\lib\\functions\\{{ item | basename }}"
+  loop: "{{ lookup('ansible.builtin.fileglob', windows_library_effective_root ~ '/lib/functions/*.ps1', wantlist=True) }}"
+  loop_control:
+    label: "{{ item | basename }}"
+
+- name: Deploy the relative module loader
+  ansible.windows.win_copy:
+    src: "{{ windows_library_effective_root }}/lib/ScriptLibrary.psm1"
+    dest: "{{ windows_script_root }}\\lib\\ScriptLibrary.psm1"
+
+- name: Deploy the common schema and mail translation table
+  ansible.windows.win_copy:
+    src: "{{ windows_library_effective_data }}/{{ item }}"
+    dest: "{{ windows_script_root }}\\lib\\data\\{{ item }}"
+  loop: [job-schema.sql, mail-translations.json]
+
+- name: Deploy the local job and status commands
+  ansible.windows.win_copy:
+    src: "{{ windows_library_effective_root }}/bin/{{ item }}"
+    dest: "{{ windows_script_root }}\\bin\\{{ item }}"
+  loop: [script-jobs.ps1, job-status.ps1]
+
+- name: Deploy the source-to-signature receipt without key material
+  ansible.windows.win_copy:
+    src: "{{ windows_library_signed_root }}/signed-manifest.json"
+    dest: "{{ windows_script_root }}\\signed-manifest.json"
+  when: windows_signing_effective.enabled and not ansible_check_mode
+
+- name: Verify signed bytes on the execution host before importing code
+  ansible.windows.win_powershell:
+    script: >-
+      param([string]$Root,[string]$Files,[string]$Thumbprint)
+
+      {{ lookup('ansible.builtin.file', role_path ~ '/../../artifacts/script-library/windows/lib/functions/Resolve-JobSigningPath.ps1', rstrip=False) }}
+
+      {{ lookup('ansible.builtin.file', role_path ~ '/../../artifacts/script-library/windows/lib/functions/Test-JobSignedBundle.ps1', rstrip=False) }}
+
+      if (-not (Test-JobSignedBundle -Root $Root -Files ($Files | ConvertFrom-Json) -Thumbprint $Thumbprint)) { throw 'Execution-host signature verification failed.' };
+      $Ansible.Changed = $false;
+    parameters:
+      Root: "{{ windows_script_root }}"
+      Files: "{{ windows_signing_bundle.files | to_json }}"
+      Thumbprint: "{{ windows_signing_bundle.certificate_thumbprint }}"
+  when: windows_signing_effective.enabled and not ansible_check_mode
+  no_log: true
+
+- name: Verify the locally prepared official SQLite artifact
+  ansible.builtin.stat:
+    path: "{{ windows_sqlite_source }}"
+    checksum_algorithm: sha256
+  delegate_to: localhost
+  become: false
+  register: windows_sqlite_artifact
+
+- name: Require the pinned SQLite artifact before host installation
+  ansible.builtin.assert:
+    that:
+      - windows_sqlite_artifact.stat.isreg | default(false)
+      - windows_sqlite_artifact.stat.checksum == (lookup('ansible.builtin.file', (windows_sqlite_source | dirname) ~ '/source.json') | from_json).executable_sha256
+    fail_msg: Prepare the verified runtime with scripts/download_windows_sqlite.py --apply first.
+
+- name: Copy the verified SQLite executable
+  ansible.windows.win_copy:
+    src: "{{ windows_sqlite_source }}"
+    dest: "{{ windows_sqlite_exe }}"
+
+- name: Initialize local SQLite without starting a job
+  ansible.windows.win_powershell:
+    script: |
+      param([string]$Root,[string]$Database,[string]$Sqlite)
+      $ErrorActionPreference = 'Stop'
+      Import-Module (Join-Path $Root 'lib/ScriptLibrary.psm1') -DisableNameChecking
+      $store = New-JobStore -Database $Database -Sqlite $Sqlite
+      $Ansible.Changed = $false
+      $Ansible.Result = @{ schema = 1; ready = [bool]$store.Epoch }
+    parameters:
+      Root: "{{ windows_script_root }}"
+      Database: "{{ windows_job_database }}"
+      Sqlite: "{{ windows_sqlite_exe }}"
+  when: not ansible_check_mode

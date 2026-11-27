@@ -51,3 +51,7 @@ Ohne Sprachvorgabe verwendet der Controller weiter Deutsch. Für einen einzelnen
 - [Ansible-SSS](https://github.com/v4z00/Ansible-SSS) verteilt Wiederherstellungsdaten auf mehrere Anteile und läuft eigenständig oder als Controller-Add-on.
 
 Ich programmiere nur selten selbst und entwickle das Projekt mit KI-Unterstützung. Wenn etwas bei dir anders läuft, schreib mir gern ein Issue mit Befehl, Version und erwartetem Ergebnis. Damit kann ich den Fehler nachstellen. [Issues](https://github.com/v4z00/Ansible-Allgm/issues) · [MIT-Lizenz](LICENSE)
+
+## Windows in der aktuellen Staging-Vorschau
+
+Mit [Windows-Zugang](descriptions/commands/windows-setup.md) und [lesendem Verbindungscheck](descriptions/commands/windows-check.md) beginnen. Neu sind die PowerShell-/SQLite-Basis, getrennte Windows-Bootstrap-/Checkmk-Pfade und [direkte Sicherheitsalarme](descriptions/configurations/security-alerts.md). Echte Windows-Piloten und private Skript-/SYSVOL-Migration stehen noch aus; der [Staging-Änderungstext](descriptions/releases/allgm.md) nennt die Grenzen.

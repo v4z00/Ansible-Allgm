@@ -1,0 +1,35 @@
+---
+- name: Require named rules with explicit scope
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name | length > 0
+      - item.direction | default('in') in ['in', 'out']
+      - item.action | default('allow') in ['allow', 'block']
+      - item.profiles is defined
+      - item.remoteip is defined
+    fail_msg: Firewall rules require an individual name, profiles and remote address scope.
+  loop: "{{ windows_firewall_rules }}"
+  loop_control:
+    label: "{{ item.name | default('invalid rule') }}"
+
+- name: Manage declared rules without clearing existing rules
+  community.windows.win_firewall_rule:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    group: "{{ item.group | default('Ansible managed') }}"
+    direction: "{{ item.direction | default('in') }}"
+    action: "{{ item.action | default('allow') }}"
+    enabled: "{{ item.enabled | default(true) }}"
+    profiles: "{{ item.profiles }}"
+    protocol: "{{ item.protocol | default(omit) }}"
+    localport: "{{ item.localport | default(omit) }}"
+    remoteport: "{{ item.remoteport | default(omit) }}"
+    localip: "{{ item.localip | default(omit) }}"
+    remoteip: "{{ item.remoteip }}"
+    program: "{{ item.program | default(omit) }}"
+    service: "{{ item.service | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ windows_firewall_rules }}"
+  loop_control:
+    label: "{{ item.name }}"

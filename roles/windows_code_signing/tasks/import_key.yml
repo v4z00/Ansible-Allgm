@@ -1,0 +1,33 @@
+---
+- name: Allocate a protected one-use PFX transport file
+  ansible.windows.win_tempfile:
+    path: "{{ windows_signing_effective.work_root }}\\certificates"
+    state: file
+    suffix: .pfx
+  register: windows_signing_pfx_temporary
+  when: not ansible_check_mode
+  no_log: true
+- name: Import the key without retaining its transport file
+  block:
+    - name: Transfer the declared private certificate without logging its contents
+      ansible.windows.win_copy:
+        src: "{{ windows_signing_effective.pfx_src }}"
+        dest: "{{ windows_signing_pfx_temporary.path }}"
+      no_log: true
+    - name: Import a non-exportable key into the selected signing store
+      ansible.windows.win_certificate_store:
+        path: "{{ windows_signing_pfx_temporary.path }}"
+        password: "{{ windows_signing_effective.pfx_password | default(omit, true) }}"
+        store_location: "{{ windows_signing_effective.store_location }}"
+        store_name: My
+        key_storage: "{{ 'machine' if windows_signing_effective.store_location == 'LocalMachine' else 'user' }}"
+        key_exportable: false
+        state: present
+      no_log: true
+  always:
+    - name: Remove the temporary PFX regardless of import outcome
+      ansible.windows.win_file:
+        path: "{{ windows_signing_pfx_temporary.path }}"
+        state: absent
+      no_log: true
+  when: not ansible_check_mode

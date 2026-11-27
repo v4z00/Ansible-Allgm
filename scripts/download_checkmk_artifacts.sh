@@ -3,6 +3,12 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
+platform=linux
+if [[ $# -gt 0 ]]; then
+  [[ $# -eq 2 && $1 == --platform ]] || { echo 'Usage: checkmk-download [--platform linux|windows|all]' >&2; exit 2; }
+  platform=$2
+fi
+[[ $platform == linux || $platform == windows || $platform == all ]] || { echo 'Unknown platform.' >&2; exit 2; }
 
 read_settings_json() {
   python3 - <<'PY'
@@ -25,6 +31,7 @@ print(json.dumps({
     'base': data.get('checkmk_download_base_url', '').rstrip('/'),
     'version': data.get('checkmk_agent_version', ''),
     'plugins': data.get('checkmk_linux_plugins', []),
+    'windows_plugins': data.get('checkmk_windows_plugins', []),
     'agent_validate': tls.get('checkmk_agent_download', False if legacy == '1' else default_validate),
     'plugin_validate': tls.get('checkmk_plugin_download', False if legacy == '1' else default_validate),
 }))
@@ -36,7 +43,7 @@ base_url=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["base"])' <<<
 version=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])' <<<"${settings_json}")
 
 [[ -n "${base_url}" ]] || { echo 'checkmk_download_base_url fehlt.' >&2; exit 1; }
-[[ -n "${version}" ]] || { echo 'checkmk_agent_version fehlt.' >&2; exit 1; }
+[[ $platform == windows || -n "${version}" ]] || { echo 'checkmk_agent_version fehlt.' >&2; exit 1; }
 
 agent_curl_args=(--fail --location --show-error)
 plugin_curl_args=(--fail --location --show-error)
@@ -51,6 +58,7 @@ if [[ "${plugin_validate}" == False ]]; then
   echo 'Hinweis: TLS-Zertifikatspruefung fuer Plugin-Downloads deaktiviert.' >&2
 fi
 
+if [[ $platform != windows ]]; then
 mkdir -p artifacts/checkmk/plugins
 agent_name="check-mk-agent_${version}-1_all.deb"
 curl "${agent_curl_args[@]}" \
@@ -60,10 +68,24 @@ chmod 0600 artifacts/checkmk/check-mk-agent.deb
 
 while IFS= read -r plugin; do
   [[ -n "${plugin}" ]] || continue
+  [[ $plugin =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]] || { echo 'Invalid plugin filename.' >&2; exit 2; }
   curl "${plugin_curl_args[@]}" \
     "${base_url}/plugins/${plugin}" \
     -o "artifacts/checkmk/plugins/${plugin}"
   chmod 0755 "artifacts/checkmk/plugins/${plugin}"
 done < <(python3 -c 'import json,sys; print("\n".join(json.load(sys.stdin)["plugins"]))' <<<"${settings_json}")
+fi
+
+if [[ $platform != linux ]]; then
+  mkdir -p artifacts/checkmk/windows/plugins
+  curl "${agent_curl_args[@]}" "${base_url}/windows/check_mk_agent.msi" -o artifacts/checkmk/check_mk_agent.msi
+  chmod 0600 artifacts/checkmk/check_mk_agent.msi
+  while IFS= read -r plugin; do
+    [[ -n $plugin ]] || continue
+    [[ $plugin =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]] || { echo 'Invalid Windows plugin filename.' >&2; exit 2; }
+    curl "${plugin_curl_args[@]}" "${base_url}/windows/plugins/${plugin}" -o "artifacts/checkmk/windows/plugins/${plugin}"
+    chmod 0600 "artifacts/checkmk/windows/plugins/${plugin}"
+  done < <(python3 -c 'import json,sys; print("\n".join(json.load(sys.stdin)["windows_plugins"]))' <<<"${settings_json}")
+fi
 
 echo "CheckMK-Agent und Plugins wurden unter ${ROOT_DIR}/artifacts/checkmk gespeichert."

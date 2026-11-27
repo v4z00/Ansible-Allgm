@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "commands": [{
+    "name": "windows-check",
+    "description": "Check WinRM HTTPS and read Windows/domain identity",
+    "handler": "bin/control.d/windows-check.sh",
+    "feature": null,
+    "requires": ["lib/control/helpers.sh", "playbooks/windows/check.yml"],
+    "aliases": []
+  }]
+}

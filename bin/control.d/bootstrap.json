@@ -14,7 +14,14 @@
         "playbooks/bootstrap/tasks/prepare_target.yml",
         "roles/bootstrap_ssh/tasks/main.yml",
         "roles/bootstrap_ssh/defaults/main.yml",
-        "roles/bootstrap_ssh/handlers/main.yml"
+        "roles/bootstrap_ssh/handlers/main.yml",
+        "scripts/run_platform_bootstrap.py",
+        "playbooks/windows/bootstrap.yml",
+        "roles/windows_bootstrap/defaults/main.yml",
+        "roles/windows_bootstrap/tasks/main.yml",
+        "roles/windows_bootstrap/tasks/firewall.yml",
+        "roles/windows_private_paths/tasks/main.yml",
+        "roles/windows_private_paths/defaults/main.yml"
       ],
       "aliases": [
         {

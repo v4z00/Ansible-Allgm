@@ -29,7 +29,7 @@
       block:
         - name: Use existing local channel settings
           ansible.builtin.copy:
-            content: "{{ {'EMAIL': script_jobs_mail_to | default(''), 'BOT_TOKEN': telegram_bot_token | default(''), 'CHAT_ID': telegram_chat_id | default(''), 'TELEGRAM_VALIDATE_CERTS': (tls_validate_certs | default({})).get('telegram_notification', true) | bool, 'REPORT_LABELS': script_jobs_report_labels | default(job_controller.labels | default({}))} | to_json }}"
+            content: "{{ {'EMAIL': script_jobs_mail_to | default(''), 'BOT_TOKEN': telegram_bot_token | default(''), 'CHAT_ID': telegram_chat_id | default(''), 'TELEGRAM_VALIDATE_CERTS': (tls_validate_certs | default({})).get('telegram_notification', true) | bool, 'REPORT_LABELS': script_jobs_report_labels | default(job_controller.labels | default({})), 'SMTP_HOST': script_jobs_smtp.host | default(''), 'SMTP_PORT': script_jobs_smtp.port | default(587), 'SMTP_TLS': script_jobs_smtp.tls | default('starttls'), 'SMTP_AUTH': script_jobs_smtp.auth | default('none'), 'SMTP_FROM': script_jobs_smtp.sender | default(''), 'SMTP_USERNAME': script_jobs_smtp.username | default(''), 'SMTP_PASSWORD': script_jobs_smtp.password | default('')} | to_json }}"
             dest: "{{ job_notify_file.path }}"
             mode: '0600'
           no_log: true
