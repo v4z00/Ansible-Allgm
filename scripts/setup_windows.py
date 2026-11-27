@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def prepare(root, apply=False):
     """Never open settings.yml or overwrite a pre-existing connection resolver."""
-    source = root / 'examples/windows/access.yml.example'
+    source = root / 'templates/windows/access.yml.example'
     target = root / 'group_vars/all_windows_systems/access.yml'
     if target.exists() or target.is_symlink():
         print('Existing Windows access file retained: ' + str(target))
@@ -18,11 +18,12 @@ def prepare(root, apply=False):
     if not apply:
         print('Would create: ' + str(target))
         return True
+    contents = source.read_text(encoding='utf-8')
     target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     # Exclusive creation also prevents a race from replacing an existing file.
     with target.open('x', encoding='utf-8') as output:
         os.chmod(target, 0o600)
-        output.write(source.read_text(encoding='utf-8'))
+        output.write(contents)
     print('Created: ' + str(target))
     return True
 
@@ -35,7 +36,7 @@ def main():
     os.umask(0o077)
     prepare(args.project.resolve(), args.apply)
     print('Add windows_access.user/password to the EXISTING private settings.yml.')
-    print('Neutral fields: examples/windows/settings.example.yml; do not replace settings.yml.')
+    print('Neutral fields: templates/windows/settings.example.yml; do not replace settings.yml.')
     print('Group Windows hosts under all_windows_systems; then run windows-check --limit HOST.')
     return 0
 

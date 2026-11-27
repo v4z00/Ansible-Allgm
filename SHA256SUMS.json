@@ -695,7 +695,7 @@
       "mode": "0755"
     },
     "bin/control.d/windows-setup.json": {
-      "sha256": "0094eb1c264ac928085f2d6cb97b4172870ee6fc0a796665a473569a05ee60a8",
+      "sha256": "ecb534a3939319fab5f34b2868056ca53e9ec3a5cd7b5f7095b61146ac7527f5",
       "mode": "0644"
     },
     "bin/control.d/windows-setup.sh": {
@@ -955,7 +955,7 @@
       "mode": "0644"
     },
     "descriptions/commands/windows-setup.md": {
-      "sha256": "fd818634d3c1734b2c6a19cfe6ac48adcbcdf1ea5424b80411429126a0ef6a1e",
+      "sha256": "bfe062e17aa1e856f288a2f902cc100e14121fe18ad39e3dc72e8845b7135b12",
       "mode": "0644"
     },
     "descriptions/configurations/group_vars__all__host_credentials.example.md": {
@@ -2063,7 +2063,7 @@
       "mode": "0755"
     },
     "scripts/setup_windows.py": {
-      "sha256": "d16c348172b04a6dcb1660563937bbbb36da9db366b0d7fc0ce95e098d0bf8f5",
+      "sha256": "57de0c8482ed5e1a1dc3cfcd7967ac07e0275a8e38f53b13da02e10878b48558",
       "mode": "0755"
     },
     "scripts/update_inventory.sh": {
@@ -2084,6 +2084,14 @@
     },
     "templates/summary_templates.j2": {
       "sha256": "c73458f405fa8f3fbbe1f76510db39c87929e9f5c5ef76f0481815136de563f4",
+      "mode": "0644"
+    },
+    "templates/windows/access.yml.example": {
+      "sha256": "1ac2489081cba24348ad5ba5050dd21da4d2ba255a42d118d9e40e9574bff264",
+      "mode": "0644"
+    },
+    "templates/windows/settings.example.yml": {
+      "sha256": "5fb78cd68ace6c666611dafc1ce83c182de74b33a2b021df69112a7da4a7775d",
       "mode": "0644"
     },
     "tools/callbacks/script_job_results.py": {
@@ -2199,7 +2207,7 @@
       "mode": "0644"
     },
     "tools/windows_tests/test_windows_connection.py": {
-      "sha256": "150ebf1bc80ebd8867353cbdcce7bf0844e15c1f6f1c1b5a2329ea8d85b87364",
+      "sha256": "5b7c5dfc700a74c1a21e74e2a1dd64c14efed0f7f3b3ad4b125cc000a44b75ea",
       "mode": "0644"
     },
     "tools/windows_tests/test_windows_deployment.py": {
@@ -2243,7 +2251,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "8246522570ae4e0e87d2155721aabdb5a4469b9bb8c203bb1e9bc24170e985ad",
+      "sha256": "656b7dc80e4d34212e6790c677d549d45c065bf9352ce9e71b7c961a86ed0048",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -2279,7 +2287,7 @@
       "mode": "0644"
     },
     "update_check/manifests/windows_foundation.json": {
-      "sha256": "36442a9ba8f6e343780cf1ad9c673f6cd006db4ad0bc94b14a8650b339a78568",
+      "sha256": "7dc9a9d1ac1abfe187f5d9fae830a58ae39df51e07c0ecc9162a771d57b06f24",
       "mode": "0644"
     },
     "update_check/probes.py": {

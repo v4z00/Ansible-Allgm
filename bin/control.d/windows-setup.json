@@ -5,7 +5,7 @@
     "description": "Prepare the private Windows access resolver without reading passwords",
     "handler": "bin/control.d/windows-setup.sh",
     "feature": null,
-    "requires": ["scripts/setup_windows.py", "examples/windows/access.yml.example", "examples/windows/settings.example.yml"],
+    "requires": ["scripts/setup_windows.py", "templates/windows/access.yml.example", "templates/windows/settings.example.yml"],
     "aliases": []
   }]
 }

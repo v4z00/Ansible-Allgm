@@ -29,9 +29,9 @@ class WindowsAccess(unittest.TestCase):
     def test_prepare_never_reads_settings_and_preserves_existing_resolver(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            source = root / 'examples/windows/access.yml.example'
+            source = root / 'templates/windows/access.yml.example'
             source.parent.mkdir(parents=True)
-            shutil.copyfile(ROOT / 'examples/windows/access.yml.example', source)
+            shutil.copyfile(ROOT / 'templates/windows/access.yml.example', source)
             original_reader = Path.read_text
 
             def read(path, *args, **kwargs):
@@ -48,6 +48,12 @@ class WindowsAccess(unittest.TestCase):
                 target.write_text('existing private resolver\n')
                 self.assertFalse(setup.prepare(root, apply=True))
                 self.assertEqual(target.read_text(), 'existing private resolver\n')
+
+    def test_missing_template_does_not_create_an_empty_access_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            with self.assertRaises(FileNotFoundError):setup.prepare(root,apply=True)
+            self.assertFalse((root/'group_vars/all_windows_systems/access.yml').exists())
 
     def test_linux_bootstrap_arguments_remain_unchanged(self):
         args = ['--limit', 'example-host', '--list-hosts']
@@ -79,7 +85,7 @@ class WindowsAccess(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='windows-access-fixture-') as temporary:
             root = Path(temporary)
             for group, source in [('all', 'examples/first_run/access.yml.example'),
-                                  ('all_windows_systems', 'examples/windows/access.yml.example')]:
+                                  ('all_windows_systems', 'templates/windows/access.yml.example')]:
                 folder = root / 'group_vars' / group
                 folder.mkdir(parents=True)
                 shutil.copyfile(ROOT / source, folder / 'access.yml')
