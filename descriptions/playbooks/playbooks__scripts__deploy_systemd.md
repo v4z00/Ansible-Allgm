@@ -1,6 +1,18 @@
+# Deploy private service profiles
+
+Run `ansible-playbook playbooks/scripts/deploy_systemd.yml --limit example-host --check` for a preview, then omit `--check` for the selected private folders and explicitly defined units. See [service profiles](../configurations/systemd-job-deployment.md) for prerequisites, paths and lifecycle settings. Programs are not started implicitly.
+
+<details>
+<summary>Deutsch</summary>
+
 # Private Dienstprofile bereitstellen
 
 `ansible-playbook playbooks/scripts/deploy_systemd.yml --limit example-host --check` prüft die Vorschau. Ohne `--check` werden ausgewählte private Ordner und daraus explizit definierte Units bereitgestellt. Voraussetzungen, Pfadzuordnung und Aktivierung stehen in [Dienstprofile](../configurations/systemd-job-deployment.md). Bestehende Programme werden nicht automatisch gestartet.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -31,3 +43,5 @@
   }
 }
 ```
+
+</details>

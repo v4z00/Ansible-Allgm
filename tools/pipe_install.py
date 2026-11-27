@@ -60,7 +60,7 @@ def save_token(source, destination):
             tmp.unlink(missing_ok=True)
 
 
-def install(profile, token_file, destination, addon_urls=(), addon_tokens=()):
+def install(profile, token_file, destination, addon_urls=(), addon_tokens=(), lang=None):
     urls = installer.addon.assignments(addon_urls)
     tokens = installer.addon.assignments(addon_tokens)
     if not tokens.keys() <= urls.keys():
@@ -91,6 +91,10 @@ def install(profile, token_file, destination, addon_urls=(), addon_tokens=()):
         github_https.clone_main(installer.module_url(profile), overlay, token_file, TARGET)
         verify_checkout(overlay, profile)
         command = [str(overlay / "install-controller"), "--target", str(TARGET)]
+    if lang:
+        base_command += ["--lang", lang]
+        if command is not base_command:
+            command += ["--lang", lang]
     for key, url in urls.items():
         name = requested[key]
         checkout = BASE.parent / ("addon-" + name)
@@ -115,6 +119,7 @@ if __name__ == "__main__":
     parser.add_argument("profile", type=staging_manifest.profile_name)
     parser.add_argument("--token-file", default="")
     parser.add_argument("--save-token-to")
+    parser.add_argument("--lang", choices=("de", "en"))
     parser.add_argument("--addon", action="append", default=[], metavar="NAME=HTTPS_URL")
     parser.add_argument("--addon-token-file", action="append", default=[], metavar="NAME=PATH")
     args = parser.parse_args()
@@ -123,7 +128,7 @@ if __name__ == "__main__":
         fd = os.open(TARGET.parent, os.O_DIRECTORY)
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            install(args.profile, args.token_file, args.save_token_to, args.addon, args.addon_token_file)
+            install(args.profile, args.token_file, args.save_token_to, args.addon, args.addon_token_file, args.lang)
         finally:
             os.close(fd)
     except BlockingIOError:

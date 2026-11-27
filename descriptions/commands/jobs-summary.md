@@ -1,3 +1,37 @@
+# Send a job summary
+
+`bin/control jobs-summary` collects stored results for the private controller target group. Narrow collection with `--limit example-host`. Collection starts no jobs. Only the controller sends Telegram and email, using `telegram_bot_token`, `telegram_chat_id` and `script_jobs_mail_to`. Hosts need no new bots, topics or delivery credentials.
+
+```text
+Job-Zusammenfassung
+
+ServerA Backup ✅
+ServerB Backup ❌
+  Quelldatei fehlt.
+```
+
+Each host/job gets one line and a status symbol. Errors and warnings include a short explanation. SQLite and detailed queries retain report/run IDs, success counts, status codes and successful individual items. A later success does not hide an unreported failure. Telegram uses UTF-8 and email uses the fixed ASCII mapping, including ae/oe/ue/ss.
+
+The controller sends a separate Vzdump summary. Missing or overdue scheduled runs appear in their category. Hosts send no immediate notifications, and no recovery notification follows a failure. Jobs and cron continue locally during controller outages. The next collection picks up stored results within their retention period.
+
+Email and Telegram are acknowledged independently. If one channel fails, only that delivery remains pending. No SQLite transaction stays open during network delivery. Interruption between delivery and acknowledgement can cause duplicates. Each call processes at most one report per category with up to 2,000 runs. Larger backlogs are reported and processed later.
+
+Configure this explicitly with `playbooks/scripts/setup_controller.yml`. It requires a schedule, targets and at least one complete notification channel. Updating Git alone does not enable summary cron. Configured Control commands also record their Ansible results. Homelab backups require the matching Homelab version. The summary replaces older immediate Control notifications.
+
+Select a private configuration with `--config /ABSOLUTE/controller-test.json`. It contains `database`, `targets` and optional `labels` and `source_overrides`. This can query existing test databases. Host-specific `source_overrides` accepts only absolute `root` and `database` paths, using the existing inventory and SSH/become settings.
+
+Incomplete host collection is a collection error. It does not count as a successful backup, and collection exits nonzero. Internal queries and summaries do not recursively generate reports.
+
+For direct Ansible runs, append the callback to existing lists using `ANSIBLE_CALLBACK_PLUGINS=tools/callbacks`, `ANSIBLE_CALLBACKS_ENABLED=script_job_results`, `SCRIPT_JOBS_CALLBACK=1` and `SCRIPT_JOBS_CONTROLLER_DB=/PATH/controller.sqlite3`.
+
+All configured channels are reserved together before sending. An interruption after
+email acknowledgement leaves Telegram pending. If the Ansible query fails after
+some hosts have answered, collection remains incomplete. Its partial spool is not
+imported, and the next collection retries from the unchanged cursor positions.
+
+<details>
+<summary>Deutsch</summary>
+
 # Job-Zusammenfassung senden
 
 `bin/control jobs-summary` sammelt gespeicherte Ergebnisse der privaten
@@ -59,10 +93,14 @@ Direkte manuelle Ansible-Aufrufe können den Callback über
 `SCRIPT_JOBS_CONTROLLER_DB=/PFAD/controller.sqlite3` verwenden. Bestehende
 Callback-Listen ergänzen.
 
-
 Ein fehlgeschlagener Ansible-Abfragelauf wird auch dann als unvollständig gemeldet,
 wenn einzelne Hosts schon geantwortet haben. Seine Teildaten werden nicht übernommen;
 die nächste Abfrage setzt an den unveränderten Cursorpositionen erneut an.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -99,3 +137,5 @@ die nächste Abfrage setzt an den unveränderten Cursorpositionen erneut an.
   }
 }
 ```
+
+</details>

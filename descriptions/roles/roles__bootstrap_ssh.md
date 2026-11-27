@@ -1,3 +1,34 @@
+# Role bootstrap_ssh
+
+Role: `roles/bootstrap_ssh`.
+
+Task names as written in the role:
+
+- Read the configured controller key locally
+- Install the controller key for the Ansible user
+- Install existing site admin keys for root
+- List local users with UID 1000 or higher
+- Remove site admin keys from non-root accounts
+- Check key authentication before disabling passwords
+- Disable password authentication when explicitly approved
+- Validate the SSH configuration before reload
+
+The parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `roles/bootstrap_ssh/tasks/main.yml`
+- `roles/bootstrap_ssh/defaults/main.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Rolle bootstrap_ssh
 
 Rolle: `roles/bootstrap_ssh`.
@@ -21,6 +52,19 @@ Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fak
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `roles/bootstrap_ssh/tasks/main.yml`
+- `roles/bootstrap_ssh/defaults/main.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -74,10 +118,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `roles/bootstrap_ssh/tasks/main.yml`
-- `roles/bootstrap_ssh/defaults/main.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

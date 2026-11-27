@@ -1,3 +1,44 @@
+# Back up Checkmk and apply the saved migration plan
+
+Back up Checkmk and apply the saved migration plan
+
+Run: `bin/control checkmk-migration-apply [options]`.
+
+Aliases: `checkmk-migration-apply`.
+
+Feature: checkmk. Control checks availability at runtime.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+- `playbooks/checkmk/migrate_hosts.yml`
+
+## Backup before migration
+
+`bin/control checkmk-migration-plan` creates the plan. Run `bin/control checkmk-migration-apply --check` to validate the plan, site and settings. Running the command without `--check` backs up the entire OMD site before applying the plan through the Checkmk API.
+
+In `group_vars/all/settings.yml`, set `checkmk_backup_target_host` to a single inventory host. The default `checkmk_backup_mode: docker` runs `omd backup` inside `checkmk_container_name`. With `checkmk_backup_mode: native`, the command runs directly on the OMD host. `checkmk_backup_dir` is an absolute path in that filesystem (default `/backup`). Choose a directory outside the site and use a persistent mount for Docker. [Checkmk manual](https://docs.checkmk.com/latest/en/omd_basics.html#backup)
+
+Without `--limit`, the play selects the backup host and controller automatically. When using a limit, include both, for example `--limit localhost,backup-host`. Replace `backup-host` with the configured inventory name. Backup commands run with elevated privileges on the backup host. API calls run on `localhost`. An incomplete limit stops the run before the backup.
+
+The finished archive has mode `0600`. API changes start after `tar -tzf` reads the archive successfully and the archive has been moved into place. A backup failure stops migration. The play reports the final archive path.
+
+To select a specific plan file, set `checkmk_migration_plan`. Otherwise the play reads `checkmk_migration_plan.yml` from the reports directory. It uses `controller_reports_dir` first, then `ANSIBLE_REPORTS_DIR`, then `x/reports` in the project. Relative paths resolve against `ANSIBLE_PROJECT_ROOT` or the project containing the playbook.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/checkmk-migration-apply.json`
+- `bin/control.d/checkmk-migration-apply.sh`
+- `lib/control/helpers.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # CheckMK sichern und den gespeicherten Plan anwenden
 
 CheckMK sichern und den gespeicherten Plan anwenden
@@ -29,6 +70,20 @@ Das fertige Archiv hat Modus `0600`. Erst nach erfolgreichem Lesen mit `tar -tzf
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/checkmk-migration-apply.json`
+- `bin/control.d/checkmk-migration-apply.sh`
+- `lib/control/helpers.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -111,11 +166,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/checkmk-migration-apply.json`
-- `bin/control.d/checkmk-migration-apply.sh`
-- `lib/control/helpers.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

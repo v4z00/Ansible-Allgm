@@ -1,5 +1,98 @@
 # Changelog
 
+## s0.8.12 – English documentation and language selection
+
+The English README now walks through a maintenance run. Catalog pages open in English and include the German text. New installations suggest a language from the locale and accept an explicit choice. Existing controllers without a language preference still use German. The optional `tools/set-controller-language.py` changes just the local language setting and saves a backup.
+
+## Previous releases
+
+### 0.8.11
+
+Fix systemd WorkingDirectory and PIDFile syntax. This release includes job module 0.5.4 and checker 1.5.4, resumable report delivery, recurring cron windows and explicitly selected service profiles. Preview new profiles with `--check`. Migrate a local approval register separately if required.
+
+### s0.8.10
+
+Job module 0.5.3 supports multiple cron windows and per-host or per-job tolerances. Running jobs are reported without being stopped. The service deployment passes role defaults to the library step.
+
+### s0.8.9
+
+Accept numeric time values from Ansible variables when validating service profiles.
+
+### s0.8.8
+
+Job module 0.5.1 can render private JSON from host variables and install a complete library in the service user’s directory. Select the new profile fields explicitly after a pilot.
+
+### s0.8.7
+
+Checker 1.5.4 supports an internal `.local/extensions` register and the established sibling location. Using both blocks migration. Older checkers need the sibling path before rollback.
+
+### s0.8.6
+
+Job module 0.5.0 can deploy private source directories and systemd units by profile. Preview with `--check`; enable, start and restart only through explicit profile fields.
+
+### s0.8.5
+
+Explicitly selected services can report snapshots to SQLite and central summaries. Long-running services, one-shots and optional services are evaluated separately. Units, processes and cron stay under their existing management.
+
+### s0.8.4
+
+Read-only discovery of custom services and timers leaves environment values, configuration bodies and command arguments on each host. Review user services and complex launch commands separately.
+
+### s0.8.3
+
+Pending report channels survive interruptions. An incomplete Ansible query retains the previous cursors so partial results are not treated as complete. No database or scheduling changes are required.
+
+### 0.8.2
+
+Checker 1.5.3 simplifies update, cleanup and feature checks while retaining the CLI, exit codes and JSON format.
+
+### s0.8.2
+
+Checker 1.5.3 previews the same compatible changes to update, cleanup and feature checks.
+
+### 0.8.1
+
+Install, validate and roll back one profile and multiple Git add-ons together. English and German CLI, descriptions and developer guides are available. Checkmk supports native OMD backups. Review the [migration guide](../commands/update-check.md) when upgrading an older controller.
+
+### s0.8.1
+
+English and German architecture and extension guides cover commands, profiles, Git add-ons and local packages. Add-on hooks can use `addon-index` and `addon-verify`.
+
+### s0.8.0
+
+Checkmk migration supports Docker or native OMD backups. Apache source and target paths are configurable, and Docker can skip its final summary pause. Removing obsolete stacks still requires confirmation.
+
+### s0.7.0
+
+Preview a local register migration with `tools/migrate_local_extensions.py --check`. Migration creates a private backup and retains approved hashes. [Register migration](../commands/update-check.md)
+
+### s0.6.0
+
+Select German or English with `--lang` or `controller_lang`. Both languages share sources and checksums. JSON reports add machine-readable status codes.
+
+### s0.5.0
+
+SSS moves into a separate optional add-on. Register an active SSS installation before changing controller versions. [Migration and rollback](../commands/update-check.md)
+
+### s0.4.1
+
+Git add-ons are checked with the base and site profile. The install receipt tracks file ownership and rollback restores it alongside files and module versions.
+
+### s0.4.0
+
+The controller sends email and Telegram reports while hosts keep their local SQLite records and cron. Use `jobs-last --limit TARGET` or `bin/job-status` to inspect results. Pilot the library and explicitly choose a summary schedule. Homelab backups require Homelab 0.3.0.
+
+### 0.3.1
+
+Use `module-versions` or `bin/control update-check --versions` to inspect installed modules. Open a new shell or run `reload` after updating.
+
+### 0.3.0
+
+My first GitHub release. The controller records script job results, handles the first Compose file when stopping stacks and requests privilege escalation for maintenance and root CA distribution.
+
+<details>
+<summary>Deutsch · frühere Versionshinweise</summary>
+
 ## 0.8.11 – Gültige systemd-Pfadangaben
 
 Diese Freigabe bündelt die Änderungen seit 0.8.2: zentrale Jobberichte setzen offene Versandkanäle nach Abbrüchen fort, bewerten wiederkehrende Cronfenster und können ausdrücklich ausgewählte systemd-Profile samt privaten Dienstordnern verwalten. Enthalten sind Jobmodul 0.5.4 und Controller-Prüfer 1.5.4.
@@ -172,3 +265,5 @@ Mit diesem Release fange ich an, die Änderungen an meiner Ansible-Basis auf Git
 - Skript-Jobs lassen sich auf dem Controller auswerten. Die Übersicht zeigt Läufe und Ergebnisse.
 - Beim Stoppen eines Compose-Projekts verwendet Ansible die erste gemeldete Compose-Datei. Das funktioniert auch bei mehreren Dateien und bei Sonderzeichen im Pfad.
 - Die Wartungsplaybooks und die Verteilung der Root-CA fordern die nötigen Rechte an. Der Update-Checker berücksichtigt getrennt installierte Erweiterungen.
+
+</details>

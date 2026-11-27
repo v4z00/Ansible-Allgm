@@ -1,3 +1,42 @@
+# Include existing system services in job reports
+
+Define reusable `script_jobs_systemd_profiles` in private group variables and select
+names through `script_jobs_systemd_selected_profiles` in each host's script logic.
+The existing script deployment writes the resolved fixed bindings as mode-0600
+`systemd.json` beside the host database. No script or unit-file inspection is used
+to infer the selection. Unknown profiles, duplicate selections, overlapping units
+and duplicate job names fail validation. An empty selection activates nothing.
+
+Each profile is a list of objects with `unit`, `mode` and optional `name`. Use
+`active` for a continuously required service, `oneshot` for an actual recorded
+successful process exit, and `observe` when inactivity is acceptable. Inactive
+required daemons fail; inactive optional services and never-run oneshots are skipped.
+Failures always remain failures and transition states produce warnings.
+
+During central collection, the host helper queries only fixed systemd status
+properties and stores an atomic observation in local SQLite. Repeated pages share
+one sample identifier and do not duplicate observations. The existing event import,
+90-day retention and controller-only notification process include these jobs.
+Inventory/profile drift blocks stale green results. Service execution, restart
+policy, MainPID and boot/shutdown ordering stay under the existing system manager.
+
+Run `PATH/bin/script-jobs systemd-status --config /var/lib/script-jobs/systemd.json`
+for a fresh read-only local observation without creating a database. `bin/job-status`
+shows the last stored observation. Exec commands, environment values, credentials,
+descriptions, journals and raw diagnostics are never requested or exported.
+
+An active service is a state observation, not a functional application test. Polling
+cannot reconstruct executions between queries or retain all oneshot outcomes across
+reboots. Shutdown results may be absent after reboot without separate local event
+recording. This integration does not rewrite the existing private service programs
+or their old notification behavior. That migration needs separately reviewed sources.
+
+
+Object profiles with source, target and services can also deploy private folders and explicit service units. List profiles remain status-only. See [deployment paths and lifecycle settings](systemd-job-deployment.md).
+
+<details>
+<summary>Deutsch</summary>
+
 # Bestehende systemd-Dienste in Jobberichte aufnehmen
 
 Das bestehende Skript-Deployment verarbeitet zentrale `script_jobs_systemd_profiles` und
@@ -74,6 +113,11 @@ und [Diensttypen](https://www.freedesktop.org/software/systemd/man/latest/system
 
 Objektprofile mit `source`, `target` und `services` können zusätzlich private Ordner und explizite Units bereitstellen. Listenprofile behalten die reine Statusanbindung. [Pfadzuordnung, Voraussetzungen und Aktivierung](systemd-job-deployment.md).
 
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
+
 ```json
 {
   "schema_version": 1,
@@ -113,3 +157,5 @@ Objektprofile mit `source`, `target` und `services` können zusätzlich private 
   }
 }
 ```
+
+</details>

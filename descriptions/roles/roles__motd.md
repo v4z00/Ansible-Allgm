@@ -1,3 +1,36 @@
+# Role motd
+
+Role: `roles/motd`.
+
+Task names as written in the role:
+
+- Install MOTD utilities
+- Create the MOTD directory
+- Find existing dynamic MOTD scripts
+- Disable dynamic MOTD scripts
+- Deploy managed dynamic MOTD scripts
+- Set the static MOTD
+- Report a missing HAP when its display is enabled
+- Install the MOTD display command
+- Install the MOTD shell alias
+- Disable the duplicate static SSH MOTD
+- Disable the redundant PAM MOTD entry
+
+The parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `roles/motd/tasks/main.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Rolle motd
 
 Rolle: `roles/motd`.
@@ -24,6 +57,18 @@ Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fak
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `roles/motd/tasks/main.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -55,9 +100,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `roles/motd/tasks/main.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

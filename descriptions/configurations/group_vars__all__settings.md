@@ -1,3 +1,28 @@
+# Configuration reference for group_vars/all/settings.yml
+
+This reference describes the example file. Effective host values depend on local settings.
+
+This reference does not activate the example or copy it into an existing site configuration.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `examples/settings/all_settings.example.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+## TLS settings per task (1.1.0)
+
+`tls_validate_certs_default` sets the optional site default, normally true. `tls_validate_certs` maps individual tasks to optional Boolean overrides. Telegram tasks independently default to true. See `examples/tls/settings.example.yml` for examples and the complete mapping.
+
+Optional report, Apache, Docker and Checkmk settings are listed in `examples/settings/controller_paths.example.yml`.
+
+<details>
+<summary>Deutsch</summary>
+
 # Konfigurationsreferenz group_vars/all/settings.yml
 
 Diese Angaben beschreiben ausschliesslich die vorliegende Vorlagen-/Beispieldatei, nicht die effektiven Werte eines laufenden Hosts.
@@ -10,7 +35,26 @@ Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
 
+## Quellen und Pflege
+
+- `examples/settings/all_settings.example.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+
+## TLS-Schalter pro Aufgabe (1.1.0)
+
+`tls_validate_certs_default` ist der optionale Standortstandard (ohne Eintrag true).
+`tls_validate_certs` ist eine YAML-Zuordnung mit optionalen booleschen Aufgabenschaltern.
+Telegram-Defaults bleiben true. Beispiele und vollstaendige Zuordnung: `examples/tls/settings.example.yml`.
+
 Die optionalen Einstellungen für Berichte, Apache, Docker und Checkmk stehen in `examples/settings/controller_paths.example.yml`.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -2396,3 +2440,5 @@ Die optionalen Einstellungen für Berichte, Apache, Docker und Checkmk stehen in
   }
 }
 ```
+
+</details>

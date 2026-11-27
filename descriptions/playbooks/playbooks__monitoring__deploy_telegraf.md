@@ -1,5 +1,48 @@
 # Playbook playbooks/monitoring/deploy_telegraf.yml
 
+Playbook: `playbooks/monitoring/deploy_telegraf.yml`.
+
+Play and task names as written in the playbook:
+
+- Deploy Telegraf
+- Require the Telegraf feature
+- Install repository prerequisites
+- Create keyring directory
+- Download the InfluxData repository key
+- Read the InfluxData key fingerprint
+- Verify the InfluxData key against the expected fingerprint
+- Install the verified InfluxData key
+- Ensure correct permissions on the key
+- Add InfluxData Repository
+- Install Telegraf
+- Deploy Telegraf Configuration
+- Remove the downloaded repository key
+- Force restart Telegraf
+- restart_telegraf
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/monitoring/deploy_telegraf.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+## Per-task TLS certificate validation (1.1.0)
+
+`tls_validate_certs.telegraf_repository_key` in `group_vars/all/settings.yml` controls verification when downloading the InfluxData repository key. It inherits `tls_validate_certs_default` (default true). Explicit false disables this check only.
+
+The site default is `tls_validate_certs_default`, normally true. Telegram tasks independently default to true unless their own override is set.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/monitoring/deploy_telegraf.yml
+
 Vorhandener Einstieg: `playbooks/monitoring/deploy_telegraf.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -28,6 +71,28 @@ Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein besch
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `playbooks/monitoring/deploy_telegraf.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+
+## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
+
+Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
+Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
+- `tls_validate_certs.telegraf_repository_key`: InfluxData Repository-Schluessel herunterladen (Standard true).
+
+Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
+verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -59,19 +124,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/monitoring/deploy_telegraf.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
-
-
-## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
-
-Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
-Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
-- `tls_validate_certs.telegraf_repository_key`: InfluxData Repository-Schluessel herunterladen (Standard true).
-
-Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
-verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+</details>

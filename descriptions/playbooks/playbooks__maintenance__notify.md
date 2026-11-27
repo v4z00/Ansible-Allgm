@@ -1,5 +1,37 @@
 # Playbook playbooks/maintenance/notify.yml
 
+Playbook: `playbooks/maintenance/notify.yml`.
+
+Play and task names as written in the playbook:
+
+- Send an operations notification
+- Read the message file
+- Send the Telegram message
+- Report missing optional Telegram settings
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/maintenance/notify.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+## Per-task TLS certificate validation (1.1.0)
+
+Under `tls_validate_certs` in `group_vars/all/settings.yml`, `tls_validate_certs.telegram_notification` controls verification for sending Telegram messages. The Telegram task defaults to true. Explicit false disables this check only.
+
+The site default is `tls_validate_certs_default`, normally true. Telegram tasks independently default to true unless their own override is set.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/maintenance/notify.yml
+
 Vorhandener Einstieg: `playbooks/maintenance/notify.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -17,6 +49,28 @@ Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein besch
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `playbooks/maintenance/notify.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+
+## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
+
+Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
+Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
+- `tls_validate_certs.telegram_notification`: Telegram-Nachricht senden (Standard true).
+
+Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
+verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -48,19 +102,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/maintenance/notify.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
-
-
-## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
-
-Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
-Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
-- `tls_validate_certs.telegram_notification`: Telegram-Nachricht senden (Standard true).
-
-Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
-verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+</details>

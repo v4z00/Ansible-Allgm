@@ -1,5 +1,50 @@
 # Playbook playbooks/bootstrap/root_access.yml
 
+Playbook: `playbooks/bootstrap/root_access.yml`.
+
+Play and task names as written in the playbook:
+
+- Prepare root access
+- Require configured bootstrap profiles
+- Require the selected bootstrap profile
+- Check the controller key
+- Require the controller key
+- Validate selected bootstrap profiles
+- Prepare root key access or individual bootstrap credentials
+- Establish root access with sudo or su
+- Test the initial connection
+- Test sudo access to root
+- Test su access to root
+- Select a working privilege escalation method
+- Stop if privilege escalation to root fails
+- Configure root key access
+- Create the root SSH directory
+- Install the controller key for root
+- Enable SSH key authentication for root
+- Validate the SSH configuration
+- Reload SSH
+- Report the privilege escalation method
+- Confirm existing root key access
+- Test the root key connection with Ansible
+- Report existing root key access
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/bootstrap/root_access.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/bootstrap/root_access.yml
+
 Vorhandener Einstieg: `playbooks/bootstrap/root_access.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -37,6 +82,18 @@ Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
 
+## Quellen und Pflege
+
+- `playbooks/bootstrap/root_access.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
+
 ```json
 {
   "schema_version": 1,
@@ -67,9 +124,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/bootstrap/root_access.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

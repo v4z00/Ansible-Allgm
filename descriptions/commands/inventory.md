@@ -1,3 +1,35 @@
+# Refresh the Proxmox inventory
+
+Refresh the Proxmox inventory
+
+Run: `bin/control inventory [options]`.
+
+Aliases: `inv-update`, `inventory`.
+
+Feature: proxmox. Control checks availability at runtime.
+
+No structured parameter list is available. Use the existing terminal workflow and its help.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+- `scripts/update_inventory.sh`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/inventory.json`
+- `bin/control.d/inventory.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+When calling the script directly, `--root` or `ANSIBLE_PROJECT_ROOT` selects the project. The generator publishes the inventory and `x/reports/inventory_report.yml` together inside that directory. It saves backups in `x/backups`.
+
+<details>
+<summary>Deutsch</summary>
+
 # Proxmox-Inventory aktualisieren
 
 Proxmox-Inventory aktualisieren
@@ -20,7 +52,20 @@ Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
 
+## Quellen und Pflege
+
+- `bin/control.d/inventory.json`
+- `bin/control.d/inventory.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
 Bei direktem Skriptaufruf wählt `--root` oder `ANSIBLE_PROJECT_ROOT` das Projekt. Der Generator veröffentlicht Inventory und `x/reports/inventory_report.yml` als zusammengehörige Aktualisierung innerhalb dieses Verzeichnisses. Die Sicherungen liegen unter `x/backups`.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -53,3 +98,5 @@ Bei direktem Skriptaufruf wählt `--root` oder `ANSIBLE_PROJECT_ROOT` das Projek
   }
 }
 ```
+
+</details>

@@ -1,6 +1,18 @@
+# Set up the results controller
+
+Run: `ansible-playbook playbooks/scripts/setup_controller.yml`. See the role descriptions under `descriptions/roles/script_jobs*.md` for prerequisites and variables. Run the playbook explicitly with a local configuration.
+
+<details>
+<summary>Deutsch</summary>
+
 # Ergebnis-Controller einrichten
 
 Aufruf: `ansible-playbook playbooks/scripts/setup_controller.yml`. Voraussetzungen und Variablen stehen in den zugeordneten Rollenbeschreibungen unter `descriptions/roles/script_jobs*.md`. Bereitstellung erfolgt nur nach ausdruecklichem Aufruf mit lokaler Konfiguration; diese Datei allein startet keine Aktion.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -31,3 +43,5 @@ Aufruf: `ansible-playbook playbooks/scripts/setup_controller.yml`. Voraussetzung
   }
 }
 ```
+
+</details>

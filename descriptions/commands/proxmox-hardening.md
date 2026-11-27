@@ -1,3 +1,32 @@
+# Harden the PVE web interface and PBS port
+
+Harden the PVE web interface and PBS port
+
+Run: `bin/control proxmox-hardening [options]`.
+
+Aliases: `proxmox-hardening`.
+
+Feature: proxmox. Control checks availability at runtime.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+- `playbooks/security/proxmox_stack_hardening.yml`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/proxmox-hardening.json`
+- `bin/control.d/proxmox-hardening.sh`
+- `lib/control/helpers.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # PVE-GUI und PBS-Port haerten
 
 PVE-GUI und PBS-Port haerten
@@ -17,6 +46,20 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/proxmox-hardening.json`
+- `bin/control.d/proxmox-hardening.sh`
+- `lib/control/helpers.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -99,11 +142,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/proxmox-hardening.json`
-- `bin/control.d/proxmox-hardening.sh`
-- `lib/control/helpers.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

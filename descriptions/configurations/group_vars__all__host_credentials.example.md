@@ -1,7 +1,19 @@
+# Optional credentials
+
+Examples are under `examples/access`. No example is loaded automatically in `group_vars/all`. Keep existing settings and secrets when reviewing examples.
+
+<details>
+<summary>Deutsch</summary>
+
 # Optionale Zugaenge
 
 Beispiele unter examples/access; keine automatisch geladene Beispieldatei in group_vars/all.
 Bestehende Settings/Secrets niemals mit Beispielwerten ersetzen.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -69,3 +81,5 @@ Bestehende Settings/Secrets niemals mit Beispielwerten ersetzen.
   }
 }
 ```
+
+</details>

@@ -1,3 +1,40 @@
+# Prepare Docker and deploy users, networks and stacks
+
+Prepare Docker and deploy users, networks and stacks
+
+Run: `bin/control docker-deploy [options]`.
+
+Aliases: `docker-push`, `docker-deploy`.
+
+Feature: docker. Control checks availability at runtime.
+
+Set `docker_deploy_pause_summary: false` in your settings or pass `-e '{"docker_deploy_pause_summary":false}'` to print the summary without waiting for Enter. The default is to pause. The report is saved under `x/reports/docker/`. Removing orphan stacks still requires typing `yes` at the terminal. An unattended run leaves them in place. When limiting hosts, include `localhost` for the confirmation and report plays, for example `--limit 'docker-test,localhost'`.
+
+By default, Compose sources live in `docker-configs` next to the controller project (`/root/docker-configs` for `/root/ansible`). The controller uses `local_base_dir`, then `docker_local_base_dir`, then `ANSIBLE_DOCKER_CONFIG_ROOT`. For targets it uses `remote_base_dir`, then `docker_remote_base_dir`, or `/srv/docker-configs` by default. For reports, `controller_reports_dir` takes precedence over `ANSIBLE_REPORTS_DIR`. The default is `x/reports` inside the project. Set `ANSIBLE_PROJECT_ROOT` to override the project path.
+
+Registry prerequisites:
+- `playbooks/docker/vars/paths.yml`
+- `lib/control/helpers.sh`
+- `playbooks/docker/deploy_docker_networks.yaml`
+- `playbooks/docker/deploy_docker_stacks.yml`
+- `playbooks/docker/deploy_docker_users.yml`
+- `playbooks/docker/prepare_deployment.yml`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/docker-deploy.json`
+- `bin/control.d/docker-deploy.sh`
+- `lib/control/helpers.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Docker vorbereiten, Benutzer/Netze/Stacks ausrollen
 
 Docker vorbereiten, Benutzer/Netze/Stacks ausrollen
@@ -25,6 +62,20 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/docker-deploy.json`
+- `bin/control.d/docker-deploy.sh`
+- `lib/control/helpers.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -87,11 +138,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/docker-deploy.json`
-- `bin/control.d/docker-deploy.sh`
-- `lib/control/helpers.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

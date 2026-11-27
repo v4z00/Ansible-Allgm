@@ -1,3 +1,19 @@
+# Read the latest job results directly from the hosts
+
+```sh
+bin/control jobs-last --limit example-host
+ansible-playbook playbooks/scripts/show_status.yml --limit example-host
+```
+
+Select targets explicitly. Through existing Ansible connections, the playbook calls each host’s `bin/job-status` helper from the complete library. It reads local SQLite results without starting jobs, editing cron or sending messages. The root is `script_jobs_target_root`, then `script_path`, then `/scripte`. Set the database with `script_jobs_database_path`.
+
+Each job shows its latest status, timestamp, symbol and exit code. A running job takes precedence over an earlier success. Missing helpers or databases and unreachable hosts appear as errors. An empty list does not establish that scheduled jobs have run.
+
+On a host, run `PATH/bin/job-status`. Filter with `--job NAME` or request structured output with `--json`. This works independently of the controller. `bin/control jobs latest` shows the controller’s last collected results. Use `runs` and `details` for history.
+
+<details>
+<summary>Deutsch</summary>
+
 # Letzte Zustände direkt auf den Hosts abfragen
 
 ```sh
@@ -20,6 +36,11 @@ Auf einem Host funktioniert derselbe Aufruf lokal: `PFAD/bin/job-status`;
 `--job NAME` filtert, `--json` liefert strukturierte Daten. Diese Ansicht benötigt
 keinen Controller. `bin/control jobs latest` zeigt dagegen den letzten gespeicherten
 Abholstand des Controllers; `runs` und `details` bieten die Historie.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -54,3 +75,5 @@ Abholstand des Controllers; `runs` und `details` bieten die Historie.
   }
 }
 ```
+
+</details>

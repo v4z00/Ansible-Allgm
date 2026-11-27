@@ -1,3 +1,40 @@
+# Distribute the SSH key and disable password login only when approved
+
+Distribute the SSH key and disable password login only when approved
+
+Run: `bin/control bootstrap [options]`.
+
+Aliases: `bootstrap`.
+
+Available without a separate feature switch. Control checks availability at runtime.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+- `scripts/run_bootstrap.py`
+- `playbooks/bootstrap.yml`
+- `playbooks/bootstrap/root_access.yml`
+- `playbooks/bootstrap/tasks/prepare_target.yml`
+- `roles/bootstrap_ssh/tasks/main.yml`
+- `roles/bootstrap_ssh/defaults/main.yml`
+- `roles/bootstrap_ssh/handlers/main.yml`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/bootstrap.json`
+- `bin/control.d/bootstrap.sh`
+- `scripts/run_bootstrap.py`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+The command registry checks that all bootstrap components are present before starting.
+
+<details>
+<summary>Deutsch</summary>
+
 # SSH-Key verteilen; Passwortabschaltung nur bei Freigabe
 
 SSH-Key verteilen; Passwortabschaltung nur bei Freigabe
@@ -23,6 +60,22 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/bootstrap.json`
+- `bin/control.d/bootstrap.sh`
+- `scripts/run_bootstrap.py`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+Die Registry prueft die vollstaendigen Bootstrap-Bestandteile vor dem Aufruf.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -116,13 +169,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/bootstrap.json`
-- `bin/control.d/bootstrap.sh`
-- `scripts/run_bootstrap.py`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
-
-Die Registry prueft die vollstaendigen Bootstrap-Bestandteile vor dem Aufruf.
+</details>

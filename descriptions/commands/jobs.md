@@ -1,3 +1,44 @@
+# Browse jobs and local results
+
+`bin/control jobs` opens the shell menu. Hosts keep their local data. Queries use the existing inventory and SSH/become settings.
+
+```sh
+bin/control jobs --limit example-host collect
+bin/control jobs --source example-host runs
+bin/control jobs --source example-host latest
+bin/control jobs --source example-host --job backup errors
+bin/control jobs --run LAUF-ID details
+bin/control jobs --limit example-host live --seconds 60
+bin/control jobs --limit example-host --json live --seconds 60
+bin/control jobs --item 101 --since 1795392000 runs
+bin/control jobs reports
+```
+
+`--project` identifies the controller root. Override inventory explicitly with `--inventory` or the local database with `--db`. By default the database comes from `config/script_jobs_controller.json` or `/var/lib/script-jobs/controller.sqlite3`. `--since` and `--until` use UTC Unix timestamps. Viewing results starts no backups.
+
+`collect` returns JSON. `live --json` streams NDJSON events and heartbeats through short Ansible SSH calls. There is no additional network service. The regular live view shows symbols and text. Earlier data remains available after disconnection.
+
+A new database generation or gap caused by 90-day retention requires review. After checking it, run `bin/control jobs --source example-host reset-cursor` to reimport remaining data. Previously delivered content can reappear after this explicit reset. History and report IDs stay visible.
+
+The menu shows running jobs, recent outcomes, warnings/errors, details, live events and delivery states. Root or the configured database owner needs access to the private files. The controller requires Python 3.11+ and its Ansible environment. There is no arbitrary SQL or remote-shell input.
+
+## Local jobs and results
+
+The shared library is under [artifacts/script-library](../../artifacts/script-library/). Operational scripts, custom functions, host settings and secrets stay under `/root/skripte-config/<Hostname>/`. Playbooks deploy from these private sources to the existing `script_path`. Git supplies the library and generic playbooks.
+
+`bin/control jobs` opens the shell UI. Each host’s cron continues running jobs locally. SQLite retains results for 90 days. Queries use existing Ansible/SSH connections. Live mode can return individual JSON events while keeping SQLite off the network. `bin/control jobs-summary` aggregates ordinary results. Vzdump gets its own completion report.
+
+See [Deploy scripts](../roles/script_jobs.md), [Set up the results controller](../roles/script_jobs_controller.md) and the [examples](../../examples/script_jobs/). Select local jobs and schedules explicitly before enabling cron.
+
+The query root follows job deployment: `script_jobs_target_root`, then `script_path`, otherwise `/scripte`. Staging a library separately does not change the live job paths.
+
+`latest` shows the latest collected state per source and job, including running jobs. Filter using `--source` or `--job`. Use `runs` for time or individual-item filters. Select a private controller configuration with `--config`.
+
+[jobs-last](jobs-last.md) queries the hosts directly for current states. Both views are read-only and send no notifications.
+
+<details>
+<summary>Deutsch</summary>
+
 # Jobs und lokale Ergebnisse
 
 `bin/control jobs` öffnet das Shell-Menü. Die Daten bleiben lokal auf den Hosts;
@@ -55,6 +96,23 @@ Ergebnisse. Der Controller sendet für Vzdump einen getrennten Abschlussbericht.
 Die Einrichtung ist unter [Skripte verteilen](../roles/script_jobs.md), [Ergebnis-Controller einrichten](../roles/script_jobs_controller.md) und in den [Beispielen](../../examples/script_jobs/) beschrieben. Ohne eine konkrete lokale Auswahl und
 Zeitpläne wird kein Cronjob erfunden oder gestartet.
 
+Der Abfragepfad folgt wie das Job-Deployment `script_jobs_target_root`, dann
+`script_path`, sonst `/scripte`. Eine separat gestagte Library legt keinen
+abweichenden Pfad für produktive Jobs fest.
+
+`latest` zeigt den letzten gespeicherten Zustand je Quelle/Job, einschließlich
+laufender Jobs. Diese Ansicht verwendet den letzten Abholstand und unterstützt
+`--source`/`--job`. Für Zeit- und Einzelobjektfilter bleibt `runs` zuständig.
+`--config` wählt eine eigene private Controllerkonfiguration.
+
+[jobs-last](jobs-last.md) fragt die letzten Zustände unmittelbar auf den Hosts ab.
+Beide Ansichten starten keine Jobs und senden keine Nachrichten.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
+
 ```json
 {
   "schema_version": 1,
@@ -89,14 +147,4 @@ Zeitpläne wird kein Cronjob erfunden oder gestartet.
 }
 ```
 
-Der Abfragepfad folgt wie das Job-Deployment `script_jobs_target_root`, dann
-`script_path`, sonst `/scripte`. Eine separat gestagte Library legt keinen
-abweichenden Pfad für produktive Jobs fest.
-
-`latest` zeigt den letzten gespeicherten Zustand je Quelle/Job, einschließlich
-laufender Jobs. Diese Ansicht verwendet den letzten Abholstand und unterstützt
-`--source`/`--job`. Für Zeit- und Einzelobjektfilter bleibt `runs` zuständig.
-`--config` wählt eine eigene private Controllerkonfiguration.
-
-[jobs-last](jobs-last.md) fragt die letzten Zustände unmittelbar auf den Hosts ab.
-Beide Ansichten starten keine Jobs und senden keine Nachrichten.
+</details>

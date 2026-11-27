@@ -1,3 +1,47 @@
+# Role checkmk_agent
+
+Role: `roles/checkmk_agent`.
+
+Task names as written in the role:
+
+- Validate Checkmk settings and credentials
+- Check the local Checkmk agent package
+- Report a missing Checkmk agent package
+- Set the Checkmk hostname
+- Create or move the host in Checkmk
+- Activate Checkmk changes before registration
+- Copy the Checkmk agent package
+- Install the Checkmk agent
+- Determine the Checkmk plugin list
+- Create Checkmk plugin directories
+- Deploy available Checkmk plugins
+- Read the Checkmk TLS status
+- Register the Checkmk agent over TLS
+- Enable the Checkmk agent socket
+- Remove the temporary agent package
+
+The parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `roles/checkmk_agent/tasks/main.yml`
+- `roles/checkmk_agent/defaults/main.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+## Per-task TLS certificate validation (1.1.0)
+
+In `group_vars/all/settings.yml`, `tls_validate_certs.checkmk_managed_host` covers creating or moving the centrally managed Checkmk host. `tls_validate_certs.checkmk_agent_activation` covers activating changes before registration. Each inherits `tls_validate_certs_default` (default true). An explicit false disables only that check.
+
+The site default is `tls_validate_certs_default`, normally true. Telegram tasks independently default to true unless their own override is set.
+
+<details>
+<summary>Deutsch</summary>
+
 # Rolle checkmk_agent
 
 Rolle: `roles/checkmk_agent`.
@@ -28,6 +72,30 @@ Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fak
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `roles/checkmk_agent/tasks/main.yml`
+- `roles/checkmk_agent/defaults/main.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+
+## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
+
+Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
+Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
+- `tls_validate_certs.checkmk_managed_host`: CheckMK-Host zentral anlegen oder verschieben (Standard true).
+- `tls_validate_certs.checkmk_agent_activation`: CheckMK-Aenderungen vor Registrierung aktivieren (Standard true).
+
+Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
+verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -217,21 +285,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `roles/checkmk_agent/tasks/main.yml`
-- `roles/checkmk_agent/defaults/main.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
-
-
-## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
-
-Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
-Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
-- `tls_validate_certs.checkmk_managed_host`: CheckMK-Host zentral anlegen oder verschieben (Standard true).
-- `tls_validate_certs.checkmk_agent_activation`: CheckMK-Aenderungen vor Registrierung aktivieren (Standard true).
-
-Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
-verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+</details>

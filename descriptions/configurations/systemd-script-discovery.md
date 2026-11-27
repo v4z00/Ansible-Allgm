@@ -1,3 +1,26 @@
+# Read custom systemd script bindings
+
+`scripts/get_systemd_scripts.py` is a standalone, read-only Ansible collector.
+Copy the one file outside the controller if needed. Specify --project, an explicit
+--limit, optionally --inventory and a new --output directory. --list-hosts queries
+inventory selection only; --version identifies the collector. Existing SSH and
+become settings apply. A local inventory connection really executes locally.
+
+Host-filtered results are stored as HOSTNAME/systemd.json with mode 0600. No script
+or configuration contents, Environment/EnvironmentFiles, credentials, descriptions,
+raw units or command arguments are exported. Exec properties are filtered separately
+on the host; only an executable script or an immediate shell script parameter is
+retained. Arbitrary arguments are never searched for path-looking values. Raw
+Ansible diagnostics are discarded.
+
+System-manager services/timers and custom drop-ins are identified. User-manager
+unit files are listed by filename only and require separate review. Complex starts
+remain unresolved. The collector never starts, stops, enables, disables or reloads
+units, nor changes cron. An observation is not an automatic scheduler migration.
+
+<details>
+<summary>Deutsch</summary>
+
 # Custom-systemd-Skripte rein lesend erfassen
 
 `scripts/get_systemd_scripts.py` ist ein eigenständiger Sammler mit eingebettetem
@@ -42,6 +65,11 @@ Zuordnung lässt sich das bestehende Startmodell in die Skriptverwaltung
 Fachreferenz: [systemd.service](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html),
 [systemd.timer](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html).
 
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
+
 ```json
 {
   "schema_version": 1,
@@ -70,3 +98,5 @@ Fachreferenz: [systemd.service](https://www.freedesktop.org/software/systemd/man
   }
 }
 ```
+
+</details>

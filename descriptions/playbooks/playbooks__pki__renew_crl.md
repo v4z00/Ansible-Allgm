@@ -1,5 +1,36 @@
 # Playbook playbooks/pki/renew_crl.yml
 
+Playbook: `playbooks/pki/renew_crl.yml`.
+
+Play and task names as written in the playbook:
+
+- Step 1: Renew and Convert Root CRL (on the controller)
+- Require a locally configured CA password
+- Generate new CRL (PEM format)
+- Convert CRL to DER format (Required for Windows!)
+- Display generation status
+- Step 2: Deploy CRL to Docker Server
+- Ensure destination directory exists
+- Copy new Root CRL (DER) with permissions 0774
+- Restart Webserver Container
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/pki/renew_crl.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/pki/renew_crl.yml
+
 Vorhandener Einstieg: `playbooks/pki/renew_crl.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -22,6 +53,18 @@ Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein besch
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `playbooks/pki/renew_crl.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -53,9 +96,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/pki/renew_crl.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

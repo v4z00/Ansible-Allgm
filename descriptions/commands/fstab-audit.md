@@ -1,3 +1,34 @@
+# Collect fstab files
+
+Collect fstab files
+
+Run: `bin/control fstab-audit [options]`.
+
+Aliases: `audit-fstab`, `fstab-audit`.
+
+Available without a separate feature switch. Control checks availability at runtime.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+- `playbooks/maintenance/audit_fstab.yml`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/fstab-audit.json`
+- `bin/control.d/fstab-audit.sh`
+- `lib/control/helpers.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+The audit writes files under `controller_reports_dir/fstab_audit`. The fallback is `ANSIBLE_REPORTS_DIR`, then `x/reports` in the controller project. Relative paths start at the project root.
+
+<details>
+<summary>Deutsch</summary>
+
 # fstab-Dateien einsammeln
 
 fstab-Dateien einsammeln
@@ -18,7 +49,21 @@ Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
 
+## Quellen und Pflege
+
+- `bin/control.d/fstab-audit.json`
+- `bin/control.d/fstab-audit.sh`
+- `lib/control/helpers.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
 Der Audit legt die Dateien unter `controller_reports_dir/fstab_audit` ab. Ohne Vorgabe gilt `ANSIBLE_REPORTS_DIR`, andernfalls `x/reports` im Controllerprojekt. Relative Pfade beginnen im Projektverzeichnis.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -100,3 +145,5 @@ Der Audit legt die Dateien unter `controller_reports_dir/fstab_audit` ab. Ohne V
   }
 }
 ```
+
+</details>

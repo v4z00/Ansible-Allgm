@@ -1,3 +1,33 @@
+# Check feature switches and the local environment without editing settings
+
+Check feature switches and the local environment without editing settings
+
+Run: `bin/control features-check [options]`.
+
+Aliases: `features-check`.
+
+Available without a separate feature switch. Control checks availability at runtime.
+
+No structured parameter list is available. Use the existing terminal workflow and its help.
+
+Registry prerequisites:
+- `scripts/feature_audit.py`
+- `scripts/feature_catalog.json`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/features-check.json`
+- `bin/control.d/features-check.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Feature-Schalter und lokale Umgebung pruefen; keine Settings aendern
 
 Feature-Schalter und lokale Umgebung pruefen; keine Settings aendern
@@ -19,6 +49,19 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/features-check.json`
+- `bin/control.d/features-check.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -52,10 +95,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/features-check.json`
-- `bin/control.d/features-check.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

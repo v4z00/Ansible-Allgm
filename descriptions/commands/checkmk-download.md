@@ -1,3 +1,45 @@
+# Download the Checkmk agent and plugins
+
+Download the Checkmk agent and plugins
+
+Run: `bin/control checkmk-download [options]`.
+
+Aliases: `checkmk-download`.
+
+Feature: checkmk. Control checks availability at runtime.
+
+No structured parameter list is available. Use the existing terminal workflow and its help.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+- `scripts/download_checkmk_artifacts.sh`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/checkmk-download.json`
+- `bin/control.d/checkmk-download.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+## Optional download setting
+
+TLS download option 1.0.0. Certificate validation is enabled by default. For one download without validation, run `CHECKMK_DOWNLOAD_INSECURE=1 bin/control checkmk-download`. Allowed values are 0 (default) and 1. Other values stop the command before downloading. Applies to agent and plugins only. API access, TLS registration, sources, selected version, plugin list and other settings are unaffected.
+
+## Per-task TLS certificate validation (1.1.0)
+
+Add optional keys under `tls_validate_certs` in `group_vars/all/settings.yml`. Each inherits `tls_validate_certs_default`, which defaults to true. An explicit false disables only the named check. Agent packages use `tls_validate_certs.checkmk_agent_download` and agent plugins use `tls_validate_certs.checkmk_plugin_download`. Both default to true.
+
+Explicit YAML entries for agent and plugin downloads take precedence over `CHECKMK_DOWNLOAD_INSECURE`. Otherwise the task inherits `tls_validate_certs_default` (default true). The environment setting is available as a one-time download override. Leave it unset when controlling the two downloads separately.
+
+The site default is `tls_validate_certs_default`, normally true. Telegram tasks independently default to true unless their own override is set.
+
+<details>
+<summary>Deutsch</summary>
+
 # CheckMK-Agent/Plugins herunterladen
 
 CheckMK-Agent/Plugins herunterladen
@@ -19,6 +61,42 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/checkmk-download.json`
+- `bin/control.d/checkmk-download.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+## Optionaler Downloadschalter
+
+TLS-DOWNLOADSCHALTER 1.0.0
+Standard: TLS-Zertifikatspruefung aktiv.
+Einmalig ohne Zertifikatspruefung:
+  CHECKMK_DOWNLOAD_INSECURE=1 bin/control checkmk-download
+Akzeptiert 0 (Standard) oder 1, andere Werte brechen vor Downloads ab.
+Gilt fuer Agent und Plugins, nicht fuer Checkmk-API oder TLS-Registrierung.
+Settings, Quelle, Versionsauswahl und Pluginliste bleiben unveraendert.
+
+
+## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
+
+Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
+Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
+- `tls_validate_certs.checkmk_agent_download`: Agentpaket herunterladen (Standard true).
+- `tls_validate_certs.checkmk_plugin_download`: Agentplugins herunterladen (Standard true).
+
+Explizite YAML-Eintraege fuer Agent/Plugins haben Vorrang vor CHECKMK_DOWNLOAD_INSECURE. Ohne Aufgabenschalter gilt tls_validate_certs_default, ohne diesen true. Die bisherige einmalige ENV-Option bleibt als ausdruecklicher Download-Override verfuegbar; explizite Aufgabenschalter haben Vorrang. Fuer getrennte Steuerung keinen ENV-Override setzen.
+
+Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
+verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -54,33 +132,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/checkmk-download.json`
-- `bin/control.d/checkmk-download.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
-
-## Optionaler Downloadschalter
-
-TLS-DOWNLOADSCHALTER 1.0.0
-Standard: TLS-Zertifikatspruefung aktiv.
-Einmalig ohne Zertifikatspruefung:
-  CHECKMK_DOWNLOAD_INSECURE=1 bin/control checkmk-download
-Akzeptiert 0 (Standard) oder 1, andere Werte brechen vor Downloads ab.
-Gilt fuer Agent und Plugins, nicht fuer Checkmk-API oder TLS-Registrierung.
-Settings, Quelle, Versionsauswahl und Pluginliste bleiben unveraendert.
-
-
-## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
-
-Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
-Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
-- `tls_validate_certs.checkmk_agent_download`: Agentpaket herunterladen (Standard true).
-- `tls_validate_certs.checkmk_plugin_download`: Agentplugins herunterladen (Standard true).
-
-Explizite YAML-Eintraege fuer Agent/Plugins haben Vorrang vor CHECKMK_DOWNLOAD_INSECURE. Ohne Aufgabenschalter gilt tls_validate_certs_default, ohne diesen true. Die bisherige einmalige ENV-Option bleibt als ausdruecklicher Download-Override verfuegbar; explizite Aufgabenschalter haben Vorrang. Fuer getrennte Steuerung keinen ENV-Override setzen.
-
-Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
-verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+</details>

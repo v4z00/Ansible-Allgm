@@ -1,8 +1,20 @@
+# Show the latest local job states
+
+See [jobs-last](../commands/jobs-last.md) for invocation and path resolution. An explicit host selection is required. The playbook only calls the local SQLite status helper.
+
+<details>
+<summary>Deutsch</summary>
+
 # Letzte lokale Jobzustände anzeigen
 
 Aufruf und Pfadauflösung stehen unter [jobs-last](../commands/jobs-last.md).
 Die explizite Hostauswahl ist Pflicht. Das Playbook führt ausschließlich den
 lokalen SQLite-Statushelfer aus.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -33,3 +45,5 @@ lokalen SQLite-Statushelfer aus.
   }
 }
 ```
+
+</details>

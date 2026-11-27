@@ -1,5 +1,37 @@
 # Playbook playbooks/network/snmp_check.yml
 
+Playbook: `playbooks/network/snmp_check.yml`.
+
+Play and task names as written in the playbook:
+
+- Check SNMP access to network devices
+- Check the SNMP client on the controller
+- Prompt privately for the missing SNMPv2 community
+- Set the SNMPv2 community for this test
+- Validate SNMP settings
+- Test the SNMPv2 connection
+- Classify the SNMPv2 access failure
+- Test the SNMPv3 connection
+- Classify the SNMPv3 access failure
+- Report successful SNMP access
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/network/snmp_check.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/network/snmp_check.yml
+
 Vorhandener Einstieg: `playbooks/network/snmp_check.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -23,6 +55,18 @@ Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein besch
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `playbooks/network/snmp_check.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -54,9 +98,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/network/snmp_check.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

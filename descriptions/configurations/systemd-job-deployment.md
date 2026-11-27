@@ -1,3 +1,80 @@
+# Deploy private folders and system services through explicit profiles
+
+The shared library and deployment logic belong in Git. Keep actual service programs,
+special functions and fixed configuration in the private controller source folder
+`/root/skripte-config/<inventory_hostname>/`. Select named profiles with
+`script_jobs_systemd_selected_profiles`; define reusable profiles in local
+`script_jobs_systemd_profiles`. No source or unit inspection infers deployment.
+
+A deployment profile is an object with `source` (relative private host folder),
+`target` (dedicated absolute destination), optional `owner`/`group`, and `services`.
+For example, source `services/watcher`, target `/opt/example-watcher`, and manifest
+path `bin/watcher.sh` deploy that exact relative file under the target. Each source
+folder needs `deployment.json` with `files`: each entry has `path`, `kind`, `sha256`
+and optional relative `dest`. Kinds are script (0700), config/library/data (0600).
+Reviewed source hashes are required. Links, path traversal, collisions, shared
+library replacement and observation database overwrites fail before deployment.
+`review_required` or `sanitized_import` prevents unreviewed imports from deploying.
+Unknown existing files remain. Existing directory ownership is preserved.
+
+Each service requires `unit`, `mode` (active/oneshot/observe), and `exec_start` as
+an explicit argument list, e.g. `["{target}/bin/watcher.sh"]`. Optional fields:
+`name`, `description`, `type` (simple/exec/oneshot/notify/forking/idle), `user`, `group`,
+`working_directory`, `exec_stop` (argument list), `exec_start_pre`, `exec_start_post`,
+`exec_stop_post` (lists of argument lists), `restart`, `restart_sec`,
+`remain_after_exit`, `timeout_start_sec`, `timeout_stop_sec`, `pid_file`, `kill_mode`,
+`after`, `before`, `wants`, `requires`, `conflicts`, `wanted_by`,
+`default_dependencies`, `environment_files`, `enabled`, and `state`.
+Dependency fields are unit-name lists; environment files are explicit absolute
+paths. Oneshot execution and observation modes must agree. Unknown fields, multiline
+values and implicit shell commands fail. Arguments are quoted literally. Keep
+secrets in private mode-0600 configuration, not unit text or command arguments.
+Existing users, packages and external configuration are prerequisites.
+
+`{target}` and `{library_root}` are expanded only in profile values. Program text
+is never rewritten: move hardcoded internal paths into private configuration before
+changing its destination. Ansible replaces a host dictionary override as a whole;
+provide a full replacement profile or distinct profile names.
+
+Run `ansible-playbook playbooks/scripts/deploy_systemd.yml --limit example-host
+--check` first, then the same explicit command without `--check`. This standalone
+playbook deploys the shared library, selected folders, generated units and fixed
+status bindings, without requiring an old root host manifest. `deploy_jobs.yml`
+also supports the profiles alongside its existing private script/Cron manifest.
+Legacy list profiles remain status-only and do not copy files or replace units.
+
+Changed units trigger daemon-reload. No lifecycle setting is inferred: only explicit
+boolean `enabled` and `state` (started/stopped/restarted/reloaded) alter service
+activation. A running service needs explicit `state: restarted` to load new code.
+Masked units are not unmasked; removing a profile does not delete or stop anything.
+Check mode performs no systemd actions. File and unit backups preserve prior files.
+The existing database is initialized without resetting history or running programs.
+
+The unit directory defaults to `/etc/systemd/system` via
+`script_jobs_systemd_unit_dir` with root owner/group; library and database paths use
+the existing script_jobs variables. Only approved status properties are queried,
+including during explicit lifecycle management. No Environment or Exec values are
+requested. A working profile is not a live application test; review private sources,
+configuration and permissions, then run an explicit pilot before migration.
+See [observation behavior and limits](systemd-job-status.md).
+
+## Service users and rendered settings
+
+Set `library: true` on an object profile to install a complete additional shared
+library inside its target, owned by that profile. `{library_root}` then resolves
+to that target. Use separate, nonoverlapping roots for different service users.
+Root services need root-owned programs and settings; unprivileged services get
+their own private folder. No access to the root library is widened.
+
+A manifest JSON entry with `kind: config` and `config_key: watcher` is rendered
+from its hash-verified source object plus `script_jobs_profile_config.watcher`. Host
+settings override defaults. The result is mode 0600 with the profile owner and
+notification credentials removed. Its digest intentionally differs from source.
+Entries without `config_key` retain byte-for-byte copying.
+
+<details>
+<summary>Deutsch</summary>
+
 # Private Ordner und systemd-Dienste per Profil bereitstellen
 
 Die gemeinsame Library und die Deploymentlogik liegen in Git. Dienstprogramme,
@@ -114,6 +191,11 @@ wie bei normalen Jobs entfernt. Die Quell-SHA wird vor dem Rendern geprüft,
 der gerenderte Inhalt hat anschließend bewusst eine andere SHA. Ohne
 `config_key` bleibt die bisherige unveränderte Dateikopie erhalten.
 
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
+
 ```json
 {
   "schema_version": 1,
@@ -157,3 +239,5 @@ der gerenderte Inhalt hat anschließend bewusst eine andere SHA. Ohne
   }
 }
 ```
+
+</details>

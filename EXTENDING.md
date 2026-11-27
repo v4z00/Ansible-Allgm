@@ -68,7 +68,9 @@ languages = {"en": {"title": "Demo greeting", "description": "Print a greeting."
 document = {"schema_version": 1, "kind": "command", "ref": "demo-hello", "title": "Demo greeting",
             "documented": True, "fields": [], "constraints": [], "sources": sources,
             "source_hashes": {p: sha(p) for p in sources}, "i18n": languages}
-Path(help_file).write_text("# Demo greeting\n\n```json\n" + json.dumps(document, ensure_ascii=False, indent=2) + "\n```\n")
+body = (f"# {languages['en']['title']}\n\n{languages['en']['description']}\n\n"
+        f"<details>\n<summary>Deutsch</summary>\n\n{languages['de']['description']}\n\n</details>")
+Path(help_file).write_text(body + "\n\n```json\n" + json.dumps(document, ensure_ascii=False, indent=2) + "\n```\n")
 
 catalog = "scripts/feature_catalog.json"
 features = read(catalog)

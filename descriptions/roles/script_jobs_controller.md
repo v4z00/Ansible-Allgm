@@ -1,3 +1,22 @@
+# Set up the results controller
+
+`playbooks/scripts/setup_controller.yml` configures only the local controller and reuses its Ansible environment.
+
+Required values are `script_jobs_targets`, `script_jobs_summary_cron` with minute/hour/weekday, and at least one complete delivery channel (`script_jobs_mail_to` or existing `telegram_bot_token` and `telegram_chat_id`). Keep values local.
+
+`script_jobs_controller_db` defaults to `/var/lib/script-jobs/controller.sqlite3` and `script_jobs_controller_root` to `/root/ansible`. Private `config/script_jobs_controller.json` points the Control helpers, callback, queries and summary to the same database. The cron entry is named `script-jobs-summary`. Check existing controller schedules first. Similar local cron jobs are not automatically removed.
+
+The callback stores aggregated host statuses, excluding task arguments, messages and host variables. General results and the controller’s own Ansible runs share a summary. Vzdump uses a separate report.
+
+Only the controller sends Telegram and email. The host role never distributes delivery credentials. Existing variables under `group_vars/all` and their local overrides continue to apply. During controller downtime, hosts work independently and queued notifications can be delivered later.
+
+Configure display names with `script_jobs_report_labels` and mappings such as `hosts: {example-host: ServerA}` and `jobs: {backup: Backup}`. A key such as `example-host/backup` applies to that host only. The private JSON stores them as `labels`. `script_jobs_source_overrides` accepts absolute `root` and `database` paths per inventory host for isolated test storage and retains existing SSH/become settings.
+
+Control commands record their maintenance and Docker update results and, with the matching Homelab version, backup results. Target selection failures are included. Status and summary playbooks add no recursive report content. Setup enables only the explicitly supplied summary schedule. Collector monitoring through Checkmk is outside this role.
+
+<details>
+<summary>Deutsch</summary>
+
 # Ergebnis-Controller einrichten
 
 `playbooks/scripts/setup_controller.yml` richtet ausschließlich den lokalen
@@ -18,6 +37,29 @@ automatisch entfernt; vorhandene Controllerzeitpläne vorher prüfen.
 Der Callback erfasst ausschließlich aggregierte Hoststatus, keine Taskargumente,
 Nachrichtentexte oder Hostvars. Allgemeine Ergebnisse und eigene Ansible-Läufe
 werden gemeinsam konsolidiert, der Vzdump-Bericht bleibt getrennt.
+
+Telegram und Mail werden ausschließlich vom Controller versendet. Die Hostrolle
+verteilt keine Versandzugangsdaten. Die bestehenden Variablen aus `group_vars/all`
+und ihre lokalen Überschreibungen gelten weiter. Bei einem Controllerausfall
+arbeiten die Hosts selbstständig weiter; Nachrichten werden nachgeholt.
+
+`script_jobs_report_labels` setzt optionale sprechende Namen über die Mappings
+`hosts: {example-host: ServerA}` und `jobs: {backup: Backup}`. Der Jobschlüssel
+`example-host/backup` gilt nur für diesen Host. Die lokale JSON-Datei speichert
+diese Vorgaben als `labels`.
+`script_jobs_source_overrides` erlaubt je Inventory-Host absolute `root`- und
+`database`-Pfade für getrennte Testablagen; SSH-/Become-Konfiguration bleibt erhalten.
+
+Die Control-Einstiege zeichnen eigene Wartungs-, Docker-Update- und mit passendem
+Homelab-Stand Backup-Ergebnisse auf. Auch Fehler bei der Zielauswahl werden erfasst.
+Reine Status- und Summary-Playbooks erzeugen keinen eigenen Berichtsinhalt.
+Die Einrichtung aktiviert nur den ausdrücklich angegebenen Summary-Zeitplan.
+Eine spätere Überwachung des Collectors mit Checkmk ist hier nicht enthalten.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -51,20 +93,4 @@ werden gemeinsam konsolidiert, der Vzdump-Bericht bleibt getrennt.
 }
 ```
 
-Telegram und Mail werden ausschließlich vom Controller versendet. Die Hostrolle
-verteilt keine Versandzugangsdaten. Die bestehenden Variablen aus `group_vars/all`
-und ihre lokalen Überschreibungen gelten weiter. Bei einem Controllerausfall
-arbeiten die Hosts selbstständig weiter; Nachrichten werden nachgeholt.
-
-`script_jobs_report_labels` setzt optionale sprechende Namen über die Mappings
-`hosts: {example-host: ServerA}` und `jobs: {backup: Backup}`. Der Jobschlüssel
-`example-host/backup` gilt nur für diesen Host. Die lokale JSON-Datei speichert
-diese Vorgaben als `labels`.
-`script_jobs_source_overrides` erlaubt je Inventory-Host absolute `root`- und
-`database`-Pfade für getrennte Testablagen; SSH-/Become-Konfiguration bleibt erhalten.
-
-Die Control-Einstiege zeichnen eigene Wartungs-, Docker-Update- und mit passendem
-Homelab-Stand Backup-Ergebnisse auf. Auch Fehler bei der Zielauswahl werden erfasst.
-Reine Status- und Summary-Playbooks erzeugen keinen eigenen Berichtsinhalt.
-Die Einrichtung aktiviert nur den ausdrücklich angegebenen Summary-Zeitplan.
-Eine spätere Überwachung des Collectors mit Checkmk ist hier nicht enthalten.
+</details>

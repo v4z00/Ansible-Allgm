@@ -1,3 +1,32 @@
+# Role postfix
+
+Role: `roles/postfix`.
+
+Task names as written in the role:
+
+- Validate the Postfix configuration
+- Install Postfix packages
+- Deploy Postfix main.cf
+- Determine the sender address for this host
+- Deploy the sender canonical map
+- Write SASL credentials
+- Enable Postfix
+
+The parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `roles/postfix/tasks/main.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Rolle postfix
 
 Rolle: `roles/postfix`.
@@ -20,6 +49,18 @@ Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fak
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `roles/postfix/tasks/main.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -51,9 +92,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `roles/postfix/tasks/main.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

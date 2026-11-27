@@ -1,3 +1,36 @@
+# Use the Bash library
+
+Functions are under [artifacts/script-library/lib](../../artifacts/script-library/lib/). The loader reads files from `common/`. Email functions also require `data/mail-translations.json`.
+
+Deploy the library from the controller with the [Bash library playbook](../playbooks/playbooks__scripts__stage_library.md). On the target, source it from your script:
+
+```bash
+source /root/script-config/lib/load.sh
+```
+
+To download one function such as `hm_log` directly:
+
+```sh
+curl -fsSLo hm_log.sh https://raw.githubusercontent.com/v4z00/Ansible-Allgm/main/artifacts/script-library/lib/common/hm_log.sh
+```
+
+The [manifest](../../SHA256SUMS.json) lists the SHA-256 values.
+
+## Query local job status
+
+The full library includes `bin/job-status` and `bin/script-jobs`. Example on a host using `/scripte`:
+
+```sh
+/scripte/bin/job-status
+/scripte/bin/job-status --job backup
+/scripte/bin/job-status --db /var/lib/script-jobs/jobs.sqlite3 --json
+```
+
+`job-status` locates the database through local `config/common.json` or `--db`. It shows each job’s latest run, including running jobs, with timestamp and exit code. Internal IDs are shown only in JSON. A missing database returns “not connected” (exit 3) without creating it. Queries start no jobs or deliveries. Host cron jobs can run while the controller is unreachable.
+
+<details>
+<summary>Deutsch</summary>
+
 # Bash-Bibliothek verwenden
 
 Die Funktionen liegen unter [artifacts/script-library/lib](../../artifacts/script-library/lib/). Der Loader lädt die Dateien aus `common/`. Die Mailfunktionen brauchen außerdem `data/mail-translations.json`.
@@ -15,6 +48,29 @@ curl -fsSLo hm_log.sh https://raw.githubusercontent.com/v4z00/Ansible-Allgm/main
 ```
 
 Die SHA-256-Prüfsummen stehen im [Manifest](../../SHA256SUMS.json).
+
+## Lokalen Jobzustand abfragen
+
+Die vollständige Library enthält `bin/job-status` und `bin/script-jobs`.
+Beispiel auf einem Host mit dem Skriptpfad `/scripte`:
+
+```sh
+/scripte/bin/job-status
+/scripte/bin/job-status --job backup
+/scripte/bin/job-status --db /var/lib/script-jobs/jobs.sqlite3 --json
+```
+
+`job-status` ermittelt die Datenbank aus der lokalen `config/common.json`;
+`--db` überschreibt diese Zuordnung. Es erscheint pro Job nur der neueste Lauf,
+auch ein gerade laufender. Zeitstempel und Exitcode sind sichtbar, interne IDs
+nur in JSON. Eine fehlende Datenbank wird als nicht angebunden gemeldet (Exit 3)
+und nicht neu angelegt. Keine Statusabfrage startet einen Job oder Versand.
+Die Hosts benötigen für ihre Cronjobs keinen erreichbaren Controller.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -41,20 +97,4 @@ Die SHA-256-Prüfsummen stehen im [Manifest](../../SHA256SUMS.json).
 }
 ```
 
-## Lokalen Jobzustand abfragen
-
-Die vollständige Library enthält `bin/job-status` und `bin/script-jobs`.
-Beispiel auf einem Host mit dem Skriptpfad `/scripte`:
-
-```sh
-/scripte/bin/job-status
-/scripte/bin/job-status --job backup
-/scripte/bin/job-status --db /var/lib/script-jobs/jobs.sqlite3 --json
-```
-
-`job-status` ermittelt die Datenbank aus der lokalen `config/common.json`;
-`--db` überschreibt diese Zuordnung. Es erscheint pro Job nur der neueste Lauf,
-auch ein gerade laufender. Zeitstempel und Exitcode sind sichtbar, interne IDs
-nur in JSON. Eine fehlende Datenbank wird als nicht angebunden gemeldet (Exit 3)
-und nicht neu angelegt. Keine Statusabfrage startet einen Job oder Versand.
-Die Hosts benötigen für ihre Cronjobs keinen erreichbaren Controller.
+</details>

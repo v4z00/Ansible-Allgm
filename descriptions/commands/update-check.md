@@ -1,3 +1,252 @@
+Check controller profiles, file hashes and optional cleanup. `--remote` previews the released main branch over HTTPS. `--apply` installs it. Cron uses the same credentials with `--auto`. Local `versions.txt` records version, HTTPS origin and an optional token-file path for each module. Public modules are anonymous. A private module’s external token file must be owned by the executing user and have mode `0600`.
+
+## Switch between main and staging
+
+| Branch | Preview | Apply |
+| --- | --- | --- |
+| Release (`main`) | `bin/control update-check --remote` | `bin/control update-check --apply` |
+| Test (`staging`) | `bin/control update-check --staging` | `bin/control update-check --apply --staging` |
+
+The selection applies to this invocation and all installed controller modules. Cron always uses main with `--auto`, so the next scheduled update can return a test controller to the release. Both branches must support the flag for switching in both directions.
+
+`ansible --version` shows the Ansible CLI version. `module-versions`, or directly `bin/control module-versions`, lists installed module versions and the current user’s installed TUI. The alias is available in a new controller shell. Local `versions.txt` uses `s1.2.3` for staging and `1.2.3` for main, both derived from the numeric `VERSION.txt`. Preview shows target versions. Apply changes installed versions.
+
+A branch change backs up and removes managed files exclusive to the previous version. Local edits to those files block the change. Restore the saved state with `--rollback BACKUP_ID`.
+
+### Test an older controller
+
+For an older checker, use the verified migration through the intermediate commits below.
+
+## Check local SHA-256 hashes
+
+### Migrate SSS from an older controller
+
+Back up the local `versions.txt` before switching. If SSS is in use, add the registration below. Modifications in the old SSS directory are reported as conflicts. Migrate personal settings privately as described in the [SSS guide](https://github.com/v4z00/Ansible-SSS/blob/main/README.md) and review each hash conflict before updating.
+
+Run the first block in a root Bash shell on a Debian controller with its existing Python environment. It creates a private checkout under `/root` and verifies the job-report path update, the SSS bridge commit, its successor and the current main revision with the previously verified checker at each step. Record the printed directory path.
+
+```bash
+bridge_dir=$(mktemp -d /root/ansible-bridge.XXXXXXXX) && (
+  set -eu
+  umask 077
+  printf 'Bridge directory: %s\n' "$bridge_dir"
+  git clone --quiet --branch main https://github.com/v4z00/Ansible-Allgm.git "$bridge_dir/base"
+  cd "$bridge_dir/base"
+  git checkout --quiet --detach 5fd77a75b6d089f063dccc675f50d07b074925c8
+  /root/ansible/.venv/bin/python /root/ansible/update_check/staging_manifest.py verify Allgm HEAD
+  cp update_check/staging_manifest.py "$bridge_dir/jobs-verifier.py"
+  git checkout --quiet --detach c7d2d7cbd881a7387d2fa424c10dfabc48a3fd41
+  /root/ansible/.venv/bin/python "$bridge_dir/jobs-verifier.py" verify Allgm HEAD
+  cp update_check/staging_manifest.py "$bridge_dir/bridge-verifier.py"
+  git checkout --quiet --detach 760166ebd9fd0b933b17307c6ace6855719c0652
+  /root/ansible/.venv/bin/python "$bridge_dir/bridge-verifier.py" verify Allgm HEAD
+  cp update_check/staging_manifest.py "$bridge_dir/current-verifier.py"
+  git checkout --quiet --detach origin/main
+  /root/ansible/.venv/bin/python "$bridge_dir/current-verifier.py" verify Allgm HEAD
+  git rev-parse --verify HEAD > "$bridge_dir/VERIFIED"
+)
+```
+
+The `VERIFIED` file contains the commit ID only after verification succeeds. If a check fails, stop, resolve the error and repeat the first block in a new directory. The checkout survives logout. In the original shell `bridge_dir` is already set. After reconnecting, list the verification records and enter **the directory for this operation without `/VERIFIED`**:
+
+```bash
+printf '%s\n' /root/ansible-bridge.*/VERIFIED
+read -r -p 'Bridge directory: ' bridge_dir
+```
+
+**Preview.** Inspect the planned switch to main without applying changes:
+
+```bash
+(
+  set -eu
+  cd "${bridge_dir:?}/base"
+  test -s ../VERIFIED
+  test "$(git rev-parse --verify HEAD)" = "$(cat ../VERIFIED)"
+  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --remote
+)
+```
+
+When `MIGRATION_REQUIRED` is the only blocker and local files are intact, exit status 1 is expected in this preview. Review the register migration plan first. Investigate other failures before proceeding. If there is no legacy register, skip both register steps.
+
+```bash
+(
+  set -eu
+  cd "${bridge_dir:?}/base"
+  test -s ../VERIFIED
+  test "$(git rev-parse --verify HEAD)" = "$(cat ../VERIFIED)"
+  /root/ansible/.venv/bin/python tools/migrate_local_extensions.py --controller /root/ansible --check
+)
+```
+
+**Migrate the register.** Apply after reviewing the plan and record the printed path to the private schema-1 backup. This block then runs a fresh code preview:
+
+```bash
+(
+  set -eu
+  cd "${bridge_dir:?}/base"
+  test -s ../VERIFIED
+  test "$(git rev-parse --verify HEAD)" = "$(cat ../VERIFIED)"
+  /root/ansible/.venv/bin/python tools/migrate_local_extensions.py --controller /root/ansible --apply
+  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --remote
+)
+```
+
+**Apply the code update.** Run only after a successful preview and review of its changes. Record the printed controller backup ID for rollback:
+
+```bash
+(
+  set -eu
+  cd "${bridge_dir:?}/base"
+  test -s ../VERIFIED
+  test "$(git rev-parse --verify HEAD)" = "$(cat ../VERIFIED)"
+  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --apply
+)
+```
+
+**Rollback.** If switching fails before the new code is installed, restore the migrated register using the retained checkout. Enter the recorded **register backup path**:
+
+```bash
+(
+  set -eu
+  cd "${bridge_dir:?}/base"
+  test -s ../VERIFIED
+  test "$(git rev-parse --verify HEAD)" = "$(cat ../VERIFIED)"
+  read -r -p 'Register backup: ' backup
+  /root/ansible/.venv/bin/python tools/migrate_local_extensions.py --controller /root/ansible --rollback "$backup"
+)
+```
+
+If the new code was installed and you need the older checker again, restore the register first as above. Then enter the **controller backup ID**. Code rollback also restores the previous receipt and `versions.txt`:
+
+```bash
+(
+  set -eu
+  cd "${bridge_dir:?}/base"
+  test -s ../VERIFIED
+  test "$(git rev-parse --verify HEAD)" = "$(cat ../VERIFIED)"
+  read -r -p 'Controller backup ID: ' backup_id
+  /root/ansible/.venv/bin/python update_check/check.py --root /root/ansible --rollback "$backup_id"
+)
+```
+
+If the register was never migrated, only code rollback is needed. Keep the checkout until you have confirmed the final controller and register state. Then manually remove the specific bridge directory you recorded.
+
+### Git add-ons
+
+A controller can have one site profile and multiple Git add-ons. Keep all four fields in each module row. A separate comment registers each add-on. Example for the local `versions.txt`:
+
+```text
+# addon=SSS
+SSS|0.0.0|https://github.com/v4z00/Ansible-SSS.git|
+```
+
+Use `0.0.0` for initial registration. Preview shows the offered version, and apply records the installed version. Rows without registration remain passive. For a private add-on the fourth field holds the token-file path. All registered modules must offer the chosen branch.
+
+Preview the plan with `bin/control update-check --remote` before `bin/control update-check --apply`. To revert, pass the printed backup ID to `bin/control update-check --rollback BACKUP_ID`. Keep both row and registration for installed add-ons. Missing sources, changed managed add-on files or occupied destinations stop the checker before replacement.
+
+`--only local` shows the separate file report. Cron reports this status before fetching from Git with `--auto`. Unknown, missing or modified local files and damaged archives block apply. Supplements are reported by package name. Conflicts with a base playbook or role are reported as `BASIS_KONFLIKT`.
+
+## Create a local extension package
+
+| Path | Purpose |
+|---|---|
+| `bin/control` | Controller commands and update checks |
+| `playbooks/`, `roles/` | Shared workflows managed through Git |
+| `tools/local_extension.py` | Approve, install, run and archive local files |
+| `/root/ansible-local/code/` | Separately installed roles, playbooks, scripts and local variables |
+| `/root/ansible-local/register.json` | Approved paths and SHA-256 values |
+| `/root/ansible-local/runs/`, `archiv/` | Local run and archive receipts |
+
+After [installing the base](../configurations/installation-allgm.md), create a local extension package outside any Git checkout. Example as root on a Debian controller:
+
+```bash
+mkdir -p /root/mein-paket/code/scripts
+cat > /root/mein-paket/code/scripts/beispiel.sh <<'SH'
+#!/bin/bash
+# manuell-integriert: ja
+# bereinigung: nach-erfolg-archivieren
+echo 'Lokale Beispielaufgabe abgeschlossen.'
+SH
+cd /root/ansible
+datei=scripts/beispiel.sh
+sha=$(sha256sum "/root/mein-paket/code/$datei" | cut -d ' ' -f 1)
+python3 tools/local_extension.py approve /root/mein-paket "$datei" "$sha"
+python3 tools/local_extension.py install /root/mein-paket
+bin/control update-check --only local
+python3 tools/local_extension.py run "$datei"
+python3 tools/local_extension.py archive "$datei"
+```
+
+The last command previews the operation. Check callers, then archive this specific revision with `python3 tools/local_extension.py archive "$datei" --confirm-sha "$sha"`. The reported archive contains the file, `BELEG.json` with approved and measured hashes and the run receipt, and `SHA256SUMS`. Run `sha256sum -c SHA256SUMS` there to verify the archived bytes.
+
+For permanent files, use `# bereinigung: behalten`. Place both marker comments directly under `---` in YAML or after the shebang in scripts. Put playbooks under `code/playbooks/` and run them with `python3 tools/local_extension.py run playbooks/beispiel.yml --limit TARGET_GROUP`. Verify each change in the private source, approve its new hash and reinstall the package. An unchanged archived revision stays archived.
+
+`bin/control update-check` reports extensions in a separate section. JSON reports use `local_extensions`. Cron with `--auto` verifies local SHA-256 before fetching from Git. Missing, extra or modified files block the switch. Controllers without local extensions continue to work as before. Cron does not run or archive local tasks.
+
+## Extend an existing site package
+
+Shared playbooks and roles under `/root/ansible` receive updates from Git. Give site-specific playbooks unique names. They may call shared base roles. Give a supplement the same site ID as its parent package and a unique package name. Maintain them independently.
+
+In the private workspace, pass the existing site package first, followed by a new directory. On Debian:
+
+```bash
+werkzeug=/root/ansible/tools/local_extension.py
+python3 "$werkzeug" new-supplement ./standort ./zusatz dienstpruefung
+mkdir -p ./zusatz/code/playbooks
+cp ./local_dienst_pruefen.yml ./zusatz/code/playbooks/
+datei=playbooks/local_dienst_pruefen.yml
+sha=$(sha256sum "./zusatz/code/$datei" | cut -d ' ' -f 1)
+python3 "$werkzeug" approve ./zusatz "$datei" "$sha"
+```
+
+Use the same marker comments for the supplement. The target must already have the site package registered. Copy the `zusatz` directory to the controller. Register and check it as root:
+
+```bash
+cd /root/ansible
+python3 tools/local_extension.py install /root/eingang/zusatz
+bin/control update-check --only local
+```
+
+The checker reports the supplement by name and verifies its files during cron. A later site package that omits a registered file leaves that revision in place. Only a deliberate update from the same local package can replace it. Paths owned by another package or matching a controller role block installation. Run the operation separately with an explicit target, for example `python3 tools/local_extension.py run playbooks/local_dienst_pruefen.yml --limit TARGET_HOST`.
+
+## Migrate a local register
+
+If the checker reports `MIGRATION_REQUIRED`, review the existing approvals. Run these commands from the controller directory:
+
+```sh
+python3 tools/migrate_local_extensions.py --check
+python3 tools/migrate_local_extensions.py --apply
+bin/control update-check --only local
+```
+
+The second command prints the path to the private schema-1 backup (mode `0600`). Migration changes only `register.json`. Scripts, playbooks and run receipts keep their original bytes and checksums. The archive names `archiv/<id>/datei`, `BELEG.json` and `SHA256SUMS` are stable so older receipts remain verifiable.
+
+German headers remain valid. For English headers, put `# manually-integrated: yes` and either `# cleanup: keep` or `# cleanup: archive-after-success` directly after the shebang or YAML document start. Before rolling the controller back to an older checker, restore the register with `python3 tools/migrate_local_extensions.py --rollback "$BACKUP"`. Set `BACKUP` to the path printed during migration. The restore refuses to overwrite later register edits.
+
+For a first migration from an older checker, use the private bridge checkout above. Follow its separate preview, register migration, code update and recovery steps.
+
+## Keep the local extension register in controller state
+
+The checker supports both the existing sibling `<controller>-local` and
+`<controller>/.local/extensions`. Keep the register, private code, run receipts and
+archives together; the site pin remains `.local/local-extension-id`. The internal
+layout is selected only when its folder already exists. Existing installations
+and new installations retain the sibling default. Two simultaneous locations
+fail explicitly instead of choosing one silently.
+
+For a deliberate move, back up the register and site pin privately, then check
+and apply any schema migration with `tools/migrate_local_extensions.py`. With no
+concurrent update/register writer, move the complete folder into `.local/extensions`
+and run `bin/control update-check --only local`. Before rolling back to an older
+checker, move it back to its sibling position and restore the schema-1 backup with
+the current migrator if required. Moving does not change private code or approved
+hashes. Schema migration and rollback work in either location.
+
+An update or rollback target without declared internal-layout support is blocked, including automatic main updates. Move the complete register to the sibling location before switching.
+
+<details>
+<summary>Deutsch</summary>
+
 Controllerprüfung für Profile, Datei-SHA und optionale Bereinigung.
 Mit `--remote` den freigegebenen Branch `main` über HTTPS prüfen, mit `--apply`
 übernehmen. `--auto` nutzt dieselben Zugangsdaten im Cronlauf. Die lokale
@@ -266,8 +515,12 @@ mit dem noch aktuellen Migrator wiederherstellen. Die Dateiinhalte und freigegeb
 SHA-Werte ändern sich durch den Pfadwechsel nicht. Schema-Migration und deren
 Rücknahme funktionieren mit beiden Ablagen.
 
-
 Ein Ziel ohne deklarierte Unterstützung der internen Ablage wird bei Update und Rollback blockiert. Das gilt auch für automatische main-Updates; zuerst die komplette Ablage an den Nachbarpfad zurücklegen.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -482,7 +735,7 @@ Ein Ziel ohne deklarierte Unterstützung der internen Ablage wird bei Update und
     "update_check/cleanup.py": "ef0fd75326697b291b075104c0d4408030aa89fad020193671758a4759121738",
     "update_check/rollout.py": "5fee32129a8d78b1dc85e55e734ebc5845d5fbcde4a5cd92024fa83fd78e45f9",
     "tools/github_https.py": "4939726758123ce18c3558bd22a668052a0bb028b62a1c71534b92ccb89e5bd5",
-    "tools/install_controller.py": "1f5024734444c49ddcbfec38386e709fb134d492f5f3cb809c7f526b8fad4b53",
+    "tools/install_controller.py": "aeb10dd2e8d48e6e1d5a9ee045bc8c2188df6790aa0d233ca0b63deefb59d87d",
     "tools/migrate_local_extensions.py": "7043675fffecee75166ef62bebe1859a90b27e5ebca38ee4bd6d085003ea43ba",
     "tools/local_extension.py": "7039aef7502b9793aa8105b0ff44b467268cfc3a49b5c05d3c2d721752dc6fe0",
     "update_check/local_extensions.py": "ea5afc8741f12bd72e9b011465f3a4e7c06dbf3f84c4434742582c5fa2827a60"
@@ -623,3 +876,5 @@ Ein Ziel ohne deklarierte Unterstützung der internen Ablage wird bei Update und
   }
 }
 ```
+
+</details>

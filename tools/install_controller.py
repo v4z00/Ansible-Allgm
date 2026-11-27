@@ -249,7 +249,31 @@ def copy_code(files, dest):
         shutil.copy2(src, file)
 
 
-def initialize(dest, files):
+def first_install_language(requested, interactive=True):
+    if requested:
+        return requested
+    locale = next((os.environ[key] for key in ("LC_ALL", "LC_MESSAGES", "LANG")
+                   if os.environ.get(key)), "")
+    suggestion = "de" if re.split(r"[_@.-]", locale.lower())[0] == "de" else "en"
+    if not interactive:
+        return suggestion
+    try:
+        with open("/dev/tty", "r") as reader, open("/dev/tty", "w") as writer:
+            while True:
+                print(f"Controller language / Sprache [de/en, Enter = {suggestion}]: ",
+                      end="", file=writer, flush=True)
+                reply = reader.readline()
+                if not reply:
+                    break
+                choice = reply.strip().lower() or suggestion
+                if choice in {"de", "en"}:
+                    return choice
+    except OSError:
+        pass
+    return suggestion
+
+
+def initialize(dest, files, language=None, interactive=True):
     copy_code(files, dest)
     local = {
         "ansible.cfg": "ansible.cfg.example",
@@ -263,6 +287,17 @@ def initialize(dest, files):
         path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         shutil.copyfile(dest / "examples/first_run" / example, path)
         path.chmod(0o600)
+    settings = dest / "group_vars/all/settings.yml"
+    chosen = first_install_language(language, interactive)
+    starter, count = re.subn(r"^controller_lang: (?:de|en)$", "controller_lang: " + chosen,
+                             settings.read_text(), flags=re.MULTILINE)
+    require(count <= 1, "Duplicate language setting in the first-run template")
+    if not count:
+        # Earlier templates omitted the optional language key.
+        from configure import set_field
+        import yaml
+        starter = set_field(starter, "controller_lang", chosen, yaml.SafeLoader)
+    settings.write_text(starter)
     (dest / "host_vars").mkdir(mode=0o700)
     for name in ("host_vars", "group_vars"):
         (dest / "inventory" / name).symlink_to(f"../{name}", target_is_directory=True)
@@ -666,6 +701,7 @@ def rollback_controller(dest, name, local=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", type=Path, required=True)
+    parser.add_argument("--lang", choices=("en", "de"), help="Language for a new controller")
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--skip-runtime", action="store_true", help="Nur Code und lokale Startvorlagen kopieren")
     action.add_argument("--export-code", action="store_true", help="Nur Code für einen Offline-Releasebaum ausgeben")
@@ -743,7 +779,7 @@ def main():
                 if args.export_code:
                     copy_code(files, prepared)
                 else:
-                    initialize(prepared, files)
+                    initialize(prepared, files, args.lang, interactive=not args.skip_runtime)
                     if addons:
                         import check
                         issues = check.check_registry(prepared)

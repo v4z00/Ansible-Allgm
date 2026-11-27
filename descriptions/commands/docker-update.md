@@ -1,3 +1,32 @@
+# Update Docker containers
+
+Use `--limit` to select hosts for execution. The command rejects tag filters and starting mid-play because these could skip mandatory checks. Use syntax, list and check modes for previews.
+
+Aliases: `docker-update-run`, `docker-update`.
+
+Feature: `docker`.
+
+Registry prerequisites:
+- `playbooks/docker/vars/paths.yml`
+- `lib/control/helpers.sh`
+- `scripts/run_docker_update.sh`
+
+## Check containers and Portainer
+
+For each updated Compose stack, `bin/control docker-update --limit TARGET_HOST` waits up to 180 seconds for services to be running or healthy. It then checks Compose sources and Docker networks. A failed check fails the run.
+
+Enable the additional TCP check with `portainer_check_enabled: true` in the Docker host’s **local host variables**. If absent or false, the controller skips the connection. The default is the host’s Ansible address, port 9443, with a five-second timeout. Override it with `portainer_check_host`, `portainer_check_port` and `portainer_check_timeout`. Run it separately with `.venv/bin/ansible-playbook playbooks/docker/check_portainer.yml --limit TARGET_HOST`.
+
+## Parameters
+
+## Sources and maintenance
+
+- `bin/control.d/docker-update.json`
+- `bin/control.d/docker-update.sh`
+
+<details>
+<summary>Deutsch</summary>
+
 # Docker-Container aktualisieren
 
 Für einen ausführenden Lauf begrenzt `--limit` die Hosts. Tagfilter und ein Einstieg mitten im Playbook würden Pflichtprüfungen auslassen und werden abgewiesen. Syntax-, Listen- und Checkmodus dienen der Vorschau.
@@ -18,6 +47,16 @@ Voraussetzungen laut Registry:
 Nur der zusätzliche TCP-Test für Portainer ist schaltbar. In den **lokalen Hostvariablen** des betreffenden Docker-Hosts `portainer_check_enabled: true` setzen. Mit `false` oder ohne Eintrag entfällt der Verbindungsversuch. Standardmäßig prüft der Controller die Ansible-Adresse des Hosts auf Port 9443 mit fünf Sekunden Wartezeit. Ein abweichendes Ziel ist über `portainer_check_host`, `portainer_check_port` und `portainer_check_timeout` konfigurierbar. Der Einzelaufruf lautet `.venv/bin/ansible-playbook playbooks/docker/check_portainer.yml --limit ZIELHOST`.
 
 ## Parameter für die TUI
+
+## Quellen und Pflege
+
+- `bin/control.d/docker-update.json`
+- `bin/control.d/docker-update.sh`
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -51,7 +90,4 @@ Nur der zusätzliche TCP-Test für Portainer ist schaltbar. In den **lokalen Hos
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/docker-update.json`
-- `bin/control.d/docker-update.sh`
+</details>

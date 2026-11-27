@@ -1,3 +1,32 @@
+# Show the inventory
+
+Show the inventory
+
+Run: `bin/control graph [options]`.
+
+Aliases: `inv-graph`, `graph`.
+
+Available without a separate feature switch. Control checks availability at runtime.
+
+No structured parameter list is available. Use the existing terminal workflow and its help.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/graph.json`
+- `bin/control.d/graph.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Inventory anzeigen
 
 Inventory anzeigen
@@ -18,6 +47,19 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/graph.json`
+- `bin/control.d/graph.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -51,10 +93,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/graph.json`
-- `bin/control.d/graph.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

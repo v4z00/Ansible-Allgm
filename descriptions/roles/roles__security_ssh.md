@@ -1,3 +1,41 @@
+# Role security_ssh
+
+Role: `roles/security_ssh`.
+
+Task names as written in the role:
+
+- Validate additional SSH listen addresses
+- Check that additional SSH listen addresses are assigned locally
+- Validate the SSH authentication mode
+- Validate the break-glass password
+- Create the break-glass user
+- Create the restricted break-glass bin directory
+- Provide only su for break-glass access
+- Install the restricted break-glass profile
+- Create the SSH drop-in directory
+- Ensure sshd includes the drop-in directory
+- Disable direct root login overrides in sshd_config
+- Deploy the hardened SSH configuration
+- Validate the complete SSH configuration
+- Run SSH handlers now
+- Wait for connectivity after the SSH restart
+
+The parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `roles/security_ssh/tasks/main.yml`
+- `roles/security_ssh/defaults/main.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Rolle security_ssh
 
 Rolle: `roles/security_ssh`.
@@ -28,6 +66,19 @@ Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fak
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `roles/security_ssh/tasks/main.yml`
+- `roles/security_ssh/defaults/main.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -164,10 +215,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `roles/security_ssh/tasks/main.yml`
-- `roles/security_ssh/defaults/main.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

@@ -1,4 +1,6 @@
 """Regression tests for the handoff from the piped script to the local installer."""
+from io import StringIO
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -22,6 +24,24 @@ class PipeInstallTest(unittest.TestCase):
             replacement = patch.object(pipe_install, attr, val)
             replacement.start()
             self.addCleanup(replacement.stop)
+
+    def test_fresh_language_suggestion_and_override(self):
+        choose = pipe_install.installer.first_install_language
+        with patch.dict(os.environ, {"LANG": "en_US.UTF-8", "LC_MESSAGES": "en", "LC_ALL": "de_DE.UTF-8"}):
+            with patch("builtins.open", side_effect=[StringIO("invalid\n\n"), StringIO()]):
+                self.assertEqual(choose(None), "de")
+            with patch("builtins.open", side_effect=AssertionError("unexpected terminal access")):
+                self.assertEqual(choose("en"), "en")
+                self.assertEqual(choose(None, interactive=False), "de")
+
+    def test_language_reaches_both_fresh_installers(self):
+        with patch.object(pipe_install, "verify_checkout"), patch.object(
+            pipe_install.github_https, "clone_main"
+        ), patch.object(subprocess, "run") as runner:
+            pipe_install.install("Homelab", "", None, lang="en")
+        self.assertEqual(len(runner.call_args_list), 2)
+        for call in runner.call_args_list:
+            self.assertEqual(call.args[0][-2:], ["--lang", "en"])
 
     def test_overlay_checked_before_base_install(self):
         calls = []

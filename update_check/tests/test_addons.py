@@ -463,7 +463,10 @@ class AddonTests(unittest.TestCase):
         relative = "update_check/staging_manifest.py"
         verifier.write_bytes((self.repos["Allgm"] / relative).read_bytes())
         guide = (source / "descriptions/commands/update-check.md").read_text()
-        refs = re.findall(r"^  git checkout --quiet --detach ([0-9a-f]{40})$", guide, re.MULTILINE)
+        english, german = guide.split("<summary>Deutsch</summary>", 1)
+        pattern = r"^  git checkout --quiet --detach ([0-9a-f]{40})$"
+        refs = re.findall(pattern, english, re.MULTILINE)
+        self.assertEqual(refs, re.findall(pattern, german, re.MULTILINE))
         self.assertGreaterEqual(len(refs), 1)
         # Each verifier is taken from the tree authenticated by its predecessor.
         for ref in [*refs, git(source, "rev-parse", "HEAD").strip()]:

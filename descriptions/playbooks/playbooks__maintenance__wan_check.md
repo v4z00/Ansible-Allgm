@@ -1,5 +1,36 @@
 # Playbook playbooks/maintenance/wan_check.yaml
 
+Playbook: `playbooks/maintenance/wan_check.yaml`.
+
+Play and task names as written in the playbook:
+
+- Check HTTP availability
+- Request the HTTPS endpoint
+- Show the result
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/maintenance/wan_check.yaml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+## Per-task TLS certificate validation (1.1.0)
+
+`tls_validate_certs.wan_check` in `group_vars/all/settings.yml` controls verification when requesting the HTTPS target. It inherits `tls_validate_certs_default` (default true). Explicit false disables this check only.
+
+The site default is `tls_validate_certs_default`, normally true. Telegram tasks independently default to true unless their own override is set.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/maintenance/wan_check.yaml
+
 Vorhandener Einstieg: `playbooks/maintenance/wan_check.yaml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -16,6 +47,28 @@ Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein besch
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `playbooks/maintenance/wan_check.yaml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+
+## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
+
+Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
+Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
+- `tls_validate_certs.wan_check`: HTTPS-Ziel abrufen (Standard true).
+
+Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
+verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -47,19 +100,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/maintenance/wan_check.yaml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
-
-
-## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
-
-Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
-Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
-- `tls_validate_certs.wan_check`: HTTPS-Ziel abrufen (Standard true).
-
-Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
-verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+</details>

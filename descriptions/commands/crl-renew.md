@@ -1,3 +1,32 @@
+# Renew and deploy the root CA revocation list
+
+Renew and deploy the root CA revocation list
+
+Run: `bin/control crl-renew [options]`.
+
+Aliases: `crl-renew-script`, `crl-renew`.
+
+Available without a separate feature switch. Control checks availability at runtime.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+- `playbooks/pki/renew_crl.yml`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/crl-renew.json`
+- `bin/control.d/crl-renew.sh`
+- `lib/control/helpers.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Root-CRL erneuern und ausrollen
 
 Root-CRL erneuern und ausrollen
@@ -17,6 +46,20 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/crl-renew.json`
+- `bin/control.d/crl-renew.sh`
+- `lib/control/helpers.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -99,11 +142,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/crl-renew.json`
-- `bin/control.d/crl-renew.sh`
-- `lib/control/helpers.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

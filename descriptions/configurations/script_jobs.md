@@ -1,3 +1,22 @@
+# Job protocol and local configuration
+
+Protocol version 1, module version 0.3.0. The SQLite runner and query helper ship in the shared library. Keep the local database outside code and release directories. It contains `runs`, `items`, `events`, `reports`, `report_runs`, `deliveries`, `cursors`, `collection_health` and metadata identifying the database generation.
+
+Each run records source host, generation, run ID, job, category, status, UTC start/activity/end, exit code and, when available, monotonic duration. Status values are `running`, `success`, `failed`, `warning` and `skipped`. An error exit cannot be recorded as success. Individual items such as VM/LXC IDs carry their own IDs and status. The runner and child process hold a local lock against overlapping runs. An interrupted predecessor stays incomplete.
+
+The `export` JSON response contains the schema, generation, retention boundary, gap/rebind status, events and next cursor. Each event has an ID, type, timestamp and filtered run/item snapshot. `watch` streams one NDJSON line per event plus heartbeats. Cursors are valid only for their generation. The controller stores imported results and cursor in a single transaction. Replays do not duplicate runs.
+
+Completed runs, associated items and events, and the job’s own old logs are kept for 90 days after completion. Age cleanup preserves running jobs. Lost history shows as a gap. Private raw logs are neither imported nor streamed. Known secret configuration values are masked before an event is stored. Keep secrets out of your own messages.
+
+Managed scripts report progress with `hm_job_event MESSAGE` and per-item results with `hm_job_item ID STATUS MESSAGE`. The runner records start and completion. During a managed run, legacy mail/Telegram helpers leave delivery to the assigned report. Outside managed runs the helpers can still send directly.
+
+Mail uses the fixed ASCII mapping for subject and body. Telegram keeps UTF-8 and status symbols for success, error, warning and skipped items. Certificate verification defaults to enabled. The Ansible summary uses `tls_validate_certs.telegram_notification`. Local scripts can set `TELEGRAM_VALIDATE_CERTS` as a JSON Boolean. Process arguments and result reports exclude secrets.
+
+For interactive local programs the runner provides a controlling terminal. Cron cannot provide interactive input. Supply actual configurations, local profiles, devices and keys where required.
+
+<details>
+<summary>Deutsch</summary>
+
 # Jobprotokoll und lokale Konfiguration
 
 Protokollversion 1, Modulstand 0.3.0. Der SQLite-Runner und der Abfragehelfer sind
@@ -45,6 +64,11 @@ Für interaktive lokale Programme erhält der Runner ein kontrollierendes Termin
 ein Cronlauf stellt dadurch keine interaktive Eingabe bereit. Fehlende reale
 Konfigurationen, lokale Profile, Geräte oder Schlüsseldaten werden nicht erfunden.
 
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
+
 ```json
 {
   "schema_version": 1,
@@ -80,3 +104,5 @@ Konfigurationen, lokale Profile, Geräte oder Schlüsseldaten werden nicht erfun
   }
 }
 ```
+
+</details>

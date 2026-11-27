@@ -1,5 +1,40 @@
 # Playbook playbooks/pki/deploy_apache_certificate.yml
 
+Playbook: `playbooks/pki/deploy_apache_certificate.yml`.
+
+Play and task names as written in the playbook:
+
+- Deploy the wildcard certificate to Apache web servers
+- Check source files on the controller
+- Show the selected certificate path
+- Require all certificate source files
+- Validate the decrypted private key
+- Get the public key fingerprint from the private key
+- Get the public key fingerprint from the certificate
+- Require the certificate and private key to match
+- Create the Apache certificate directory
+- Deploy the certificate and intermediate chain
+- Deploy the decrypted private key
+- Validate the Apache configuration
+- Restart Apache
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/pki/deploy_apache_certificate.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/pki/deploy_apache_certificate.yml
+
 Vorhandener Einstieg: `playbooks/pki/deploy_apache_certificate.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -26,6 +61,18 @@ Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein besch
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `playbooks/pki/deploy_apache_certificate.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -57,9 +104,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/pki/deploy_apache_certificate.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

@@ -1,5 +1,32 @@
 # Playbook playbooks/docker/get_docker_ips.yaml
 
+Playbook: `playbooks/docker/get_docker_ips.yaml`.
+
+Play and task names as written in the playbook:
+
+- Audit Docker Networks and IPs with Service Mapping
+- Find networks and their source files
+- Find static IP addresses and their source files
+- Find published host ports and their source files
+- Show the audit results
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/docker/get_docker_ips.yaml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/docker/get_docker_ips.yaml
+
 Vorhandener Einstieg: `playbooks/docker/get_docker_ips.yaml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -18,6 +45,18 @@ Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein besch
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `playbooks/docker/get_docker_ips.yaml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -49,9 +88,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/docker/get_docker_ips.yaml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

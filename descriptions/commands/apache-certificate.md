@@ -1,3 +1,31 @@
+# Replace an Apache certificate
+
+As root on the controller, set `APACHE_CERTIFICATE_ROOT` to the directory containing your certificate sets. `bin/control apache-certificate` lists complete sets, newest leaf certificate first. Set `APACHE_CERTIFICATE_SOURCE_DIRECTORY` to select a set directly. An encrypted source key requires its passphrase at the terminal the first time it is decrypted.
+
+The playbook `playbooks/pki/deploy_apache_certificate.yml` runs on the `checkmk_webserver_hosts` group. Set the following Ansible variables in your private inventory. For source selection in the shell wrapper, set the corresponding uppercase environment variables before running it.
+
+| File | Variable | Default |
+| --- | --- | --- |
+| Leaf certificate | `apache_certificate_filename` | `certificate.crt` |
+| PEM certificate chain | `apache_intermediate_filename` | `intermediate1.crt` |
+| Encrypted source key (shell) | `apache_encrypted_key_filename` | `wildcard_example_org.key` |
+| Decrypted source key | `apache_private_key_filename` | `wildcard_example_org_unencrypted.key` |
+| Certificate and chain on the server | `apache_certificate_target_filename` | `cert.cert` |
+| Private key on the server | `apache_private_key_target_filename` | `key.key` |
+
+The source directory is `apache_certificate_source_directory`, defaulting to `apache_certificate_root/apache_certificate_year`. Individual absolute source paths are `apache_certificate_source`, `apache_intermediate_source` and `apache_private_key_source`. The wrapper also supports `APACHE_ENCRYPTED_KEY_SOURCE`. The target directory `apache_certificate_directory` defaults to `/cert`. Individual absolute paths `apache_certificate_target` and `apache_private_key_target` take precedence. Use distinct paths without links. Other users must not have write access to destination directories.
+
+Preview the selected set and the proposed changes:
+
+```bash
+APACHE_CERTIFICATE_ROOT=/srv/pki bin/control apache-certificate --check --limit web
+```
+
+Adjust `--limit web` to your inventory. The wrapper prepares a mode-`0600` decrypted key on the controller even for preview. On the target, Ansible checks the certificate, chain and matching key. When replacing files it saves previous versions as mode-`0600` files named `.<filename>.previous-*`. Apache restarts after `apache2ctl configtest` succeeds. On a failed test or restart the helper restores the previous files. If a restart failed and the old pair exists, it also attempts a restart using the restored files.
+
+<details>
+<summary>Deutsch</summary>
+
 # Apache-Zertifikat austauschen
 
 Als root auf dem Controller `APACHE_CERTIFICATE_ROOT` auf das Verzeichnis mit den Zertifikatssätzen setzen. `bin/control apache-certificate` zeigt die vollständigen Sätze nach Änderungszeit des Serverzertifikats an. Für einen bestimmten Satz kann `APACHE_CERTIFICATE_SOURCE_DIRECTORY` direkt auf dessen Ordner zeigen. Ein verschlüsselter Schlüssel erfordert beim ersten Entschlüsseln die Passphrase am Terminal.
@@ -22,6 +50,11 @@ APACHE_CERTIFICATE_ROOT=/srv/pki bin/control apache-certificate --check --limit 
 ```
 
 `--limit web` auf das eigene Inventory anpassen. Der Shell-Einstieg bereitet den entschlüsselten Schlüssel mit Modus `0600` auch für die Vorschau vor. Auf dem Ziel prüft Ansible Zertifikat, Kette und zugehörigen Schlüssel. Beim Austausch sichert es vorhandene geänderte Dateien unter `.<Dateiname>.previous-*` mit Modus `0600`. Nach erfolgreichem `apache2ctl configtest` startet Apache neu. Schlägt die Prüfung oder der Neustart fehl, setzt der Helfer die Dateien auf den vorigen Stand. Bei fehlgeschlagenem Neustart mit vorhandenem altem Paar versucht er anschließend, Apache mit diesem Paar wieder zu starten.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -60,3 +93,5 @@ APACHE_CERTIFICATE_ROOT=/srv/pki bin/control apache-certificate --check --limit 
   }
 }
 ```
+
+</details>

@@ -1,13 +1,9 @@
-Beschreibungen für Ansible-TUI
+Controller catalog
 
-Unter commands/ findest du die Control-Befehle. playbooks/ und roles/ erklären
-die zugehörigen Abläufe. configurations/ enthält die Installationsanleitungen
-und beschreibt die lokalen Einstellungen.
+commands/ covers bin/control commands, playbooks/ and roles/ describe the
+Ansible tasks, and configurations/ covers installation and local settings.
+On GitHub, each page opens in English. Expand Deutsch for the German text.
 
-Jede Katalogseite besteht aus lesbarem Markdown und einem JSON-Block. Ansible-TUI
-zeigt den Text unter Ansible mit Ctrl+D an. Für ein Formular liest sie die
-Felder aus dem JSON-Block und prüft die dort hinterlegten Quellhashs.
-Befehlsnamen und Aliase stammen aus bin/control.d/.
-
-Der Projektcode steht unter der MIT-Lizenz. Der Lizenztext liegt in
-LICENSE im Repository-Stamm.
+In Ansible TUI, select an entry under Ansible and press Ctrl+D. The TUI reads
+the form fields and SHA-256 source hashes from the JSON block on the same page.
+Command names and aliases come from bin/control.d/. See LICENSE for the MIT license.

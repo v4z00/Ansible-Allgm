@@ -13,7 +13,8 @@ FENCE = re.compile(r"^```json\s*\n(.*?)\n```", re.M | re.S)
 
 class DescriptionTests(unittest.TestCase):
     def check_contract(self, path, roots):
-        match = FENCE.search(path.read_text())
+        text = path.read_text()
+        match = FENCE.search(text)
         if not match:
             return
         data = json.loads(match[1])
@@ -25,6 +26,12 @@ class DescriptionTests(unittest.TestCase):
             self.assertTrue(translated["description"].strip(), path.name)
             self.assertEqual(set(translated.get("fields", {})), field_ids, path.name)
             self.assertNotIn("source_hashes", translated)
+        # The schema also accepts custom Markdown layouts from existing add-ons.
+        public_text = text[:match.start()]
+        english, marker, german = public_text.partition("<summary>Deutsch</summary>")
+        if marker:
+            self.assertIn(data["i18n"]["en"]["description"].strip(), english, path.name)
+            self.assertIn(data["i18n"]["de"]["description"].strip(), german, path.name)
         for rel, expected in data["source_hashes"].items():
             parts = Path(rel).parts
             self.assertTrue(parts and not Path(rel).is_absolute() and ".." not in parts)

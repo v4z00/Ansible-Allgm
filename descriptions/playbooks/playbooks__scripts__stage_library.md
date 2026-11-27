@@ -1,8 +1,22 @@
+# Distribute the public Bash library
+
+From the controller, run `.venv/bin/ansible-playbook playbooks/scripts/stage_library.yml --limit TARGET_HOST`. The role copies the loader, shared functions and email mapping to `/root/script-config/lib/`. It does not execute the functions on target hosts.
+
+Select target hosts explicitly with `--limit`.
+
+<details>
+<summary>Deutsch</summary>
+
 # Öffentliche Bash-Bibliothek verteilen
 
 Auf dem Controller `.venv/bin/ansible-playbook playbooks/scripts/stage_library.yml --limit ZIELHOST` ausführen. Die Rolle kopiert Loader, gemeinsame Funktionen und Mailtabelle nach `/root/script-config/lib/`. Sie führt die Funktionen auf den Zielhosts nicht aus.
 
 Eine explizite Hostauswahl mit `--limit` ist erforderlich.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -35,3 +49,5 @@ Eine explizite Hostauswahl mit `--limit` ist erforderlich.
   }
 }
 ```
+
+</details>

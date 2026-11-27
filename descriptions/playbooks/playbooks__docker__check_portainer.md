@@ -1,3 +1,18 @@
+# Check Portainer connectivity
+
+This playbook runs for the same Docker hosts after their regular container check. With `portainer_check_enabled: true` the controller probes the TCP port and fails if unreachable. Without the setting, or when false, it skips the probe. Override the default Ansible address, port 9443 and five-second timeout with `portainer_check_host`, `portainer_check_port` and `portainer_check_timeout`.
+
+To run it separately from the controller directory:
+
+```bash
+.venv/bin/ansible-playbook playbooks/docker/check_portainer.yml --limit ZIELHOST
+```
+
+## Parameters
+
+<details>
+<summary>Deutsch</summary>
+
 # Portainer-Erreichbarkeit prüfen
 
 Das Playbook wird nach dem regulären Container-Check für dieselben Docker-Hosts aufgerufen. Mit `portainer_check_enabled: true` prüft der Controller den konfigurierten TCP-Port. Ohne Eintrag oder bei `false` entfällt die Verbindung. Ein aktiviertes, unerreichbares Ziel führt zum Fehler. `portainer_check_host`, `portainer_check_port` und `portainer_check_timeout` überschreiben Ansible-Zieladresse, Port 9443 und fünf Sekunden Timeout.
@@ -9,6 +24,11 @@ Einzeln aus dem Controllerverzeichnis ausführen:
 ```
 
 ## Parameter
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -106,3 +126,5 @@ Einzeln aus dem Controllerverzeichnis ausführen:
   }
 }
 ```
+
+</details>

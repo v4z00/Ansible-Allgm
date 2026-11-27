@@ -1,3 +1,33 @@
+# Inspect Docker networks and static IP addresses
+
+Inspect Docker networks and static IP addresses
+
+Run: `bin/control docker-ips [options]`.
+
+Aliases: `docker-ips`.
+
+Feature: docker. Control checks availability at runtime.
+
+Registry prerequisites:
+- `playbooks/docker/vars/paths.yml`
+- `lib/control/helpers.sh`
+- `playbooks/docker/get_docker_ips.yaml`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/docker-ips.json`
+- `bin/control.d/docker-ips.sh`
+- `lib/control/helpers.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Docker-Netze und statische IPs auswerten
 
 Docker-Netze und statische IPs auswerten
@@ -18,6 +48,20 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/docker-ips.json`
+- `bin/control.d/docker-ips.sh`
+- `lib/control/helpers.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -100,11 +144,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/docker-ips.json`
-- `bin/control.d/docker-ips.sh`
-- `lib/control/helpers.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

@@ -14,6 +14,8 @@ prepare_fresh_debian() {
     case "$1" in
       --target) [[ $# -ge 2 ]] || return 0; target=$2; shift 2 ;;
       --target=*) target=${1#*=}; shift ;;
+      --lang) [[ $# -ge 2 && ( $2 == de || $2 == en ) ]] || return 0; shift 2 ;;
+      --lang=de|--lang=en) shift ;;
       --addon|--addon-url|--addon-token-file) [[ $# -ge 2 ]] || return 0; shift 2 ;;
       --addon=*|--addon-url=*|--addon-token-file=*) shift ;;
       --token-file) [[ $# -ge 2 && -n "${ANSIBLE_STAGING_OVERLAY:-}" && "${ANSIBLE_STAGING_OVERLAY}" != Homelab ]] || return 0; shift 2 ;;

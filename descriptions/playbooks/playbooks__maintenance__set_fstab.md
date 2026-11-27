@@ -1,5 +1,45 @@
 # Playbook playbooks/maintenance/set_fstab.yaml
 
+Playbook: `playbooks/maintenance/set_fstab.yaml`.
+
+Play and task names as written in the playbook:
+
+- Manage centrally defined mounts
+- Find the storage definition for this host
+- Load the storage definition for this host
+- Set the managed mounts
+- Require unique mount names and mount points
+- Validate mount definitions
+- Identify required mount types
+- Install the CIFS client
+- Install the NFS client
+- Install bindfs
+- Detect active mount points
+- Create mount points
+- Write fstab entries and optionally mount filesystems
+- Manage the optional mount health check cron job
+- Manage the optional Kerberos refresh cron job
+- Run fstab handlers now
+- Validate fstab
+- Reload systemd after fstab changes
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/maintenance/set_fstab.yaml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/maintenance/set_fstab.yaml
+
 Vorhandener Einstieg: `playbooks/maintenance/set_fstab.yaml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -32,6 +72,18 @@ Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
 
+## Quellen und Pflege
+
+- `playbooks/maintenance/set_fstab.yaml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
+
 ```json
 {
   "schema_version": 1,
@@ -62,9 +114,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/maintenance/set_fstab.yaml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

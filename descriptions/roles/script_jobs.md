@@ -1,3 +1,68 @@
+# Deploy local scripts with the shared library
+
+Executable operational scripts stay in `/root/skripte-config/<inventory_hostname>/` on the controller. Keep these private sources, custom functions, host values and secrets outside Git. The shared library lives under `artifacts/script-library/`.
+
+```sh
+ansible-playbook playbooks/scripts/deploy_jobs.yml --limit example-host --syntax-check
+ansible-playbook playbooks/scripts/deploy_jobs.yml --limit example-host --check
+ansible-playbook playbooks/scripts/deploy_jobs.yml --limit example-host
+```
+
+Supply a verified local `deployment.json` with `files` entries specifying `path`, `sha256` and `kind`. Supported files include entry scripts, `programs/*.sh`, `config/*.json` and `lib/special/**/*.sh`. Local code cannot replace Git library files. Input hashes are verified before transfer. Rendered destination configurations are separate local files.
+
+| Variable | Meaning and default |
+|---|---|
+| `script_jobs_source_root` | Local controller source, `/root/skripte-config` |
+| `script_jobs_target_root` | Existing `script_path`, otherwise `/scripte` |
+| `script_jobs_database_path` | Runtime data outside scripts, `/var/lib/script-jobs/jobs.sqlite3` |
+| `script_jobs_owner`, `script_jobs_group` | Run and file owner/group, both `root` |
+| `script_jobs_common_config` | Explicit shared JSON values, otherwise `script_library_common_config` or `{}` |
+| `script_jobs_job_config` | Explicit per-script values, otherwise `script_library_job_config` or `{}` |
+| `script_jobs` | Cron jobs to manage, `[]` |
+| `script_jobs_sets` | Reusable local job lists, `{}` |
+| `script_jobs_selected_sets` | Selected local sets, `[]` |
+| `script_jobs_timezone` | Explicit IANA time zone for schedule checks |
+
+Each job has `name`, `script`, optional list-valued `args` and `user`, a `category` (`general` or `vzdump`), a `cron` block and optionally `expected`. Cron accepts calendar fields or `special_time`. Vzdump requires explicit Monday (`1` or `mon`). `expected.deadline_minutes` and `expected.max_runtime_minutes` identify missing and overdue runs. Complex schedules need explicit `expected.start` and `expected.weekdays` (Monday=0). An incomplete expectation appears unconfigured. Schedule monitoring and execution are independent.
+
+Private source configuration is followed by explicit host variables. At runtime the script-specific file overrides `common.json`, including explicitly empty values. `JOB_DATABASE_PATH` must match the Ansible database mapping. Conflicts fail before writes. Set `JOB_MAX_RUNTIME_SECONDS` to limit runner duration.
+
+Every job in a local database uses the same configured owner. Files and the database use mode 0600, directories and executables 0700. The role follows existing become settings.
+
+Cron management applies only to explicit entries. An unknown legacy invocation, a still-running script or a system-wide cron conflict blocks migration. After review, use the exact old command line as `legacy_command`. Unrelated jobs, unknown files and jobs removed from the selection are not silently deleted.
+
+The role never starts backup scripts. Without a cron list it installs files and SQLite without creating schedules. There are no synthetic disable flags. Pilot the actual cron migration with the intended local configuration.
+
+After merging configuration, the role removes mail/Telegram values and sets legacy delivery flags to false. Empty compatibility fields support older shell programs. Operational credentials such as the backup destination remain in place. All jobs, including Vzdump, record local results only. Managed cron scripts must be present in the verified source manifest.
+
+The library installs `bin/job-status` on every host to read the latest job states without a controller, network access or starting jobs. On the controller, `bin/control jobs-last --limit TARGET` runs the same helper.
+
+Map existing system services through reusable `script_jobs_systemd_profiles`
+and the explicit host list `script_jobs_systemd_selected_profiles`. Profiles contain
+unit names and `active`, `oneshot` or `observe` modes. Deployment uses the selected
+profiles rather than inferring bindings from script or unit files. It writes fixed
+status settings next to SQLite. The existing collector includes filtered service
+observations in the same central summary. No units or cron schedules are changed
+by these bindings. See [systemd status profiles](../configurations/systemd-job-status.md)
+for point-in-time and shutdown-history limits.
+
+
+Object profiles with source, target and services can also deploy private folders and explicit service units. List profiles remain status-only. See [deployment paths and lifecycle settings](../configurations/systemd-job-deployment.md).
+
+`script_jobs_profile_config` holds rendered service-profile JSON settings and
+overrides matching `script_jobs_job_config` defaults. This keeps service settings
+separate from ordinary cron job configuration.
+
+Status checks merge `script_jobs_expected_defaults`, per-job
+`script_jobs_expected_overrides`, then `job.expected`. Both variables default to
+empty and do not change execution. Minute/hour schedules support single values,
+comma lists, `*`, and `*/N`; `expected.start` can also list explicit `HH:MM` times.
+Timezone, start deadline and maximum observed runtime stay explicit local settings.
+An older running job remains visible across the next scheduled slot.
+
+<details>
+<summary>Deutsch</summary>
+
 # Lokale Skripte mit neutraler Library bereitstellen
 
 Die ausführbaren Betriebsskripte liegen ausschließlich unter
@@ -96,6 +161,11 @@ Damit werden etwa zweimal tägliche Jobs und Fünf-Minuten-Checks korrekt getren
 Zeitzone, Startfrist und maximale Beobachtungsdauer bleiben explizite lokale Werte.
 Ein noch laufender alter Job bleibt auch über das nächste Cronfenster sichtbar.
 
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
+
 ```json
 {
   "schema_version": 1,
@@ -135,3 +205,5 @@ Ein noch laufender alter Job bleibt auch über das nächste Cronfenster sichtbar
   }
 }
 ```
+
+</details>

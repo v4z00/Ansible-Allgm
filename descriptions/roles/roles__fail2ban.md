@@ -1,3 +1,34 @@
+# Role fail2ban
+
+Role: `roles/fail2ban`.
+
+Task names as written in the role:
+
+- Install Fail2ban
+- Validate mail recipients for enabled notifications
+- Install the silent mail action for ticket systems
+- Remove the silent mail action when ticket notifications are disabled
+- Install the Proxmox VE filter
+- Install the Proxmox Backup filter
+- Deploy the Fail2ban configuration
+- Enable Fail2ban
+
+The parameters list public role defaults. Internal facts, registered values and private host credentials are not form inputs.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `roles/fail2ban/tasks/main.yml`
+- `roles/fail2ban/defaults/main.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Rolle fail2ban
 
 Rolle: `roles/fail2ban`.
@@ -21,6 +52,19 @@ Die Parameterliste beschreibt vorhandene oeffentliche Defaults. Task-interne Fak
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `roles/fail2ban/tasks/main.yml`
+- `roles/fail2ban/defaults/main.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -108,10 +152,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `roles/fail2ban/tasks/main.yml`
-- `roles/fail2ban/defaults/main.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

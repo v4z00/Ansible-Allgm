@@ -1,3 +1,24 @@
+# Complete shared script library
+
+Every selected Linux host receives the complete shared library from `artifacts/script-library/`: mail/Telegram, logging, fixed ASCII mail transliteration, SQLite job runner and query helper. Operational programs and custom functions stay in private controller sources managed by `script_jobs`.
+
+`script_library_root` sets the installation directory (default `/root/script-config`). `script_library_owner` and `script_library_group` both default to root. When called by `script_jobs`, the library is installed relative to the existing target script directory.
+
+The role requires explicit targets, guards existing symlinks and never starts scripts. Library files use 0600, directories and the job helper 0700. Job execution needs Python 3 with SQLite. No network service is installed.
+
+Run the helpers directly:
+
+```sh
+/root/script-config/bin/script-jobs --db /var/lib/script-jobs/jobs.sqlite3 runs
+/root/script-config/bin/script-jobs --db /var/lib/script-jobs/jobs.sqlite3 watch --seconds 30
+/root/script-config/bin/script-jobs --db /var/lib/script-jobs/jobs.sqlite3 details --run LAUF-ID
+```
+
+When querying a missing database, the helper reports it as not yet connected. Initialization and job execution are separate explicit operations. Sourcing shell functions starts no jobs.
+
+<details>
+<summary>Deutsch</summary>
+
 # Vollständige neutrale Skriptbibliothek
 
 Jeder ausgewählte Linux-Host erhält die ganze Grundbibliothek aus
@@ -27,6 +48,11 @@ Direkte Helferbeispiele:
 Eine fehlende Datenbank wird bei einer Abfrage als noch nicht angebunden gemeldet.
 Das Initialisieren und das Ausführen eines Jobs sind eigene ausdrückliche
 Operationen. Das Laden der Shell-Funktionen führt keinen Job aus.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -59,3 +85,5 @@ Operationen. Das Laden der Shell-Funktionen führt keinen Job aus.
   }
 }
 ```
+
+</details>

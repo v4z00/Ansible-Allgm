@@ -1,3 +1,35 @@
+# Export service users from Docker configuration to host_vars
+
+Export service users from Docker configuration to host_vars
+
+Run: `bin/control docker-users-export [options]`.
+
+Aliases: `docker-users-export`.
+
+Feature: docker. Control checks availability at runtime.
+
+No structured parameter list is available. Use the existing terminal workflow and its help.
+
+Set the Compose directory with `--source PATH` or `ANSIBLE_DOCKER_CONFIG_ROOT`. By default the export reads `docker-configs` next to the project. The project is chosen by `--root PATH`, then `ANSIBLE_PROJECT_ROOT`, then the checkout containing the script. Use `--check` to preview changes.
+
+Registry prerequisites:
+- `lib/control/helpers.sh`
+- `scripts/export_docker_users.py`
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `bin/control.d/docker-users-export.json`
+- `bin/control.d/docker-users-export.sh`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+<details>
+<summary>Deutsch</summary>
+
 # Service-User aus Docker-Konfigurationen nach host_vars exportieren
 
 Service-User aus Docker-Konfigurationen nach host_vars exportieren
@@ -21,6 +53,19 @@ Voraussetzungen laut Registry:
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `bin/control.d/docker-users-export.json`
+- `bin/control.d/docker-users-export.sh`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -54,10 +99,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `bin/control.d/docker-users-export.json`
-- `bin/control.d/docker-users-export.sh`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+</details>

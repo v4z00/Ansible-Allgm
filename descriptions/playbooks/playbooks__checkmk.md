@@ -1,5 +1,41 @@
 # Playbook playbooks/checkmk.yml
 
+Playbook: `playbooks/checkmk.yml`.
+
+Play and task names as written in the playbook:
+
+- Ensure the Checkmk folder hierarchy exists
+- Validate the Checkmk API settings for folders
+- Create Checkmk folders and their parents
+- Manage Checkmk agents and hosts
+- Register non-Linux hosts in Checkmk
+- Validate the API settings and target folder for manual hosts
+- Create the non-Linux host without attributes or ensure it is in the target folder
+- Report the Checkmk host requiring manual configuration
+
+Run the corresponding Control command. Roles, inventory and site settings also affect this playbook. Check support for --limit and check mode before use.
+
+## Parameters
+
+The listed sources define these parameters. Missing documentation is indicated. Defaults are informational. Credentials are omitted.
+
+## Sources and maintenance
+
+- `playbooks/checkmk.yml`
+
+Maintain this description and its source hashes together when the code changes. The database stores a cache.
+
+## Per-task TLS certificate validation (1.1.0)
+
+In `group_vars/all/settings.yml`, `tls_validate_certs.checkmk_folders` controls certificate validation for creating Checkmk folders and parents. `tls_validate_certs.checkmk_manual_host` controls creating or placing non-Linux hosts without attributes. Each inherits `tls_validate_certs_default` (default true). An explicit false disables only that check.
+
+The site default is `tls_validate_certs_default`, normally true. Telegram tasks independently default to true unless their own override is set.
+
+<details>
+<summary>Deutsch</summary>
+
+# Playbook playbooks/checkmk.yml
+
 Vorhandener Einstieg: `playbooks/checkmk.yml`.
 
 Im Quelltext benannte Plays/Aufgaben:
@@ -21,6 +57,29 @@ Ausfuehrung bevorzugt ueber den passenden Control-Befehl. Die Datei allein besch
 Die Angaben stammen aus den aufgefuehrten Quellen. Fehlende Erklaerungen sind
 als solche markiert. Defaults sind Hinweise und werden nicht automatisch gesetzt.
 Vertrauliche Werte werden nicht dokumentiert.
+
+## Quellen und Pflege
+
+- `playbooks/checkmk.yml`
+
+Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
+Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
+
+
+## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
+
+Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
+Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
+- `tls_validate_certs.checkmk_folders`: CheckMK-Ordner und Elternordner anlegen (Standard true).
+- `tls_validate_certs.checkmk_manual_host`: Nicht-Linux-Host ohne Attribute anlegen oder im Zielordner sicherstellen (Standard true).
+
+Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
+verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+
+</details>
+
+<details>
+<summary>Catalog metadata (JSON)</summary>
 
 ```json
 {
@@ -52,20 +111,4 @@ Vertrauliche Werte werden nicht dokumentiert.
 }
 ```
 
-## Quellen und Pflege
-
-- `playbooks/checkmk.yml`
-
-Diese Datei ist die Pflegequelle fuer Mensch und Add-on. Bei Codeaenderungen
-Beschreibung und Quellhashs gemeinsam pruefen. Die Datenbank ist nur Cache.
-
-
-## TLS-Zertifikatspruefung pro Aufgabe (1.1.0)
-
-Optionale Eintraege unter `tls_validate_certs` in `group_vars/all/settings.yml`.
-Fehlende Eintraege erben tls_validate_certs_default (ohne Standortstandard true); explizites false deaktiviert nur die genannte Pruefung.
-- `tls_validate_certs.checkmk_folders`: CheckMK-Ordner und Elternordner anlegen (Standard true).
-- `tls_validate_certs.checkmk_manual_host`: Nicht-Linux-Host ohne Attribute anlegen oder im Zielordner sicherstellen (Standard true).
-
-Standortstandard: tls_validate_certs_default (ohne Eintrag true). Telegram-Aufgaben
-verwenden unabhaengig davon true als Default, ausser bei explizitem Task-Override.
+</details>
