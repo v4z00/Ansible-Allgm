@@ -1,4 +1,7 @@
 ---
+- name: Verify the configured Windows authentication policy
+  ansible.builtin.include_role:
+    name: windows_connection_guard
 - name: Resolve environment signing settings without exposing credentials
   ansible.builtin.set_fact:
     windows_signing_effective: "{{ windows_code_signing_defaults | combine(windows_script_signing, recursive=True) }}"

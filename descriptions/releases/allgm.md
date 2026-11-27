@@ -1,5 +1,13 @@
 # Changelog
 
+## s0.9.1 – Windows Kerberos access
+
+Keep the Windows account in the private secrets file. Enabled Kerberos requires
+Kerberos for WinRM. Existing controllers can upgrade the known Windows resolver
+with `bin/control windows-setup --upgrade-known-resolver` and `--apply`, then
+prepare the Debian runtime with `bin/setup-runtime --windows-kerberos`.
+See the [Windows access guide](../commands/windows-setup.md).
+
 ## s0.9.0 – Windows foundation and immediate host security alerts
 
 The Windows foundation now also includes grouped, unlinked GPO registry hardening

@@ -55,6 +55,57 @@ class WindowsAccess(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):setup.prepare(root,apply=True)
             self.assertFalse((root/'group_vars/all_windows_systems/access.yml').exists())
 
+    def test_known_resolver_upgrade_is_explicit_backed_up_and_preserves_local_edits(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);source=root/'templates/windows/access.yml.example'
+            source.parent.mkdir(parents=True);source.write_text('new resolver\n')
+            target=root/'group_vars/all_windows_systems/access.yml';target.parent.mkdir(parents=True)
+            old=b'old synthetic resolver\n';target.write_bytes(old)
+            with patch.object(setup,'KNOWN_RESOLVERS',frozenset([hashlib.sha256(old).hexdigest()])):
+                self.assertFalse(setup.prepare(root,apply=True))
+                self.assertTrue(setup.prepare(root,upgrade_known=True))
+                self.assertEqual(target.read_bytes(),old)
+                self.assertTrue(setup.prepare(root,apply=True,upgrade_known=True))
+                self.assertEqual(target.read_text(),'new resolver\n')
+                saved=list((root/'x/backups/windows-access').glob('*.yml'))
+                self.assertEqual(len(saved),1);self.assertEqual(saved[0].read_bytes(),old)
+                target.write_text('local administrator edit\n')
+                self.assertFalse(setup.prepare(root,apply=True,upgrade_known=True))
+                self.assertEqual(target.read_text(),'local administrator edit\n')
+
+    def test_kerberos_uses_the_single_secret_account_and_overrides_ntlm(self):
+        executable=Path(sys.executable).with_name('ansible-playbook')
+        if not executable.is_file():self.skipTest('Ansible runtime required')
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary).resolve()
+            for group,source in [('all','examples/first_run/access.yml.example'),('all_windows_systems','templates/windows/access.yml.example')]:
+                folder=root/'group_vars'/group;folder.mkdir(parents=True)
+                shutil.copyfile(ROOT/source,folder/'access.yml')
+            settings={'features':{'kerberos':True},'windows_connection':{'transport':'ntlm'}}
+            secrets={'windows_access':{'user':'automation@EXAMPLE.INVALID','password':'single-fixture-secret'}}
+            (root/'group_vars/all/settings.yml').write_text(yaml.safe_dump(settings))
+            (root/'group_vars/all/secrets.yml').write_text(yaml.safe_dump(secrets))
+            inventory={'all':{'children':{'all_windows_systems':{'hosts':{'win01':{}}}}}}
+            (root/'inventory.yml').write_text(yaml.safe_dump(inventory))
+            checks=[{'ansible.builtin.assert':{'that':["ansible_winrm_transport == 'kerberos'","ansible_user == 'automation@EXAMPLE.INVALID'","ansible_password == 'single-fixture-secret'","ansible_winrm_kinit_mode == 'managed'"]},'no_log':True}]
+            (root/'test.yml').write_text(yaml.safe_dump([{'hosts':'all_windows_systems','gather_facts':False,'tasks':checks}]))
+            result=subprocess.run([str(executable),'-i',str(root/'inventory.yml'),str(root/'test.yml')],capture_output=True,text=True,env={**os.environ,'ANSIBLE_LOCAL_TEMP':str(root/'tmp')},timeout=30)
+            self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+            self.assertNotIn('single-fixture-secret',result.stdout+result.stderr)
+
+    def test_guard_blocks_an_inventory_ntlm_override_when_kerberos_is_required(self):
+        executable=Path(sys.executable).with_name('ansible-playbook')
+        if not executable.is_file():self.skipTest('Ansible runtime required')
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary).resolve()
+            play=[{'hosts':'localhost','gather_facts':False,'vars':{'features':{'kerberos':True},'ansible_connection':'winrm','ansible_winrm_scheme':'https','ansible_winrm_transport':'ntlm','ansible_user':'automation@EXAMPLE.INVALID','ansible_password':'fixture-guard-secret','windows_connection_guard_dependencies':False},'roles':['windows_connection_guard']}]
+            path=root/'test.yml';path.write_text(yaml.safe_dump(play))
+            result=subprocess.run([str(executable),'-i','localhost,',str(path)],capture_output=True,text=True,env={**os.environ,'ANSIBLE_LOCAL_TEMP':str(root/'tmp'),'ANSIBLE_ROLES_PATH':str(ROOT/'roles')},timeout=30)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('No NTLM fallback',result.stdout+result.stderr)
+            self.assertNotIn('fixture-guard-secret',result.stdout+result.stderr)
+
     def test_linux_bootstrap_arguments_remain_unchanged(self):
         args = ['--limit', 'example-host', '--list-hosts']
         self.assertEqual(bootstrap.command(args)[2:], args)

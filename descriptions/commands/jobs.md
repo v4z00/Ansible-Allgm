@@ -130,7 +130,7 @@ Beide Ansichten starten keine Jobs und senden keine Nachrichten.
   "source_hashes": {
     "bin/control.d/jobs.json": "24dcd5c94d8d2bb818f3b3100d74f2b294d8ff07479395dc4273307a61384c68",
     "bin/control.d/jobs.sh": "7247b8df4c0662e5a92338d005fac347d9632ce52f3f2bfc84217b363702293e",
-    "scripts/job_console.py": "2629de658c1f3d32164c360175f68d24058fe31404b030403c3ecbf3f8eca3c9"
+    "scripts/job_console.py": "a029a246f2b08217200b1e03db09f536c09de2b68c47959917692f59fcec12c3"
   },
   "i18n": {
     "de": {

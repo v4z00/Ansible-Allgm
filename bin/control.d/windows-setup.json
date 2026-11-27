@@ -1,11 +1,18 @@
 {
   "schema": 1,
-  "commands": [{
-    "name": "windows-setup",
-    "description": "Prepare the private Windows access resolver without reading passwords",
-    "handler": "bin/control.d/windows-setup.sh",
-    "feature": null,
-    "requires": ["scripts/setup_windows.py", "templates/windows/access.yml.example", "templates/windows/settings.example.yml"],
-    "aliases": []
-  }]
+  "commands": [
+    {
+      "name": "windows-setup",
+      "description": "Prepare the private Windows access resolver without reading passwords",
+      "handler": "bin/control.d/windows-setup.sh",
+      "feature": null,
+      "requires": [
+        "scripts/setup_windows.py",
+        "templates/windows/access.yml.example",
+        "templates/windows/settings.example.yml",
+        "templates/windows/secrets.yml.example"
+      ],
+      "aliases": []
+    }
+  ]
 }

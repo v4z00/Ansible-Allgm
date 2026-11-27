@@ -1,14 +1,26 @@
 ---
-# This resolver belongs only to group_vars/all_windows_systems/access.yml.
+# Windows-only resolver. Account fields belong together in private secrets.yml.
 windows_effective_access: "{{ (windows_access | default({})) | combine((windows_host_access | default({})).get(inventory_hostname, {})) }}"
+# Existing nonsecret connection fields in windows_access still work during migration.
+windows_effective_connection: >-
+  {{ (windows_effective_access | dict2items | selectattr('key', 'in',
+     ['port', 'transport', 'certificate_validation', 'ca_trust_path', 'kerberos_hostname', 'kinit_mode'])
+      | items2dict)
+      | combine(windows_connection | default({}),
+                (windows_host_connection | default({})).get(inventory_hostname, {})) }}
+windows_kerberos_required: "{{ (features | default({})).get('kerberos', false) }}"
 ansible_connection: winrm
 ansible_shell_type: powershell
 ansible_user: "{{ windows_effective_access.get('user', '') }}"
 ansible_password: "{{ windows_effective_access.get('password', '') }}"
-ansible_port: "{{ windows_effective_access.get('port', 5986) | int }}"
+ansible_port: "{{ windows_effective_connection.get('port', 5986) | int }}"
 ansible_become: false
 ansible_winrm_scheme: https
-ansible_winrm_transport: "{{ windows_effective_access.get('transport', 'ntlm') }}"
-ansible_winrm_server_cert_validation: "{{ windows_effective_access.get('certificate_validation', 'validate') }}"
-ansible_winrm_ca_trust_path: "{{ windows_effective_access.get('ca_trust_path') or none }}"
+# Kerberos is mandatory when the existing environment feature is enabled.
+# A single transport is selected: no ordered list or NTLM fallback.
+ansible_winrm_transport: "{{ 'kerberos' if windows_kerberos_required else windows_effective_connection.get('transport', 'ntlm') }}"
+ansible_winrm_server_cert_validation: "{{ windows_effective_connection.get('certificate_validation', 'validate') }}"
+ansible_winrm_ca_trust_path: "{{ windows_effective_connection.get('ca_trust_path') or none }}"
+ansible_winrm_kerberos_hostname_override: "{{ windows_effective_connection.get('kerberos_hostname') or none }}"
+ansible_winrm_kinit_mode: "{{ windows_effective_connection.get('kinit_mode', 'managed') }}"
 ansible_winrm_connection_timeout: 60

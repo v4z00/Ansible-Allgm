@@ -3,6 +3,29 @@ set -euo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 umask 077
+windows_kerberos=false
+case "${1:-}" in
+  '') [[ $# == 0 ]] || { echo 'Use bin/setup-runtime [--windows-kerberos].' >&2; exit 2; } ;;
+  --windows-kerberos) [[ $# == 1 ]] || exit 2; windows_kerberos=true ;;
+  --help|-h) printf '%s\n' 'bin/setup-runtime [--windows-kerberos]' 'Kerberos: install Debian build/client packages and pywinrm Kerberos support; existing krb5.conf stays in place.'; exit 0 ;;
+  *) echo 'Use bin/setup-runtime [--windows-kerberos].' >&2; exit 2 ;;
+esac
+if [[ "$windows_kerberos" == true ]]; then
+  [[ -r /etc/os-release ]] || { echo 'Automatic Kerberos runtime preparation requires Debian 12/13.' >&2; exit 2; }
+  ID= VERSION_ID=
+  . /etc/os-release
+  [[ "$ID" == debian && "$VERSION_ID" =~ ^(12|13)$ ]] || { echo 'Install Kerberos dependencies manually on this controller OS.' >&2; exit 2; }
+  missing=()
+  for package in gcc python3-dev libkrb5-dev krb5-user; do
+    status=$(dpkg-query -W -f='${db:Status-Status}' "$package" 2>/dev/null) || status=
+    [[ "$status" == installed ]] || missing+=("$package")
+  done
+  if (( ${#missing[@]} )); then
+    (( EUID == 0 )) || { echo "Install as root first: ${missing[*]}" >&2; exit 2; }
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+  fi
+fi
 controller_python="${CONTROLLER_PYTHON:-}"
 if [[ -z "$controller_python" ]]; then
   for candidate in python3.12 python3.13 python3.11 python3; do
@@ -23,6 +46,9 @@ if [[ ! -x .venv/bin/python3 ]] || ! .venv/bin/python3 -m pip --version >/dev/nu
   fi
 fi
 .venv/bin/python3 -m pip --disable-pip-version-check install -r requirements-controller.txt
+if [[ "$windows_kerberos" == true ]]; then
+  .venv/bin/python3 -m pip --disable-pip-version-check install -r templates/windows/requirements-kerberos.txt
+fi
 export ANSIBLE_CONFIG="$ROOT_DIR/ansible.cfg"
 .venv/bin/ansible-galaxy collection install --no-deps -r requirements-extra.yml -p "$ROOT_DIR/collections"
 .venv/bin/ansible-playbook --version

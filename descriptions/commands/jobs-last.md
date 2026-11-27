@@ -63,7 +63,7 @@ Windows-Hosts in all_windows_systems werden über ihren eigenen PowerShell-/SQLi
   "source_hashes": {
     "bin/control.d/jobs-last.json": "23289315b66e43d636fa55911b55ecd2fdde7c2117d340b9a6ef32aae8111960",
     "bin/control.d/jobs-last.sh": "7e9f939cf794e78873b987de31cb193f6572ba5c8f0ea5bc923ab5c10e09a644",
-    "playbooks/scripts/show_status.yml": "5b6b3cd0d08dac47374cbe39619d2d6c7153ab01fc0839daac3c11702fde08c5"
+    "playbooks/scripts/show_status.yml": "aec30a471cedc72b02a4329033b60becba505cdf119067184c5de64affb8a420"
   },
   "i18n": {
     "de": {

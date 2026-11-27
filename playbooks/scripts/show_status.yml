@@ -36,6 +36,9 @@
     - name: Require an explicit Windows target selection
       ansible.builtin.assert:
         that: ansible_limit | default('') | trim | length > 0
+    - name: Verify Windows authentication prerequisites
+      ansible.builtin.include_role:
+        name: windows_connection_guard
     - name: Query the installed read-only Windows status library
       ansible.windows.win_powershell:
         script: |

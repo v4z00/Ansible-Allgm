@@ -57,7 +57,7 @@ Firewallregeln oder GPOs.
   "source_hashes": {
     "bin/control.d/windows-check.json": "bda7e4cc2266c2d5faddc366a29050469cbbbdb34c3cd73eae71b09296e6aea7",
     "bin/control.d/windows-check.sh": "6ee135270ec378cfad418d3eba806d41a9df322be10b8ef48cc2a7e2375e3aae",
-    "playbooks/windows/check.yml": "f8bccb41c827a11736eb146db420babe8c998686e5e7163eec965daf56f2a353"
+    "playbooks/windows/check.yml": "0850b7e1c9fe01c8166186e5ba42d1372c34b32fa8cd7001cbe805da42a3056b"
   },
   "i18n": {
     "en": {

@@ -44,7 +44,7 @@ class WindowsDeployment(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
             tasks=yaml.safe_load((ROOT/'roles/windows_bootstrap/tasks/main.yml').read_text())
-            checks=tasks[1]['ansible.builtin.assert']['that']
+            checks=next(task['ansible.builtin.assert']['that'] for task in tasks if 'ansible.builtin.assert' in task)
             defaults=yaml.safe_load((ROOT/'roles/windows_bootstrap/defaults/main.yml').read_text())
             play=[{'hosts':'localhost','connection':'local','gather_facts':False,
                    'vars':{**defaults,'ansible_facts':{'os_family':'Windows'}},

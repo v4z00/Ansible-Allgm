@@ -1,0 +1,2 @@
+# Optional controller transport, enabled explicitly by bin/setup-runtime --windows-kerberos.
+pywinrm[kerberos]==0.5.0

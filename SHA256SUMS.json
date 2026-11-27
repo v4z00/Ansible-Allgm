@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "9d8c94f1ad3ea96b1e2ac4914fda4cb93c76b4a3e0d8cc6dd8976d6c0b227d15",
+      "sha256": "179a5390966e85c2071a87c1b31de13df67460665196f6529f8c4986842f81e5",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -695,7 +695,7 @@
       "mode": "0755"
     },
     "bin/control.d/windows-setup.json": {
-      "sha256": "ecb534a3939319fab5f34b2868056ca53e9ec3a5cd7b5f7095b61146ac7527f5",
+      "sha256": "cb3df6fe981ebf693ecbe77a6e47d1f3b778bdbc4b49dae1f854e9736a56235d",
       "mode": "0644"
     },
     "bin/control.d/windows-setup.sh": {
@@ -707,7 +707,7 @@
       "mode": "0755"
     },
     "bin/setup-runtime": {
-      "sha256": "2fc28973f55863d8aa4f79e366f1b10121e5ee951f04c82f9c0be90e4628fb95",
+      "sha256": "24f88f27c7103dc52203585a16f5223540a8ceddb270c7f27914f14e43ca902c",
       "mode": "0755"
     },
     "config/bashrc": {
@@ -743,7 +743,7 @@
       "mode": "0644"
     },
     "descriptions/commands/bootstrap.md": {
-      "sha256": "c956a42ba3654eaf8348921e4066b8ad6facb7df86d52901096de4398763ede1",
+      "sha256": "d9afcaf87178ae2aa1ceea318c7a6d502a18243230079b50048e409fa42e3e2c",
       "mode": "0644"
     },
     "descriptions/commands/ca-distribute.md": {
@@ -847,7 +847,7 @@
       "mode": "0644"
     },
     "descriptions/commands/jobs-last.md": {
-      "sha256": "4e4727248ea62a40365898f4a53481a08a86dc697bd653c6e62496cf436606ed",
+      "sha256": "917f1f8046bd39e65018eef39fbe6e8f0f3c31425e618985297710f8b3d0d784",
       "mode": "0644"
     },
     "descriptions/commands/jobs-summary.md": {
@@ -855,7 +855,7 @@
       "mode": "0644"
     },
     "descriptions/commands/jobs.md": {
-      "sha256": "90c3e10bb081d4465dc02a05742b69cc5ee038d6cfd9c1b7e0de873f895b38d7",
+      "sha256": "b1e1189f3eb747010e15811b9232d6da4c1226ace9b120387cfcf47795bc329c",
       "mode": "0644"
     },
     "descriptions/commands/keytabs.md": {
@@ -947,15 +947,15 @@
       "mode": "0644"
     },
     "descriptions/commands/windows-check.md": {
-      "sha256": "d52d15bf82624a6ee1a592c8023eb217debad0b804bed343f0bad40107f8978e",
+      "sha256": "b64c5011c9c71f39190c62e464840742a94b6b3078bc45fe9e8c9a6e834ff420",
       "mode": "0644"
     },
     "descriptions/commands/windows-gpo.md": {
-      "sha256": "d55b7b90ebd011cfe1e371941eefe84bc68a97b022160507aa3f6cd0f56dee41",
+      "sha256": "3e4e7d6e608c3d1128fee2378f221c720159abc120b3ef0986f47e3da7023f76",
       "mode": "0644"
     },
     "descriptions/commands/windows-setup.md": {
-      "sha256": "bfe062e17aa1e856f288a2f902cc100e14121fe18ad39e3dc72e8845b7135b12",
+      "sha256": "3cd8c0887fe2231fd31b594ccdd422acef2dd0c4499954f534497e7addd7e4d0",
       "mode": "0644"
     },
     "descriptions/configurations/group_vars__all__host_credentials.example.md": {
@@ -971,7 +971,7 @@
       "mode": "0644"
     },
     "descriptions/configurations/job-local-checks.md": {
-      "sha256": "b83b2363d14961e4b5d8336f4ee3e53e3e6a400d487138271310941c68b7a827",
+      "sha256": "61730c780121cb2fb2f2da063e29ae8a29ce45b8d1148b06a0f6213d4a0e3139",
       "mode": "0644"
     },
     "descriptions/configurations/script-library.md": {
@@ -991,7 +991,7 @@
       "mode": "0644"
     },
     "descriptions/configurations/systemd-job-status.md": {
-      "sha256": "6c33c98e3b22c0e98eedf9afbace5381cc1308388a4bf9d43057547b79b79128",
+      "sha256": "f92cda9441bb40895e5f465cd6938d9e13ba143eaaf74d59229b106a617d67c5",
       "mode": "0644"
     },
     "descriptions/configurations/systemd-script-discovery.md": {
@@ -999,7 +999,7 @@
       "mode": "0644"
     },
     "descriptions/configurations/windows-code-signing.md": {
-      "sha256": "fb685130dd5b53be9c062db29cc6fd5cbe78e768998adc5574180ba55366245b",
+      "sha256": "a909bd5e9230ac0922cd2d404013c6ecb87aa4d06a7cc53ae04dcbc58b2b2eb4",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__base.md": {
@@ -1187,7 +1187,7 @@
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__show_status.md": {
-      "sha256": "9f57a6af14dccdaba50ce539a603a11364276db4f9b38b6f161944d3a89edd47",
+      "sha256": "80e76ed0612fdae628f90a1e121fba8fdfc43c16848f437dc02ff00b4795aa3a",
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__scripts__stage_library.md": {
@@ -1207,11 +1207,11 @@
       "mode": "0644"
     },
     "descriptions/playbooks/playbooks__windows__stage_library.md": {
-      "sha256": "813031471789017d40167a3945378efaab79a23b8fdd032242eb88d0d16c3d6d",
+      "sha256": "55ff4c33c34c962d2378f6383e7742a47b67af642d90bf30b47650c6e5168410",
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "00fea18b5b300e3ab6d6a9acdd958e4af5235d6f71bf5b467a8783228e0b3d9d",
+      "sha256": "a9adad623449c7b1658965186360be7c4a315e6f65149b50eaf0644ff3a620cd",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -1571,7 +1571,7 @@
       "mode": "0644"
     },
     "playbooks/scripts/show_status.yml": {
-      "sha256": "5b6b3cd0d08dac47374cbe39619d2d6c7153ab01fc0839daac3c11702fde08c5",
+      "sha256": "aec30a471cedc72b02a4329033b60becba505cdf119067184c5de64affb8a420",
       "mode": "0644"
     },
     "playbooks/scripts/stage_library.yml": {
@@ -1595,7 +1595,7 @@
       "mode": "0644"
     },
     "playbooks/windows/check.yml": {
-      "sha256": "f8bccb41c827a11736eb146db420babe8c998686e5e7163eec965daf56f2a353",
+      "sha256": "0850b7e1c9fe01c8166186e5ba42d1372c34b32fa8cd7001cbe805da42a3056b",
       "mode": "0644"
     },
     "playbooks/windows/gpo.yml": {
@@ -1659,7 +1659,7 @@
       "mode": "0644"
     },
     "roles/checkmk_agent/tasks/windows.yml": {
-      "sha256": "245499dae7f3bdea3854e53e11b8391e6f1b9392b27b17133cf82aca03babc4f",
+      "sha256": "699e248aca276dd5f3e0f270f86839db8e8f9542f63cbd1d1ca9e7ad76c63510",
       "mode": "0644"
     },
     "roles/fail2ban/defaults/main.yml": {
@@ -1791,7 +1791,7 @@
       "mode": "0644"
     },
     "roles/script_jobs_checkmk/tasks/windows.yml": {
-      "sha256": "0cef2f6a3ca11be733e52baab9b1fb20a4aad38d44ca59d5341308c3ec48a499",
+      "sha256": "656b4354da46bac1adeac2133792b6ce15ded20b94a9a79870c488c785689ed1",
       "mode": "0644"
     },
     "roles/script_jobs_checkmk/templates/script_jobs.ps1.j2": {
@@ -1879,7 +1879,7 @@
       "mode": "0644"
     },
     "roles/windows_bootstrap/tasks/main.yml": {
-      "sha256": "b31b49ba141dfcb87b544cf4a105a66392a41dd1f9bc3e50cff87093cb378742",
+      "sha256": "fea094022dbcfd894b29adcd041afb05b3d799d4c2ba6d3480cf6d864b5cc772",
       "mode": "0644"
     },
     "roles/windows_code_signing/defaults/main.yml": {
@@ -1907,7 +1907,7 @@
       "mode": "0644"
     },
     "roles/windows_code_signing/tasks/validate.yml": {
-      "sha256": "5be4f9f3e025759c01bdbafeb2f5615a961e40e911e7fcd597850660cfa268f8",
+      "sha256": "319bb0b9c3ee7f3a561bd7dda7ebcbf08e53aaa540f6e134ffbfc6b170437c33",
       "mode": "0644"
     },
     "roles/windows_code_signing/templates/setup-probe.ps1.j2": {
@@ -1916,6 +1916,14 @@
     },
     "roles/windows_code_signing/templates/sign-bundle.ps1.j2": {
       "sha256": "1e877235ae59edbeb06b3d198d97b3afa6e9106f8656252b42dfec9e45b574e3",
+      "mode": "0644"
+    },
+    "roles/windows_connection_guard/defaults/main.yml": {
+      "sha256": "72926416afb3bfa1404ab8655661ab8714ac479fb8b61bf1c269777f5357f371",
+      "mode": "0644"
+    },
+    "roles/windows_connection_guard/tasks/main.yml": {
+      "sha256": "c4bb19066b4a2880596d2aae2bcb9a17119aecc974abeb50fd3c7be73e044701",
       "mode": "0644"
     },
     "roles/windows_gpo/defaults/main.yml": {
@@ -1939,7 +1947,7 @@
       "mode": "0644"
     },
     "roles/windows_gpo/tasks/main.yml": {
-      "sha256": "3297962ae4c1dfba6d558a60cfa51491aaedba30b9c88ebf65a66d850e0c0495",
+      "sha256": "a6faef14a9dbada96489ea09ca7f01ad5f7435b44577f4ece8bef7589f0294da",
       "mode": "0644"
     },
     "roles/windows_gpo/templates/manage.ps1.j2": {
@@ -1959,7 +1967,7 @@
       "mode": "0644"
     },
     "roles/windows_script_library/tasks/main.yml": {
-      "sha256": "b18cfd83ff4dfd76bf517317ecf1992c46dff2a9392daeacec2ac2e0f1018808",
+      "sha256": "fa716834bc1593354a822ca6a378261b0d939c5e842631db2289082e986bd667",
       "mode": "0644"
     },
     "scripts/apache_certificate_files.py": {
@@ -2019,7 +2027,7 @@
       "mode": "0644"
     },
     "scripts/job_console.py": {
-      "sha256": "2629de658c1f3d32164c360175f68d24058fe31404b030403c3ecbf3f8eca3c9",
+      "sha256": "a029a246f2b08217200b1e03db09f536c09de2b68c47959917692f59fcec12c3",
       "mode": "0644"
     },
     "scripts/job_cron_guard.py": {
@@ -2063,7 +2071,7 @@
       "mode": "0755"
     },
     "scripts/setup_windows.py": {
-      "sha256": "57de0c8482ed5e1a1dc3cfcd7967ac07e0275a8e38f53b13da02e10878b48558",
+      "sha256": "7ec80c07824955871a1e5bc7a4f294f8613445c60dfb57c51f4e096a6db96f17",
       "mode": "0755"
     },
     "scripts/update_inventory.sh": {
@@ -2087,11 +2095,19 @@
       "mode": "0644"
     },
     "templates/windows/access.yml.example": {
-      "sha256": "1ac2489081cba24348ad5ba5050dd21da4d2ba255a42d118d9e40e9574bff264",
+      "sha256": "41d0abf0e1b347c64ad3fd322e3c030c12654bd5fff0b2d39a01566f22c1aa6d",
+      "mode": "0644"
+    },
+    "templates/windows/requirements-kerberos.txt": {
+      "sha256": "c4dd61709f3d0676371b1d9e09b688fe993e598a522d07acacf2a3681bd68171",
+      "mode": "0644"
+    },
+    "templates/windows/secrets.yml.example": {
+      "sha256": "db8877b6d3ae05c1960d336cc4de380f1811f400a4d58453fa1d6f257f3b3478",
       "mode": "0644"
     },
     "templates/windows/settings.example.yml": {
-      "sha256": "5fb78cd68ace6c666611dafc1ce83c182de74b33a2b021df69112a7da4a7775d",
+      "sha256": "07b237f5931e831fcd63ab46ce544424de810613387e450d79f45c6d67c9f1c3",
       "mode": "0644"
     },
     "tools/callbacks/script_job_results.py": {
@@ -2207,11 +2223,11 @@
       "mode": "0644"
     },
     "tools/windows_tests/test_windows_connection.py": {
-      "sha256": "5b7c5dfc700a74c1a21e74e2a1dd64c14efed0f7f3b3ad4b125cc000a44b75ea",
+      "sha256": "fbd9e9e1f5558e1092f68598a3129b687f8a79cefb86b8498889a4c3d6576202",
       "mode": "0644"
     },
     "tools/windows_tests/test_windows_deployment.py": {
-      "sha256": "fe3e3f92c8625305ab86f8fe91f0ff71f1919244c5541cb74def0f9c7b97a58b",
+      "sha256": "aa5dc41c4e3e8e457c8f3ce0c26941ca1746058aace28d4e144ec62d23c4cb20",
       "mode": "0644"
     },
     "tools/windows_tests/test_windows_gpo.py": {
@@ -2251,7 +2267,7 @@
       "mode": "0644"
     },
     "update_check/integrity.json": {
-      "sha256": "656b7dc80e4d34212e6790c677d549d45c065bf9352ce9e71b7c961a86ed0048",
+      "sha256": "75fb0556f3c56b63c8b787b179fbfbb9ead5f6caba69940cdf2b8f06495756d7",
       "mode": "0644"
     },
     "update_check/legacy_sss.json": {
@@ -2267,7 +2283,7 @@
       "mode": "0644"
     },
     "update_check/manifests/controller_basis.json": {
-      "sha256": "14213e925968853aff084197d9a4c73d82a8d567ee9b3e08552f67eaea0ded5c",
+      "sha256": "1155b0647b25e335eaa007bcb32e9fbc2d3f669a2d773f028a38268e9f23fcfb",
       "mode": "0644"
     },
     "update_check/manifests/host_updates.json": {
@@ -2275,11 +2291,11 @@
       "mode": "0644"
     },
     "update_check/manifests/script_jobs.json": {
-      "sha256": "e2e03d0f1e0f1def043a3bbd7d7276ed914d53f6f81e39da3c045c3fbd0e7448",
+      "sha256": "5d11e6b9d057862b230417cc9a686f81839378dd4cea03653403c4f749f1555f",
       "mode": "0644"
     },
     "update_check/manifests/tls_tasks.json": {
-      "sha256": "6a29da84f482f5075c30cf10c76deeeec164c578eb44b430144b18a09c623a43",
+      "sha256": "fd896d9cf276441d10a60990124237bb96a0eaa86016d5d437b6c90b86c1845d",
       "mode": "0644"
     },
     "update_check/manifests/version_pruefer.json": {
@@ -2287,7 +2303,7 @@
       "mode": "0644"
     },
     "update_check/manifests/windows_foundation.json": {
-      "sha256": "7dc9a9d1ac1abfe187f5d9fae830a58ae39df51e07c0ecc9162a771d57b06f24",
+      "sha256": "80da31ab7049e3ddfb5c2fba703541e7692abf2858f76c376565d7e72211c468",
       "mode": "0644"
     },
     "update_check/probes.py": {
@@ -2299,7 +2315,7 @@
       "mode": "0644"
     },
     "update_check/release.json": {
-      "sha256": "814639eb2c8e2344439747b8fd443d59ad16d838e5c2832358d6976548876c1d",
+      "sha256": "333ebc7e2abbbc411f68e693e8e44917baa62ee224e2048ad1ab1f5c8855425c",
       "mode": "0644"
     },
     "update_check/rollout.py": {

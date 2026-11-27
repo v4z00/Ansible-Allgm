@@ -29,7 +29,7 @@ lokalen SQLite-Statushelfer aus.
     "playbooks/scripts/show_status.yml"
   ],
   "source_hashes": {
-    "playbooks/scripts/show_status.yml": "5b6b3cd0d08dac47374cbe39619d2d6c7153ab01fc0839daac3c11702fde08c5"
+    "playbooks/scripts/show_status.yml": "aec30a471cedc72b02a4329033b60becba505cdf119067184c5de64affb8a420"
   },
   "i18n": {
     "de": {

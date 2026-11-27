@@ -1,14 +1,15 @@
 ---
-# Merge these keys into the existing private group_vars/all/settings.yml.
-# Enter the account locally. Never put real credentials in this example.
-windows_access:
-  user: ''
-  password: ''
-  transport: ntlm
+# Merge non-secret connection settings into existing private settings.yml.
+# Keep the EXISTING features.kerberos switch. When true it enforces Kerberos.
+# Do not replace the surrounding features mapping with an example.
+windows_connection:
   port: 5986
   certificate_validation: validate
   ca_trust_path: ''
-windows_host_access: {}
+  kinit_mode: managed
+  # transport: ntlm  # Optional only when features.kerberos is false.
+windows_host_connection: {}
+# Account fields are exclusively in secrets.yml; see secrets.yml.example.
 windows_script_root: 'C:\Scripte'
 windows_state_root: 'C:\ProgramData\ScriptJobs'
 windows_timezone: 'W. Europe Standard Time'

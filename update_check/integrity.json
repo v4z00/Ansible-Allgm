@@ -8,12 +8,12 @@
     "probes.py": "3ef5592956d6f9e7072310b39b3a9cdf5e38057b194faa4790a30ea38c01fa70",
     "VERSION.txt": "04c93b7e7635a43d0cb6d097f9af0a72a9973041d11847e521cc682f1668c605",
     "tests/test_check.py": "0acd1d021c3fde1f64e782f565b9897a74bc6d34702bdbb650d52d28b05dea03",
-    "release.json": "814639eb2c8e2344439747b8fd443d59ad16d838e5c2832358d6976548876c1d",
+    "release.json": "333ebc7e2abbbc411f68e693e8e44917baa62ee224e2048ad1ab1f5c8855425c",
     "settings_contract.json": "8c35306e9cf5bd5f0c76bac08a333fd983b1f7d821a10d77f0f7f4a1b2b148d1",
     "settings_catalog.json": "1542fef04599ec29d60847b38bc7838bfe14d6cd304c7fa886f9edc0547f824c",
-    "manifests/controller_basis.json": "14213e925968853aff084197d9a4c73d82a8d567ee9b3e08552f67eaea0ded5c",
+    "manifests/controller_basis.json": "1155b0647b25e335eaa007bcb32e9fbc2d3f669a2d773f028a38268e9f23fcfb",
     "manifests/host_updates.json": "5d0661b9ab84017e75d06e43eea8af5036ca1b3eec729d9e05428c32af318eea",
-    "manifests/tls_tasks.json": "6a29da84f482f5075c30cf10c76deeeec164c578eb44b430144b18a09c623a43",
+    "manifests/tls_tasks.json": "fd896d9cf276441d10a60990124237bb96a0eaa86016d5d437b6c90b86c1845d",
     "manifests/bootstrap.json": "51ca216536f6003237a46b62d4c480722b851178f135db85df23fa8febd79488",
     "manifests/version_pruefer.json": "8ab494118d1e08203bbbc14d260865427d6649fd67e2ab36a18d91b74b9952c7",
     "cleanup.py": "ef0fd75326697b291b075104c0d4408030aa89fad020193671758a4759121738",
@@ -25,7 +25,7 @@
     "local_extensions.py": "ea5afc8741f12bd72e9b011465f3a4e7c06dbf3f84c4434742582c5fa2827a60",
     "tests/test_local_extensions.py": "4b655c74bd450dd4752e7f3c3a259c35e5f6416d5c14e0131b4b13068e1d6639",
     "tests/test_docker_update.py": "62d9d451034e60dee0d1cdc7faeff8ab2a852234497cacb60093005048892f7c",
-    "manifests/script_jobs.json": "e2e03d0f1e0f1def043a3bbd7d7276ed914d53f6f81e39da3c045c3fbd0e7448",
+    "manifests/script_jobs.json": "5d11e6b9d057862b230417cc9a686f81839378dd4cea03653403c4f749f1555f",
     "tests/test_branches.py": "381f52127176cf9fa4a1342ecabccc850b569902435a1aff91cdb02bcc053372",
     "rollout.py": "5fee32129a8d78b1dc85e55e734ebc5845d5fbcde4a5cd92024fa83fd78e45f9",
     "staging_manifest.py": "613b305ea18aaecdcbb10310803916e01796598328551baff749f34ecc5e199d",
@@ -43,7 +43,7 @@
     "tests/test_controller_paths.py": "8af9fe08f6fb7bad654b06c7395cbe22f335dc8b2d82e5a003bd19fa8226a015",
     "tests/test_docker_deploy.py": "342a0d17096e0f524bfdf9289c7d632e7aad7c61d1dccfe365866cd5adb8fb29",
     "tests/test_extending_examples.py": "0d578e96af415cddf2479bbcde5923d9b35c5e53d72b178e83886bdb1d68fec5",
-    "manifests/windows_foundation.json": "7dc9a9d1ac1abfe187f5d9fae830a58ae39df51e07c0ecc9162a771d57b06f24"
+    "manifests/windows_foundation.json": "80da31ab7049e3ddfb5c2fba703541e7692abf2858f76c376565d7e72211c468"
   },
   "trust": "Lokale Sollwerte, keine Signatur. Nicht aus veraenderten Live-Dateien automatisch neu erzeugen."
 }

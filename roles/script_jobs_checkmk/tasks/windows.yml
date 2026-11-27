@@ -1,4 +1,7 @@
 ---
+- name: Verify Windows authentication prerequisites
+  ansible.builtin.include_role:
+    name: windows_connection_guard
 - name: Ensure the Windows job library is installed
   ansible.builtin.include_role:
     name: windows_script_library

@@ -1,3 +1,6 @@
+- name: Verify the configured Windows authentication policy
+  ansible.builtin.include_role:
+    name: windows_connection_guard
 - name: Require an explicit single GPO management host and opt-in switch
   ansible.builtin.assert:
     that:

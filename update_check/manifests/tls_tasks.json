@@ -12,7 +12,7 @@
     "playbooks/monitoring/deploy_telegraf.yml": "1464f13d88625f105416f05c21b67ce1aa34d1ae30c067d91e374582be4c356c",
     "roles/checkmk_agent/tasks/linux.yml": "8aa1d752862aa41512a2024dbe7ee15c90a6d0360708f5f97c839cc40353d4e8",
     "roles/checkmk_agent/tasks/main.yml": "de2fe6270bda944bea360070650949668ace1dc1aa4e5b67b58909d165ea1319",
-    "roles/checkmk_agent/tasks/windows.yml": "245499dae7f3bdea3854e53e11b8391e6f1b9392b27b17133cf82aca03babc4f",
+    "roles/checkmk_agent/tasks/windows.yml": "699e248aca276dd5f3e0f270f86839db8e8f9542f63cbd1d1ca9e7ad76c63510",
     "scripts/download_checkmk_artifacts.sh": "d8e84ccf2ca1f4a235e9081de370884d8e4bb624aa18914ac88014a3585da1c7",
     "scripts/plan_checkmk_migration.py": "fe40b84c6e45526383baf1f05b84c747ad764441fe8d824db649149e6f9de415",
     "templates/monitoring/telegraf.conf.j2": "cfa37b7cbf21c6d684e2b75df266a35a18e2e3523c144062ad6231b0098438e5"

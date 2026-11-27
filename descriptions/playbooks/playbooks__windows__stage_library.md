@@ -121,7 +121,7 @@ keine Fachaufgabe. SYSVOL, GPOs und ADMX bleiben getrennt.
     "roles/windows_private_paths/defaults/main.yml": "837dd13bfcadd8e9aa90d307c16f693d50f98c30665bdf007cf28d653713a2a0",
     "roles/windows_private_paths/tasks/main.yml": "339efbc5858ac5acb1fbd2a53a988be36e60d03aa6f47bc19a80f3b0a9fdb38e",
     "roles/windows_script_library/defaults/main.yml": "498c646175a7f392295d6cb65a15b36c9326837c1cc5b837d360a90238d933f5",
-    "roles/windows_script_library/tasks/main.yml": "b18cfd83ff4dfd76bf517317ecf1992c46dff2a9392daeacec2ac2e0f1018808",
+    "roles/windows_script_library/tasks/main.yml": "fa716834bc1593354a822ca6a378261b0d939c5e842631db2289082e986bd667",
     "scripts/download_windows_sqlite.py": "9e54ffc684d76230e1b79af158fb98cea1eee7f19bd0c812ec391c3390598a62"
   },
   "i18n": {

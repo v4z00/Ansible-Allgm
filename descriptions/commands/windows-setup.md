@@ -1,31 +1,50 @@
 # Prepare Windows HTTPS access
 
-Run `bin/control windows-setup` for a preview, then `bin/control windows-setup --apply`.
-The helper creates only a missing `group_vars/all_windows_systems/access.yml`, mode 0600.
-It never opens password settings, changes an existing resolver, or contacts hosts.
+Run `bin/control windows-setup` for a preview and add `--apply` to create the
+missing Windows-group resolver (0600). Use `--upgrade-known-resolver` to preview
+an upgrade of a byte-identical previous resolver. With `--apply`, the helper
+backs up that resolver under `x/backups/windows-access` before replacing it.
+Custom resolvers need a manual review of the differences.
 
-Merge the neutral fields from `templates/windows/settings.example.yml` into the existing
-private settings file. Enter `windows_access.user` and `.password` locally. Windows
-inventory groups must include `all_windows_systems`; Linux keeps its existing SSH resolver.
-HTTPS/5986, NTLM and certificate validation are defaults. Set a trusted CA bundle when
-needed. Kerberos requires the corresponding controller dependencies and DNS setup.
-After updating controller code, run `bin/setup-runtime` to install pywinrm before use.
+Keep `windows_access.user` and `windows_access.password` together in the existing
+private `group_vars/all/secrets.yml`. The helper uses only the public resolver
+template. Optional connection settings are in `templates/windows/settings.example.yml`.
+Windows inventory hosts belong to `all_windows_systems`. Use a DNS name matching
+the server certificate and Kerberos service principal.
+
+With `features.kerberos: true`, WinRM requires Kerberos over HTTPS/5986. Set a UPN
+such as `automation@EXAMPLE.INVALID`. Managed kinit obtains a ticket with the
+configured account. Manual kinit uses an existing ticket cache. Prepare the
+Debian controller with `bin/setup-runtime --windows-kerberos` and configure DNS,
+time synchronization, the realm and CA trust. Without the Kerberos feature, the
+resolver defaults to NTLM unless Kerberos is selected explicitly.
+Run `bin/control windows-check --limit HOST` to verify the connection.
 
 <details>
 <summary>Deutsch</summary>
 
 # Windows-Zugang über HTTPS vorbereiten
 
-`bin/control windows-setup` zeigt die Vorschau, `bin/control windows-setup --apply`
-legt ausschließlich einen fehlenden Windows-Gruppenresolver mit Modus 0600 an.
-Bestehende Resolver und Settings bleiben erhalten; der Helfer liest keine Passwortwerte.
+`bin/control windows-setup` zeigt die Vorschau. Mit `--apply` wird der fehlende
+Windows-Gruppenresolver mit Modus 0600 angelegt. `--upgrade-known-resolver` zeigt
+die Aktualisierung eines exakt bekannten Altstands. Mit `--apply` sichert der
+Helfer diesen Resolver unter `x/backups/windows-access` und aktualisiert ihn.
+Bei einem selbst bearbeiteten Resolver die Unterschiede manuell prüfen.
 
-Die neutralen Felder aus `templates/windows/settings.example.yml` in die vorhandenen
-privaten Settings ergänzen und den Windows-Benutzer samt Passwort dort selbst eintragen.
-Windows gehört in `all_windows_systems`. Die Linux-SSH-Auflösung bleibt bestehen.
-Standard sind HTTPS/5986, NTLM und aktive Zertifikatsprüfung. Eine eigene CA bei Bedarf
-über `ca_trust_path` angeben. Kerberos benötigt seine Controller-Abhängigkeiten und DNS.
-Nach dem Codeupdate `bin/setup-runtime` für pywinrm ausführen. Kein Host wird hier verändert.
+`windows_access.user` und `windows_access.password` bleiben zusammen in der
+bestehenden privaten `group_vars/all/secrets.yml`. Der Helfer verwendet die
+öffentliche Resolver-Vorlage. Optionale Verbindungseinstellungen stehen in
+`templates/windows/settings.example.yml`. Windows-Ziele gehören in
+`all_windows_systems`. Der DNS-Name muss zu Zertifikat und Kerberos-SPN passen.
+
+Bei `features.kerberos: true` ist Kerberos über HTTPS/5986 verpflichtend. Den
+Benutzer als UPN eintragen, beispielsweise `automation@EXAMPLE.INVALID`.
+Managed kinit bezieht das Ticket mit dem konfigurierten Konto. Manual kinit
+verwendet einen vorhandenen Ticketcache. Auf Debian
+`bin/setup-runtime --windows-kerberos` ausführen. DNS, Zeitsynchronisation, Realm
+und CA-Vertrauen müssen passen. Bei ausgeschaltetem Kerberos-Feature gilt NTLM
+als Vorgabe, sofern nicht ausdrücklich Kerberos gewählt wird.
+`bin/control windows-check --limit HOST` prüft die Verbindung.
 
 </details>
 
@@ -43,7 +62,7 @@ Nach dem Codeupdate `bin/setup-runtime` für pywinrm ausführen. Kein Host wird 
     {
       "id": "apply",
       "label": "apply",
-      "description": "Create only the missing private Windows resolver.",
+      "description": "Create a missing resolver or apply an explicitly selected upgrade.",
       "type": "boolean",
       "required": false,
       "sensitive": false,
@@ -51,41 +70,67 @@ Nach dem Codeupdate `bin/setup-runtime` für pywinrm ausführen. Kein Host wird 
         "kind": "flag",
         "name": "--apply"
       }
+    },
+    {
+      "id": "upgrade_known_resolver",
+      "label": "Upgrade the known resolver",
+      "description": "Preview and optionally upgrade a byte-identical old resolver with backup.",
+      "type": "boolean",
+      "required": false,
+      "sensitive": false,
+      "binding": {
+        "kind": "flag",
+        "name": "--upgrade-known-resolver"
+      }
     }
   ],
   "constraints": [],
   "sources": [
     "bin/control.d/windows-setup.json",
     "bin/control.d/windows-setup.sh",
+    "bin/setup-runtime",
+    "scripts/setup_windows.py",
     "templates/windows/access.yml.example",
-    "templates/windows/settings.example.yml",
-    "scripts/setup_windows.py"
+    "templates/windows/requirements-kerberos.txt",
+    "templates/windows/secrets.yml.example",
+    "templates/windows/settings.example.yml"
   ],
   "source_hashes": {
-    "bin/control.d/windows-setup.json": "ecb534a3939319fab5f34b2868056ca53e9ec3a5cd7b5f7095b61146ac7527f5",
+    "bin/control.d/windows-setup.json": "cb3df6fe981ebf693ecbe77a6e47d1f3b778bdbc4b49dae1f854e9736a56235d",
     "bin/control.d/windows-setup.sh": "e836be47701c88a7ec783ac09c1886fc50234a89022cdfbfbb2102722fca3949",
-    "templates/windows/access.yml.example": "1ac2489081cba24348ad5ba5050dd21da4d2ba255a42d118d9e40e9574bff264",
-    "templates/windows/settings.example.yml": "5fb78cd68ace6c666611dafc1ce83c182de74b33a2b021df69112a7da4a7775d",
-    "scripts/setup_windows.py": "57de0c8482ed5e1a1dc3cfcd7967ac07e0275a8e38f53b13da02e10878b48558"
+    "bin/setup-runtime": "24f88f27c7103dc52203585a16f5223540a8ceddb270c7f27914f14e43ca902c",
+    "scripts/setup_windows.py": "7ec80c07824955871a1e5bc7a4f294f8613445c60dfb57c51f4e096a6db96f17",
+    "templates/windows/access.yml.example": "41d0abf0e1b347c64ad3fd322e3c030c12654bd5fff0b2d39a01566f22c1aa6d",
+    "templates/windows/requirements-kerberos.txt": "c4dd61709f3d0676371b1d9e09b688fe993e598a522d07acacf2a3681bd68171",
+    "templates/windows/secrets.yml.example": "db8877b6d3ae05c1960d336cc4de380f1811f400a4d58453fa1d6f257f3b3478",
+    "templates/windows/settings.example.yml": "07b237f5931e831fcd63ab46ce544424de810613387e450d79f45c6d67c9f1c3"
   },
   "i18n": {
     "en": {
       "title": "Prepare Windows HTTPS access",
-      "description": "# Prepare Windows HTTPS access\n\nRun `bin/control windows-setup` for a preview, then `bin/control windows-setup --apply`.\nThe helper creates only a missing `group_vars/all_windows_systems/access.yml`, mode 0600.\nIt never opens password settings, changes an existing resolver, or contacts hosts.\n\nMerge the neutral fields from `templates/windows/settings.example.yml` into the existing\nprivate settings file. Enter `windows_access.user` and `.password` locally. Windows\ninventory groups must include `all_windows_systems`; Linux keeps its existing SSH resolver.\nHTTPS/5986, NTLM and certificate validation are defaults. Set a trusted CA bundle when\nneeded. Kerberos requires the corresponding controller dependencies and DNS setup.\nAfter updating controller code, run `bin/setup-runtime` to install pywinrm before use.",
+      "description": "# Prepare Windows HTTPS access\n\nRun `bin/control windows-setup` for a preview and add `--apply` to create the\nmissing Windows-group resolver (0600). Use `--upgrade-known-resolver` to preview\nan upgrade of a byte-identical previous resolver. With `--apply`, the helper\nbacks up that resolver under `x/backups/windows-access` before replacing it.\nCustom resolvers need a manual review of the differences.\n\nKeep `windows_access.user` and `windows_access.password` together in the existing\nprivate `group_vars/all/secrets.yml`. The helper uses only the public resolver\ntemplate. Optional connection settings are in `templates/windows/settings.example.yml`.\nWindows inventory hosts belong to `all_windows_systems`. Use a DNS name matching\nthe server certificate and Kerberos service principal.\n\nWith `features.kerberos: true`, WinRM requires Kerberos over HTTPS/5986. Set a UPN\nsuch as `automation@EXAMPLE.INVALID`. Managed kinit obtains a ticket with the\nconfigured account. Manual kinit uses an existing ticket cache. Prepare the\nDebian controller with `bin/setup-runtime --windows-kerberos` and configure DNS,\ntime synchronization, the realm and CA trust. Without the Kerberos feature, the\nresolver defaults to NTLM unless Kerberos is selected explicitly.\nRun `bin/control windows-check --limit HOST` to verify the connection.\n",
       "fields": {
         "apply": {
           "label": "apply",
-          "description": "Create only the missing private Windows resolver."
+          "description": "Create a missing resolver or apply an explicitly selected upgrade."
+        },
+        "upgrade_known_resolver": {
+          "label": "Upgrade the known resolver",
+          "description": "Preview and optionally upgrade a byte-identical old resolver with backup."
         }
       }
     },
     "de": {
       "title": "Windows-Zugang über HTTPS vorbereiten",
-      "description": "# Windows-Zugang über HTTPS vorbereiten\n\n`bin/control windows-setup` zeigt die Vorschau, `bin/control windows-setup --apply`\nlegt ausschließlich einen fehlenden Windows-Gruppenresolver mit Modus 0600 an.\nBestehende Resolver und Settings bleiben erhalten; der Helfer liest keine Passwortwerte.\n\nDie neutralen Felder aus `templates/windows/settings.example.yml` in die vorhandenen\nprivaten Settings ergänzen und den Windows-Benutzer samt Passwort dort selbst eintragen.\nWindows gehört in `all_windows_systems`. Die Linux-SSH-Auflösung bleibt bestehen.\nStandard sind HTTPS/5986, NTLM und aktive Zertifikatsprüfung. Eine eigene CA bei Bedarf\nüber `ca_trust_path` angeben. Kerberos benötigt seine Controller-Abhängigkeiten und DNS.\nNach dem Codeupdate `bin/setup-runtime` für pywinrm ausführen. Kein Host wird hier verändert.",
+      "description": "# Windows-Zugang über HTTPS vorbereiten\n\n`bin/control windows-setup` zeigt die Vorschau. Mit `--apply` wird der fehlende\nWindows-Gruppenresolver mit Modus 0600 angelegt. `--upgrade-known-resolver` zeigt\ndie Aktualisierung eines exakt bekannten Altstands. Mit `--apply` sichert der\nHelfer diesen Resolver unter `x/backups/windows-access` und aktualisiert ihn.\nBei einem selbst bearbeiteten Resolver die Unterschiede manuell prüfen.\n\n`windows_access.user` und `windows_access.password` bleiben zusammen in der\nbestehenden privaten `group_vars/all/secrets.yml`. Der Helfer verwendet die\nöffentliche Resolver-Vorlage. Optionale Verbindungseinstellungen stehen in\n`templates/windows/settings.example.yml`. Windows-Ziele gehören in\n`all_windows_systems`. Der DNS-Name muss zu Zertifikat und Kerberos-SPN passen.\n\nBei `features.kerberos: true` ist Kerberos über HTTPS/5986 verpflichtend. Den\nBenutzer als UPN eintragen, beispielsweise `automation@EXAMPLE.INVALID`.\nManaged kinit bezieht das Ticket mit dem konfigurierten Konto. Manual kinit\nverwendet einen vorhandenen Ticketcache. Auf Debian\n`bin/setup-runtime --windows-kerberos` ausführen. DNS, Zeitsynchronisation, Realm\nund CA-Vertrauen müssen passen. Bei ausgeschaltetem Kerberos-Feature gilt NTLM\nals Vorgabe, sofern nicht ausdrücklich Kerberos gewählt wird.\n`bin/control windows-check --limit HOST` prüft die Verbindung.\n",
       "fields": {
         "apply": {
           "label": "apply",
-          "description": "Create only the missing private Windows resolver."
+          "description": "Fehlenden Resolver anlegen oder ausdrücklich gewählte Aktualisierung anwenden."
+        },
+        "upgrade_known_resolver": {
+          "label": "Bekannten Resolver aktualisieren",
+          "description": "Unveränderten Altstand prüfen und optional mit Sicherung aktualisieren."
         }
       }
     }

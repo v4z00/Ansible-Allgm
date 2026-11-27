@@ -1,4 +1,7 @@
 ---
+- name: Verify the configured Windows authentication policy
+  ansible.builtin.include_role:
+    name: windows_connection_guard
 - name: Read Windows facts through the selected connection
   ansible.windows.setup:
     gather_subset: [min]

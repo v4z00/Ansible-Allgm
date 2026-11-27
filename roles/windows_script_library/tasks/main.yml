@@ -1,4 +1,7 @@
 ---
+- name: Verify the configured Windows authentication policy
+  ansible.builtin.include_role:
+    name: windows_connection_guard
 - name: Require explicit target selection and separate local runtime paths
   ansible.builtin.assert:
     that:

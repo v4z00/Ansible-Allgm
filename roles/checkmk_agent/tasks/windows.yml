@@ -1,4 +1,7 @@
 ---
+- name: Verify the configured Windows authentication policy
+  ansible.builtin.include_role:
+    name: windows_connection_guard
 - name: Copy the Windows agent MSI from the controller
   ansible.windows.win_copy:
     src: "{{ checkmk_windows_agent_package_src }}"

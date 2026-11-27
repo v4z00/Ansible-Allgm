@@ -117,7 +117,7 @@ und die echte Vertrauenskette dieser Umgebung müssen noch im Pilot bestätigt w
     "roles/windows_code_signing/tasks/library.yml": "d400ec9b4fe88ccd1419f3077bd748882d44753d98ac61afb5c2b6dca9c020db",
     "roles/windows_code_signing/tasks/main.yml": "c915df95c8ae0caef55b6d4761636b3d278d8709a3f69b3934d4c631f41e9400",
     "roles/windows_code_signing/tasks/trust.yml": "ccc08ce7cca2d4d7d9a95b8506d56fcb10589ec268cd97ff56b939cbd9255ef5",
-    "roles/windows_code_signing/tasks/validate.yml": "5be4f9f3e025759c01bdbafeb2f5615a961e40e911e7fcd597850660cfa268f8",
+    "roles/windows_code_signing/tasks/validate.yml": "319bb0b9c3ee7f3a561bd7dda7ebcbf08e53aaa540f6e134ffbfc6b170437c33",
     "roles/windows_code_signing/templates/setup-probe.ps1.j2": "f91f0e18a978f0aa02b8ae5c5470ed702c74d8013597a4e128350957b6743a25",
     "roles/windows_code_signing/templates/sign-bundle.ps1.j2": "1e877235ae59edbeb06b3d198d97b3afa6e9106f8656252b42dfec9e45b574e3",
     "scripts/windows_signing_bundle.py": "ff6560e44f4ab816a6564c9169bd35db351100fd9ba4c114ee170e8739207338"

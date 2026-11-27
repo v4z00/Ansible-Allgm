@@ -1,0 +1,44 @@
+---
+- name: Validate the Windows connection without displaying account values
+  block:
+    - name: Require HTTPS and honor the environment Kerberos switch
+      ansible.builtin.assert:
+        that:
+          - (features | default({})).get('kerberos', false) is boolean
+          - ansible_connection == 'winrm'
+          - ansible_winrm_scheme | default('') == 'https'
+          - ansible_winrm_server_cert_validation | default('validate') in ['validate', 'ignore']
+          - ansible_winrm_transport | default('') in ['kerberos', 'ntlm']
+          - not (features | default({})).get('kerberos', false) or ansible_winrm_transport == 'kerberos'
+          - ansible_winrm_transport != 'kerberos' or (ansible_user | default('')) is match('^[^@\s]+@[^@\s]+$')
+          - ansible_user | default('') | length > 0
+          - ansible_winrm_kinit_mode | default('managed') in ['managed', 'manual']
+          - ansible_winrm_transport != 'kerberos' or ansible_winrm_kinit_mode | default('managed') == 'manual' or ansible_password | default('') | length > 0
+      no_log: true
+  rescue:
+    - name: Explain the connection prerequisites without secret values
+      ansible.builtin.fail:
+        msg: Windows requires WinRM HTTPS, a supported single transport and a user. Enabled features.kerberos requires Kerberos with a UPN principal; managed kinit also needs the private password. No NTLM fallback is allowed.
+- name: Verify Kerberos runtime dependencies without obtaining a ticket
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - -c
+      - "import shutil,sys,winrm,requests_kerberos,kerberos; sys.exit(0 if shutil.which('kinit') else 2)"
+  delegate_to: localhost
+  become: false
+  vars:
+    ansible_connection: local
+    ansible_become: false
+    ansible_shell_type: sh
+  changed_when: false
+  check_mode: false
+  register: windows_kerberos_dependencies
+  failed_when: false
+  no_log: true
+  when: ansible_winrm_transport == 'kerberos' and windows_connection_guard_dependencies
+- name: Require the selected Kerberos runtime before host contact
+  ansible.builtin.assert:
+    that: windows_kerberos_dependencies.rc == 0
+    fail_msg: Install the controller Kerberos dependencies with bin/setup-runtime --windows-kerberos and prepare DNS, time and krb5.conf. No NTLM fallback will be attempted.
+  when: ansible_winrm_transport == 'kerberos' and windows_connection_guard_dependencies

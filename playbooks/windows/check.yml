@@ -7,16 +7,9 @@
     - name: Require an explicit Windows target selection
       ansible.builtin.assert:
         that: ansible_limit | default('') | trim | length > 0
-    - name: Require the configured HTTPS Windows connection
-      ansible.builtin.assert:
-        that:
-          - ansible_connection == 'winrm'
-          - ansible_winrm_scheme | default('') == 'https'
-          - ansible_winrm_transport | default('') in ['ntlm', 'kerberos']
-          - ansible_winrm_server_cert_validation | default('validate') in ['validate', 'ignore']
-          - ansible_user | default('') | length > 0
-        fail_msg: Configure the Windows resolver and private windows_access settings first.
-      no_log: true
+    - name: Verify Windows authentication prerequisites
+      ansible.builtin.include_role:
+        name: windows_connection_guard
       tags: [always]
 
     - name: Test authenticated Windows remoting

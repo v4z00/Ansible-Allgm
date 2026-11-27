@@ -157,7 +157,7 @@ Windows verwendet `bin/control bootstrap --platform windows --limit example-host
     "roles/bootstrap_ssh/tasks/main.yml": "d168265533ba97af5f81e007f50a154e4a788f74ba9543ade1cf100e19df228d",
     "scripts/run_platform_bootstrap.py": "207b53757399c2e60ebb6135a10bc1d34889f410675708c9c65bdaa22f90b420",
     "playbooks/windows/bootstrap.yml": "b4a87046013c89827d98bcc07cda098b81fe1767c83b64dd9efd8afce885b3a4",
-    "roles/windows_bootstrap/tasks/main.yml": "b31b49ba141dfcb87b544cf4a105a66392a41dd1f9bc3e50cff87093cb378742",
+    "roles/windows_bootstrap/tasks/main.yml": "fea094022dbcfd894b29adcd041afb05b3d799d4c2ba6d3480cf6d864b5cc772",
     "roles/windows_private_paths/tasks/main.yml": "339efbc5858ac5acb1fbd2a53a988be36e60d03aa6f47bc19a80f3b0a9fdb38e"
   },
   "i18n": {

@@ -25,6 +25,10 @@ PLAY='''- name: Read local host job events without executing jobs
   vars:
     job_is_windows: "{{ ansible_connection | default('ssh') in ['winrm','psrp'] or inventory_hostname in groups.get('all_windows_systems', []) }}"
   tasks:
+    - name: Verify Windows authentication prerequisites
+      ansible.builtin.include_role:
+        name: windows_connection_guard
+      when: job_is_windows
     - name: Observe explicitly configured systemd services without running jobs
       ansible.builtin.command:
         argv: "{{ [script_jobs_python | default('/usr/bin/python3'), job_source_overrides.get(inventory_hostname, {}).get('root', script_jobs_target_root | default(script_path | default('/scripte'))) ~ '/bin/script-jobs', '--db', job_source_overrides.get(inventory_hostname, {}).get('database', script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3')), 'systemd-record', '--config', (job_source_overrides.get(inventory_hostname, {}).get('database', script_jobs_database_path | default('/var/lib/script-jobs/jobs.sqlite3'))) | dirname ~ '/systemd.json', '--sample', job_systemd_sample, '--expect-profiles', ({'profiles': script_jobs_systemd_profiles | default({}), 'selected': script_jobs_systemd_selected_profiles} | to_json)] }}"

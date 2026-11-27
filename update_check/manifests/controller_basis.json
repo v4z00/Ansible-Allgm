@@ -120,7 +120,7 @@
     "bin/control.d/wan-check.json": "1b4010d9d0b305495f87a31fc0125f94738927b850db646825acc7e07f94b443",
     "bin/control.d/wan-check.sh": "76a2718860aae610b66ad961e52aaafff5639db9dc3ef603c0d1faada28fbe18",
     "bin/install-controller": "606db45311631b739dcae6e717c4ea46c8fec10a35d71f835d9d3a6fa8311a56",
-    "bin/setup-runtime": "2fc28973f55863d8aa4f79e366f1b10121e5ee951f04c82f9c0be90e4628fb95",
+    "bin/setup-runtime": "24f88f27c7103dc52203585a16f5223540a8ceddb270c7f27914f14e43ca902c",
     "config/bashrc": "71c142457b955dabf4196aa78839e68cb09004f2c9d668d82c6db8d1b6e7308a",
     "config/shell_aliases.sh": "adfe60f157d13215f6b5c89dcb4b02493446d7210c507628b7f7a07f50b274e2",
     "controller-base.json": "439d7176387f1e1d41f95d0b0cb7d29122a60c573376a61f8b56a7f988f96d14",

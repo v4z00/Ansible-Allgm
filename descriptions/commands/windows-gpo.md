@@ -87,7 +87,7 @@ References: [New-GPO](https://learn.microsoft.com/en-us/powershell/module/groupp
     "roles/windows_gpo/files/Read-GpoPolicyString.ps1": "040111e1c864b8b31385d10444fac4e38eb3d2eb0ce140c6376e37f6ebcb2905",
     "roles/windows_gpo/files/Read-GpoRegistryPolicy.ps1": "18039c42061fa0df67c0909214ba486dbad3500d77222f9c3e271ac1075bae2a",
     "roles/windows_gpo/filter_plugins/gpo_plan.py": "13a5d1c6c73144c236245254c6a8615d2a54279ba40bffb51afc506537b9d6f1",
-    "roles/windows_gpo/tasks/main.yml": "3297962ae4c1dfba6d558a60cfa51491aaedba30b9c88ebf65a66d850e0c0495",
+    "roles/windows_gpo/tasks/main.yml": "a6faef14a9dbada96489ea09ca7f01ad5f7435b44577f4ece8bef7589f0294da",
     "roles/windows_gpo/templates/manage.ps1.j2": "cc921f320ebd1586ea6859ab1e5a9a6de50cfd70c0af0debc826e17bd88dd0f8"
   },
   "i18n": {
