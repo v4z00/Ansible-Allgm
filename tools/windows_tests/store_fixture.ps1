@@ -4,7 +4,16 @@ Import-Module (Join-Path $Root 'artifacts/script-library/windows/lib/ScriptLibra
 [Threading.Thread]::CurrentThread.CurrentCulture = 'de-DE'
 $database = Join-Path $Directory "job ' fixture.sqlite3"
 $store = New-JobStore -Database $database -Sqlite $Sqlite -Source 'fixture.example.invalid'
-if ($Case -eq 'store') {
+if ($Case -eq 'sql-rows') {
+    $none = @(Invoke-JobSql -Store $store -Sql 'SELECT key FROM meta WHERE 0;')
+    $one = @(Invoke-JobSql -Store $store -Sql "SELECT key FROM meta WHERE key='schema';")
+    $many = @(Invoke-JobSql -Store $store -Sql 'SELECT key FROM meta ORDER BY key;')
+    if ($none.Count -ne 0 -or $one.Count -ne 1 -or $one[0].key -ne 'schema' -or
+        ($many.key -join ',') -ne 'epoch,floor,host,schema' -or $many.Count -ne 4) {
+        throw 'SQLite rows were not emitted as individual results.'
+    }
+}
+elseif ($Case -eq 'store') {
     $missing = Join-Path $Directory 'missing.sqlite3'
     try { $null = Open-JobStore -Database $missing -Sqlite $Sqlite; throw 'Expected failure.' }
     catch { if (Test-Path -LiteralPath $missing) { throw 'Read query created a database.' } }

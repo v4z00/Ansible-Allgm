@@ -2,6 +2,7 @@
 windows_script_signing: {}
 windows_code_signing_defaults:
   enabled: false
+  use_presigned_cache: false
   host: ''
   public_certificate_src: ''
   pfx_src: ''

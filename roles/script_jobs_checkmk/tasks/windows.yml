@@ -5,15 +5,45 @@
 - name: Ensure the Windows job library is installed
   ansible.builtin.include_role:
     name: windows_script_library
+    public: true
+- name: Validate the literal paths used by the Windows agent launcher
+  ansible.builtin.assert:
+    that:
+      - windows_script_root is match(script_jobs_checkmk_cmd_path_pattern)
+      - windows_state_root is match(script_jobs_checkmk_cmd_path_pattern)
+      - windows_sqlite_exe is match(script_jobs_checkmk_cmd_path_pattern)
+  vars:
+    script_jobs_checkmk_cmd_path_pattern: '^[A-Za-z]:\\[^"%\r\n]+$'
+- name: Inspect the previous Windows Checkmk entry point
+  ansible.windows.win_stat:
+    path: "{{ script_jobs_checkmk_windows_local_dir }}\\script_jobs.ps1"
+    checksum_algorithm: sha256
+  register: script_jobs_checkmk_legacy
+- name: Protect locally maintained Checkmk checks with the old name
+  ansible.builtin.assert:
+    that:
+      - script_jobs_checkmk_legacy.stat.checksum | default('') in legacy_digests
+    fail_msg: The existing script_jobs.ps1 differs from the managed template. Move the custom check out of this name before installing the Windows launcher.
+  vars:
+    legacy_template: "{{ lookup('ansible.builtin.template', 'script_jobs.ps1.j2') }}"
+    legacy_digests:
+      - "{{ legacy_template | hash('sha256') }}"
+      - "{{ legacy_template | replace('\n', '\r\n') | hash('sha256') }}"
+  when: script_jobs_checkmk_legacy.stat.exists
 - name: Create the Windows local-check directory
   ansible.windows.win_file:
     path: "{{ script_jobs_checkmk_windows_local_dir }}"
     state: directory
 - name: Write non-secret thresholds in the protected state directory
   ansible.windows.win_copy:
-    content: "{{ {'database': windows_job_database | default('C:\\ProgramData\\ScriptJobs\\jobs.sqlite3'), 'jobs': script_jobs_checkmk_effective, 'security_outbox': script_jobs_checkmk_security_outbox | bool} | to_nice_json }}"
-    dest: "{{ windows_state_root | default('C:\\ProgramData\\ScriptJobs') }}\\config\\checkmk-jobs.json"
-- name: Install the Windows Checkmk entry point
+    content: "{{ {'database': windows_job_database, 'jobs': script_jobs_checkmk_effective, 'security_outbox': script_jobs_checkmk_security_outbox | bool} | to_nice_json }}"
+    dest: "{{ windows_state_root }}\\config\\checkmk-jobs.json"
+- name: Install the Checkmk launcher for the signed PowerShell entry point
   ansible.windows.win_template:
-    src: script_jobs.ps1.j2
-    dest: "{{ script_jobs_checkmk_windows_local_dir }}\\script_jobs.ps1"
+    src: script_jobs.cmd.j2
+    dest: "{{ script_jobs_checkmk_windows_local_dir }}\\script_jobs.cmd"
+- name: Remove the verified old launcher to keep a single result per job
+  ansible.windows.win_file:
+    path: "{{ script_jobs_checkmk_windows_local_dir }}\\script_jobs.ps1"
+    state: absent
+  when: script_jobs_checkmk_legacy.stat.exists

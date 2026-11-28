@@ -54,6 +54,7 @@ PLAY='''- name: Read local host job events without executing jobs
       no_log: true
     - name: Read Windows SQLite events through the local PowerShell library
       ansible.windows.win_powershell:
+        depth: 10
         script: |
           param([string]$Root, [string]$Database, [string]$Sqlite, [long]$After, [string]$Epoch)
           $ErrorActionPreference = 'Stop'
@@ -64,7 +65,7 @@ PLAY='''- name: Read local host job events without executing jobs
         parameters:
           Root: "{{ job_source_overrides.get(inventory_hostname, {}).get('root', windows_script_root | default('C:\\\\Scripte')) }}"
           Database: "{{ job_source_overrides.get(inventory_hostname, {}).get('database', windows_job_database | default('C:\\\\ProgramData\\\\ScriptJobs\\\\jobs.sqlite3')) }}"
-          Sqlite: "{{ windows_sqlite_exe | default((windows_script_root | default('C:\\\\Scripte')) ~ '\\\\runtime\\\\sqlite3.exe') }}"
+          Sqlite: "{{ windows_sqlite_exe | default(job_source_overrides.get(inventory_hostname, {}).get('root', windows_script_root | default('C:\\\\Scripte')) ~ '\\\\runtime\\\\sqlite3.exe') }}"
           After: "{{ job_cursors.get(inventory_hostname, {}).get('last_id', 0) }}"
           Epoch: "{{ job_cursors.get(inventory_hostname, {}).get('epoch', '') }}"
       become: false

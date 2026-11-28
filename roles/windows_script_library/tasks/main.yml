@@ -78,7 +78,7 @@
   ansible.windows.win_copy:
     src: "{{ windows_library_effective_root }}/bin/{{ item }}"
     dest: "{{ windows_script_root }}\\bin\\{{ item }}"
-  loop: [script-jobs.ps1, job-status.ps1]
+  loop: [script-jobs.ps1, job-status.ps1, checkmk-jobs.ps1]
 
 - name: Deploy the source-to-signature receipt without key material
   ansible.windows.win_copy:

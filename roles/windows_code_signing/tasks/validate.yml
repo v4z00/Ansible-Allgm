@@ -8,7 +8,9 @@
   no_log: true
 - name: Validate the signing switch
   ansible.builtin.assert:
-    that: windows_signing_effective.enabled is boolean
+    that:
+      - windows_signing_effective.enabled is boolean
+      - windows_signing_effective.use_presigned_cache is boolean
   no_log: true
 - name: Validate an explicitly enabled signing environment
   ansible.builtin.assert:

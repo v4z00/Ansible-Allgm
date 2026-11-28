@@ -1,0 +1,11 @@
+# Put actual networks in private group_vars and assign stages by group or host.
+windows_ad_firewall_networks:
+  domain_clients: ['192.0.2.0/25', '2001:db8:20::/64']
+  trusted_rpc: ['192.0.2.128/26', '2001:db8:30::/64']
+  administration: ['192.0.2.200', '2001:db8:40::20']
+windows_ad_firewall_stages:
+  directory: [domain_clients]
+  rpc: [trusted_rpc]
+  # domain-members: [domain_clients]
+  # administration: [administration]
+windows_ad_firewall_rpc_ports: '49152-65535'

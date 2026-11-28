@@ -1,9 +1,10 @@
 #requires -Version 5.1
 param(
-    [Parameter(Mandatory)][ValidateSet('init','latest','export','prune','security-alert','security-retry')][string]$Command,
+    [Parameter(Mandatory)][ValidateSet('init','latest','export','prune','run','security-alert','security-retry')][string]$Command,
     [string]$Database = 'C:\ProgramData\ScriptJobs\jobs.sqlite3',
     [string]$Sqlite = (Join-Path (Split-Path -Parent $PSScriptRoot) 'runtime/sqlite3.exe'),
     [string[]]$ConfigFile = @(),
+    [string]$SpecFile,
     [string]$EventKey,
     [string]$Job,
     [string]$Epoch,
@@ -14,6 +15,9 @@ param(
 $ErrorActionPreference = 'Stop'
 try {
     Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'lib/ScriptLibrary.psm1') -DisableNameChecking
+    if ($Command -eq 'run' -and (-not $SpecFile -or -not (Test-Path -LiteralPath $Database -PathType Leaf))) {
+        throw 'The run requires an existing job database and a private job specification.'
+    }
     if ($Command -in @('latest','export')) {
         if (-not (Test-Path -LiteralPath $Database -PathType Leaf)) {
             '{"status":"not_attached","schema":1}'
@@ -31,6 +35,10 @@ try {
         }
         export { $result = Export-JobEvents -Store $store -After $After -Limit $Limit -Epoch $Epoch }
         prune { $result = @{ removed = Remove-JobHistory -Store $store -Days $Days } }
+        run {
+            $exitCode = Invoke-ScriptJob -Store $store -SpecFile $SpecFile
+            $result = @{ schema = 1; exit_code = $exitCode }
+        }
         security-alert {
             $config = Get-JobConfig -Path $ConfigFile
             # Alert details are data on stdin, never executable script/command arguments.

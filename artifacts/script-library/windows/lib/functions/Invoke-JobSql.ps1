@@ -37,7 +37,9 @@ function Invoke-JobSql {
             throw 'SQLite operation failed.'
         }
         if (-not [string]::IsNullOrWhiteSpace($output)) {
-            return $output | ConvertFrom-Json
+            # Windows PowerShell returns a JSON array as a single pipeline object.
+            $rows = ConvertFrom-Json -InputObject $output
+            foreach ($row in $rows) { $row }
         }
     }
     finally { $process.Dispose() }

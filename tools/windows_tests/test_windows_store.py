@@ -51,6 +51,8 @@ class WindowsStore(unittest.TestCase):
         result=subprocess.run(command,capture_output=True,text=True,timeout=60)
         if check:self.assertEqual(result.returncode,0,result.stderr)
         return result
+    def test_sql_results_expose_zero_one_or_many_rows(self):
+        self.fixture('sql-rows')
     def test_protocol_import_unicode_sql_injection_and_read_queries(self):
         self.fixture('store')
         store=Store(self.directory/'controller.sqlite3','controller')

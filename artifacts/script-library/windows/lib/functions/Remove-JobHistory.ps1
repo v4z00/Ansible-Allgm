@@ -14,7 +14,8 @@ COMMIT;
 "@
     $rows = @(Invoke-JobSql -Store $Store -Sql $sql)
     $logs = Join-Path (Split-Path -Parent $Store.Database) 'logs'
-    foreach ($old in @($rows[0].expired | ConvertFrom-Json)) {
+    $expired = ConvertFrom-Json -InputObject $rows[0].expired
+    foreach ($old in $expired) {
         if ($old.source -ne $Store.Source -or $old.epoch -ne $Store.Epoch -or
             $old.run_id -notmatch '^[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$') { continue }
         foreach ($suffix in @('.log','.stderr.log')) {

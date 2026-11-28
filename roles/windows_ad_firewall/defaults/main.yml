@@ -1,0 +1,5 @@
+---
+windows_ad_firewall_apply: false
+windows_ad_firewall_networks: {}
+windows_ad_firewall_stages: {}
+windows_ad_firewall_rpc_ports: '49152-65535'

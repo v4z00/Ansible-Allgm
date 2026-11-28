@@ -15,6 +15,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes,serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID,ExtendedKeyUsageOID
+import yaml
 
 ROOT=Path(__file__).resolve().parents[2]
 spec=importlib.util.spec_from_file_location('windows_signing_bundle',ROOT/'scripts/windows_signing_bundle.py')
@@ -81,6 +82,72 @@ class Signing(unittest.TestCase):
         self.assertTrue(bundle.verify(root,expected))
         (root/'code.ps1').write_text('tampered')
         with self.assertRaises(ValueError):bundle.verify(root,expected)
+    def test_presigned_cache_is_checked_before_publisher_trust(self):
+        binary = Path(sys.executable).with_name('ansible-playbook')
+        if not binary.is_file():
+            self.skipTest('Ansible controller runtime required')
+        scripts = self.root / 'scripts'
+        scripts.mkdir()
+        shutil.copy2(ROOT / 'scripts/windows_signing_bundle.py', scripts)
+        tasks = self.root / 'roles/windows_code_signing/tasks'
+        tasks.mkdir(parents=True)
+        shutil.copy2(ROOT / 'roles/windows_code_signing/tasks/bundle.yml', tasks)
+        (tasks / 'validate.yml').write_text('---\n[]\n')
+        (tasks / 'sign_on_host.yml').write_text(
+            '- ansible.builtin.fail:\n    msg: SIGNER_PROCESS_MUST_NOT_RUN\n'
+        )
+        (tasks / 'trust.yml').write_text(
+            '- name: TEST_CONFIGURE_PUBLISHER_TRUST\n  ansible.builtin.debug:\n    msg: trust\n'
+        )
+        code_root = self.root / 'code'
+        code_root.mkdir()
+        shutil.copy2(self.code, code_root)
+        cache = self.root / 'cache'
+        batch = bundle.prepare(bundle.code_files(code_root), self.certificate, cache)
+        signed_root = Path(batch['signed_root'])
+        receipt = {
+            'schema': 1,
+            'certificate_thumbprint': batch['certificate_thumbprint'],
+            'files': [{'path': 'code.ps1', 'source_sha256': batch['files'][0]['sha256'],
+                       'signed_sha256': batch['files'][0]['sha256']}],
+        }
+        variables = {
+            'windows_signing_source_kind': 'code-root',
+            'windows_signing_source_path': str(code_root),
+            'windows_signing_effective': {
+                'enabled': True,
+                'use_presigned_cache': True,
+                'public_certificate_src': str(self.certificate),
+                'cache_root': str(cache),
+                'timestamp_server': '',
+            },
+        }
+        play = self.root / 'play.yml'
+        play.write_text(yaml.safe_dump([{
+            'hosts': 'localhost',
+            'connection': 'local',
+            'gather_facts': False,
+            'vars': variables,
+            'tasks': [
+                {'ansible.builtin.include_role': {'name': 'windows_code_signing', 'tasks_from': 'bundle'}},
+                {'ansible.builtin.assert': {'that': 'windows_signed_bundle_root is defined'}},
+            ],
+        }]))
+        command = [str(binary), '-i', 'localhost,', str(play)]
+        environment = {
+            **os.environ,
+            'ANSIBLE_LOCAL_TEMP': str(self.root / 'ansible-tmp'),
+            'ANSIBLE_REMOTE_TMP': str(self.root / 'ansible-remote-tmp'),
+        }
+        missing = subprocess.run(command, env=environment, capture_output=True, text=True, timeout=30)
+        self.assertNotEqual(missing.returncode, 0)
+        self.assertNotIn('TEST_CONFIGURE_PUBLISHER_TRUST', missing.stdout)
+        shutil.copy2(self.code, signed_root)
+        (signed_root / 'signed-manifest.json').write_text(json.dumps(receipt))
+        valid = subprocess.run(command, env=environment, capture_output=True, text=True, timeout=30)
+        self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
+        self.assertIn('TEST_CONFIGURE_PUBLISHER_TRUST', valid.stdout)
+        self.assertNotIn('SIGNER_PROCESS_MUST_NOT_RUN', valid.stdout)
     @unittest.skipUnless(PWSH,'Portable PowerShell runtime required')
     def test_signer_control_flow_with_mock_authenticode_cmdlets(self):
         path=self.root/'fixture';path.mkdir()

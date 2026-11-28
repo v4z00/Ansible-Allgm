@@ -1,0 +1,8 @@
+---
+- name: Preview or reconcile domain-controller firewall rules one host at a time
+  hosts: windows_domain_controllers
+  gather_facts: false
+  serial: 1
+  any_errors_fatal: true
+  roles:
+    - windows_ad_firewall

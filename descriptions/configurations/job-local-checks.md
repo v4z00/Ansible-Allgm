@@ -8,8 +8,11 @@ notification credentials are never included in the local-check output.
 
 `script_jobs_checkmk_security_outbox: true` adds a pending-delivery service. Linux uses
 a read-only Python SQLite connection; Windows uses the PowerShell library and SQLite
-CLI. The Windows library/signing prerequisites apply. The playbook adds only its own
-entry point and leaves other local checks intact.
+CLI. The Windows agent calls `script_jobs.cmd`, which invokes the managed
+PowerShell entry point in the shared library. In a signing environment that entry
+point is covered by the library's Authenticode receipt and keeps the host policy.
+Verify live output in the agent's `dump` command in addition to testing the query.
+The playbook preserves other local checks.
 
 Windows agent rollout is separate: `checkmk-download --platform windows` downloads the
 site MSI and selected Windows plugins; `checkmk_manage_windows_agents: true` in the

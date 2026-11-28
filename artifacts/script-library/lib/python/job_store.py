@@ -162,6 +162,7 @@ class Store:
             expected=current['last_id']
             if batch['next']<expected:return 0
             for event in events:
+                if not isinstance(event,dict):raise ValueError('Invalid event record')
                 if not isinstance(event['id'],int) or event['id']<=expected:continue
                 payload=event['payload'];run=payload['run']
                 if run['status'] not in STATUSES or run['category'] not in CATEGORIES:raise ValueError('Invalid event status')

@@ -1,0 +1,4 @@
+@echo off
+setlocal DisableDelayedExpansion
+"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -File "{{ windows_script_root }}\bin\checkmk-jobs.ps1" -ConfigPath "{{ windows_state_root }}\config\checkmk-jobs.json" -Sqlite "{{ windows_sqlite_exe }}" 2>nul
+if errorlevel 1 echo 3 "Script jobs data" - Windows local check could not start

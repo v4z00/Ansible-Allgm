@@ -1,0 +1,24 @@
+---
+- name: Require an explicit target and firewall change decision
+  ansible.builtin.assert:
+    that:
+      - ansible_limit | default('') | trim | length > 0
+      - windows_ad_firewall_apply is boolean
+- name: Validate existing Windows authentication
+  ansible.builtin.include_role:
+    name: windows_connection_guard
+- name: Compile only the AD firewall stages assigned to this host
+  ansible.builtin.set_fact:
+    windows_ad_firewall_plan: "{{ windows_ad_firewall_stages | windows_ad_firewall_plan(windows_ad_firewall_networks, windows_ad_firewall_rpc_ports) }}"
+- name: Compare or apply owned local Windows Firewall rules
+  ansible.windows.win_powershell:
+    script: "{{ lookup('ansible.builtin.file', 'Sync-AdFirewall.ps1') }}"
+    parameters:
+      Plan: "{{ windows_ad_firewall_plan | to_json }}"
+      Apply: "{{ windows_ad_firewall_apply }}"
+  register: windows_ad_firewall_result
+  when: windows_ad_firewall_plan | length > 0
+- name: Show the rule plan and whether Windows accepted the rules
+  ansible.builtin.debug:
+    var: windows_ad_firewall_result.result
+  when: windows_ad_firewall_plan | length > 0

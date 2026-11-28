@@ -37,6 +37,16 @@ A code-root inventory skips configuration/private/state/archive directories befo
 reading files and accepts PowerShell code only. It never scans an execution host.
 The common library entry remains `tasks_from: library`.
 
+When the private key belongs to a signed-in operator, set
+`windows_script_signing.use_presigned_cache: true`. Prepare each library or
+add-on batch with `scripts/windows_signing_bundle.py prepare` and the same
+source, public certificate, cache and timestamp settings as the deployment.
+Use the declared operator session to sign that batch and return the files and
+`signed-manifest.json` to its `signed_root` directory. The controller verifies
+the receipt and file hashes before the deployment role configures publisher
+trust. The execution host still verifies Authenticode and the exact publisher.
+An absent or invalid batch stops deployment and requires a newly signed batch.
+
 The central task calls the same Set-AuthenticodeSignature mechanism as a local signer.
 Timestamping is optional and explicit. Signatures without a timestamp need certificate
 lifetime/rotation planning. A check-mode run performs no key import or signing. Portable
@@ -74,6 +84,15 @@ konfigurierten Host signiert, per Mutex gegen parallele Änderungen geschützt u
 getrennten Quell-/Signatur-SHA zurückgeholt. Native Signaturprüfung vor Import auch auf
 dem Ausführungsziel. PS1, PSM1, PSD1 und PS1XML werden signiert, unbekannte Hostdateien
 nicht rekursiv übernommen. Unveränderte gültige Batches werden wiederverwendet.
+
+Für den Schlüssel eines angemeldeten Benutzers
+`windows_script_signing.use_presigned_cache: true` wählen. Das Paket mit
+`scripts/windows_signing_bundle.py prepare` und denselben Quell-, Zertifikats-,
+Cache- und Zeitstempelparametern vorbereiten. Die signierten Dateien mit
+`signed-manifest.json` im ausgegebenen Verzeichnis `signed_root` ablegen.
+Ansible prüft Beleg und SHA vor der Vertrauenskonfiguration. Das Ausführungsziel
+prüft zusätzlich Authenticode und den vorgesehenen Herausgeber. Ein fehlendes
+oder fehlerhaftes Paket stoppt das Deployment.
 
 Verwendet wird Set-AuthenticodeSignature wie im bisherigen Signer. Zeitstempelserver
 sind optional; ohne Zeitstempel die Zertifikatslaufzeit/Rotation beachten. Checkmode

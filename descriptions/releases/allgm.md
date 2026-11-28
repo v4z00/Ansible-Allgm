@@ -1,5 +1,13 @@
 # Changelog
 
+## s0.9.2 – Scoped AD firewall and job monitoring
+
+Active Directory firewall rules use explicit directory, RPC, member and
+administration stages with named private network scopes. The standard invocation
+previews changes on one domain controller at a time. Managed IDs are distinct
+from existing local and GPO rules. Windows Checkmk queries go through the common
+PowerShell entry point and support the configured Authenticode workflow.
+
 ## s0.9.1 – Windows Kerberos access
 
 Keep the Windows account in the private secrets file. Enabled Kerberos requires

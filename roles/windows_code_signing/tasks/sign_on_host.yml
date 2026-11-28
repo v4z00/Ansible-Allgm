@@ -1,0 +1,46 @@
+---
+- name: Create protected batch directories on the configured signer
+  ansible.builtin.include_role:
+    name: windows_private_paths
+    apply:
+      delegate_to: "{{ windows_signing_effective.host }}"
+      vars:
+        ansible_become: true
+        ansible_become_method: runas
+        ansible_become_user: SYSTEM
+  vars:
+    windows_private_paths:
+      - "{{ windows_signing_effective.work_root }}"
+      - "{{ windows_signing_effective.work_root }}\\batches"
+      - "{{ windows_signing_effective.work_root }}\\batches\\{{ windows_signing_bundle.batch_id }}"
+- name: Sign the exact batch under a signer-local mutex
+  ansible.windows.win_powershell:
+    script: "{{ lookup('ansible.builtin.template', 'sign-bundle.ps1.j2') }}"
+    parameters:
+      Root: "{{ windows_signing_effective.work_root }}\\batches\\{{ windows_signing_bundle.batch_id }}"
+      Payload: "{{ windows_signing_bundle | to_json }}"
+      StoreLocation: "{{ windows_signing_effective.store_location }}"
+      TimestampServer: "{{ windows_signing_effective.timestamp_server }}"
+  delegate_to: "{{ windows_signing_effective.host }}"
+  vars:
+    ansible_become: true
+    ansible_become_method: runas
+    ansible_become_user: SYSTEM
+  register: windows_signing_result
+  no_log: true
+- name: Require verified signer output before retrieving artifacts
+  ansible.builtin.assert:
+    that: windows_signing_result.result.ready
+    fail_msg: The configured signer did not produce a verified signed bundle.
+- name: Retrieve only signed code and its receipt
+  ansible.builtin.fetch:
+    src: "{{ windows_signing_effective.work_root }}\\batches\\{{ windows_signing_bundle.batch_id }}\\{{ item | replace('/', '\\') }}"
+    dest: "{{ windows_signing_bundle.signed_root }}/{{ item }}"
+    flat: true
+  delegate_to: "{{ windows_signing_effective.host }}"
+  vars:
+    ansible_become: true
+    ansible_become_method: runas
+    ansible_become_user: SYSTEM
+  loop: "{{ windows_signing_bundle.files | map(attribute='path') | list + ['signed-manifest.json'] }}"
+  no_log: true
