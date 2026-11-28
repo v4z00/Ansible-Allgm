@@ -10,7 +10,13 @@ Keep `windows_access.user` and `windows_access.password` together in the existin
 private `group_vars/all/secrets.yml`. The helper uses only the public resolver
 template. Optional connection settings are in `templates/windows/settings.example.yml`.
 Windows inventory hosts belong to `all_windows_systems`. Use a DNS name matching
-the server certificate and Kerberos service principal.
+the server certificate and Kerberos service principal. Set
+`windows_connection.dns_suffix` to qualify short inventory names for WinRM.
+Set a complete `inventory_dns_name` in static inventory or in the inventory
+generator's `host_overrides` to replace the derived name.
+`windows_host_connection.<host>.dns_name` takes precedence and an empty name uses
+`ansible_host`. These settings resolve the WinRM endpoint and leave the inventory
+address available for the other integrations.
 
 With `features.kerberos: true`, WinRM requires Kerberos over HTTPS/5986. Set a UPN
 such as `automation@EXAMPLE.INVALID`. Managed kinit obtains a ticket with the
@@ -36,6 +42,12 @@ bestehenden privaten `group_vars/all/secrets.yml`. Der Helfer verwendet die
 öffentliche Resolver-Vorlage. Optionale Verbindungseinstellungen stehen in
 `templates/windows/settings.example.yml`. Windows-Ziele gehören in
 `all_windows_systems`. Der DNS-Name muss zu Zertifikat und Kerberos-SPN passen.
+`windows_connection.dns_suffix` ergänzt kurze Inventarnamen für WinRM.
+Ein vollständiges `inventory_dns_name` aus dem statischen Inventar oder
+aus `host_overrides` im Inventar-Update ersetzt den abgeleiteten Namen.
+`windows_host_connection.<host>.dns_name` hat Vorrang. Bei einem ausdrücklich
+leeren Wert verwendet WinRM `ansible_host`. Die Inventar-IP bleibt für andere
+Integrationen verfügbar.
 
 Bei `features.kerberos: true` ist Kerberos über HTTPS/5986 verpflichtend. Den
 Benutzer als UPN eintragen, beispielsweise `automation@EXAMPLE.INVALID`.
@@ -99,11 +111,11 @@ als Vorgabe, sofern nicht ausdrücklich Kerberos gewählt wird.
     "bin/control.d/windows-setup.json": "cb3df6fe981ebf693ecbe77a6e47d1f3b778bdbc4b49dae1f854e9736a56235d",
     "bin/control.d/windows-setup.sh": "e836be47701c88a7ec783ac09c1886fc50234a89022cdfbfbb2102722fca3949",
     "bin/setup-runtime": "24f88f27c7103dc52203585a16f5223540a8ceddb270c7f27914f14e43ca902c",
-    "scripts/setup_windows.py": "7ec80c07824955871a1e5bc7a4f294f8613445c60dfb57c51f4e096a6db96f17",
-    "templates/windows/access.yml.example": "41d0abf0e1b347c64ad3fd322e3c030c12654bd5fff0b2d39a01566f22c1aa6d",
+    "scripts/setup_windows.py": "78480395f32b0ef7d2c445f50b6d192fd292138e8a8d21f4e2c81e2c88e205a2",
+    "templates/windows/access.yml.example": "0e9db5160d2796c76ce605d70b87e3296b72f51f66c6f99d14d60cb9591fb823",
     "templates/windows/requirements-kerberos.txt": "c4dd61709f3d0676371b1d9e09b688fe993e598a522d07acacf2a3681bd68171",
     "templates/windows/secrets.yml.example": "db8877b6d3ae05c1960d336cc4de380f1811f400a4d58453fa1d6f257f3b3478",
-    "templates/windows/settings.example.yml": "07b237f5931e831fcd63ab46ce544424de810613387e450d79f45c6d67c9f1c3"
+    "templates/windows/settings.example.yml": "b6c034e14124ac5cebabd7744adfc2d51d36c6819f557a8ff0941e140a2ef262"
   },
   "i18n": {
     "en": {

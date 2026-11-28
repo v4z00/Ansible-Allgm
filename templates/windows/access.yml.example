@@ -16,6 +16,14 @@ ansible_password: "{{ windows_effective_access.get('password', '') }}"
 ansible_port: "{{ windows_effective_connection.get('port', 5986) | int }}"
 ansible_become: false
 ansible_winrm_scheme: https
+# Keep the inventory IP available for other automation.
+windows_dns_suffix: "{{ windows_effective_connection.get('dns_suffix', windows_inventory_dns_suffix | default('')) | default('', true) | trim | trim('.') }}"
+windows_default_dns_name: >-
+  {{ (inventory_hostname if '.' in inventory_hostname else inventory_hostname ~ '.' ~ windows_dns_suffix)
+     if windows_dns_suffix else '' }}
+ansible_winrm_host: >-
+  {{ windows_effective_connection.get('dns_name', inventory_dns_name | default(windows_default_dns_name))
+     | default(ansible_host | default(inventory_hostname), true) }}
 # Kerberos is mandatory when the existing environment feature is enabled.
 # A single transport is selected: no ordered list or NTLM fallback.
 ansible_winrm_transport: "{{ 'kerberos' if windows_kerberos_required else windows_effective_connection.get('transport', 'ntlm') }}"

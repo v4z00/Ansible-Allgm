@@ -1,5 +1,13 @@
 # Changelog
 
+## s0.9.3 – Separate WinRM DNS names from inventory addresses
+
+WinRM accepts an environment DNS suffix, an explicit inventory name and a
+complete host override. The DNS name is used for HTTPS and Kerberos while
+Proxmox continues to refresh the inventory IP. Existing controllers can update
+the byte-identical resolver via `windows-setup --upgrade-known-resolver --apply`.
+With no DNS settings, the existing address is used.
+
 ## s0.9.2 – Scoped AD firewall and job monitoring
 
 Active Directory firewall rules use explicit directory, RPC, member and

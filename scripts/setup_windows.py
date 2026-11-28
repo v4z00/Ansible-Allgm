@@ -9,7 +9,10 @@ import sys
 import tempfile
 
 ROOT=Path(__file__).resolve().parents[1]
-KNOWN_RESOLVERS=frozenset(['1ac2489081cba24348ad5ba5050dd21da4d2ba255a42d118d9e40e9574bff264'])
+KNOWN_RESOLVERS = frozenset({
+    '1ac2489081cba24348ad5ba5050dd21da4d2ba255a42d118d9e40e9574bff264',
+    '41d0abf0e1b347c64ad3fd322e3c030c12654bd5fff0b2d39a01566f22c1aa6d',
+})
 
 
 def prepare(root, apply=False, upgrade_known=False):

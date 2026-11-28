@@ -106,6 +106,50 @@ class WindowsAccess(unittest.TestCase):
             self.assertIn('No NTLM fallback',result.stdout+result.stderr)
             self.assertNotIn('fixture-guard-secret',result.stdout+result.stderr)
 
+    def test_winrm_dns_uses_inventory_names_and_preserves_the_dynamic_ip(self):
+        executable = Path(sys.executable).with_name('ansible-playbook')
+        if not executable.is_file():
+            self.skipTest('Ansible runtime required')
+        cases = {
+            'short': ('short.example.invalid', {}),
+            'already.example.invalid': ('already.example.invalid', {}),
+            'static': ('server.other.invalid', {'inventory_dns_name': 'server.other.invalid'}),
+            'override': ('explicit.other.invalid', {'inventory_dns_name': 'unused.example.invalid'}),
+            'address': ('192.0.2.10', {'inventory_dns_name': 'unused.example.invalid'}),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            target = root / 'group_vars/all_windows_systems'
+            target.mkdir(parents=True)
+            shutil.copyfile(ROOT / 'templates/windows/access.yml.example', target / 'access.yml')
+            (target / 'settings.yml').write_text(yaml.safe_dump({
+                'windows_connection': {'dns_suffix': '.example.invalid'},
+                'windows_host_connection': {
+                    'override': {'dns_name': 'explicit.other.invalid'},
+                    'address': {'dns_name': ''},
+                },
+            }))
+            hosts = {
+                host: {'ansible_host': '192.0.2.10', 'expected_name': result, **variables}
+                for host, (result, variables) in cases.items()
+            }
+            inventory = root / 'inventory.yml'
+            inventory.write_text(yaml.safe_dump({'all_windows_systems': {'hosts': hosts}}))
+            play = root / 'test.yml'
+            play.write_text(yaml.safe_dump([{
+                'hosts': 'all_windows_systems',
+                'gather_facts': False,
+                'tasks': [{'ansible.builtin.assert': {'that': [
+                    "ansible_host == '192.0.2.10'", 'ansible_winrm_host == expected_name',
+                ]}}],
+            }]))
+            result = subprocess.run(
+                [str(executable), '-i', str(inventory), str(play)],
+                capture_output=True, text=True, timeout=30,
+                env={**os.environ, 'ANSIBLE_LOCAL_TEMP': str(root / 'tmp')},
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_linux_bootstrap_arguments_remain_unchanged(self):
         args = ['--limit', 'example-host', '--list-hosts']
         self.assertEqual(bootstrap.command(args)[2:], args)

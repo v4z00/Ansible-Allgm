@@ -3,7 +3,7 @@
   "profile": "Allgm",
   "files": {
     "VERSION.txt": {
-      "sha256": "f34248c2449a022d41c918d1e995ad85859a1e9f0e6f89d0af23ae4a55519f71",
+      "sha256": "38ecaa1e4c36c6691944c83df7671fca8b86f5cbf2d4e22c0012aa52df14b149",
       "mode": "0644"
     },
     "artifacts/script-library/bin/job-status": {
@@ -959,7 +959,7 @@
       "mode": "0644"
     },
     "descriptions/commands/windows-setup.md": {
-      "sha256": "3cd8c0887fe2231fd31b594ccdd422acef2dd0c4499954f534497e7addd7e4d0",
+      "sha256": "3431feaafe8040aed588acada6830755fc23b71283661477a858a9fa0f5c4256",
       "mode": "0644"
     },
     "descriptions/configurations/group_vars__all__host_credentials.example.md": {
@@ -1219,7 +1219,7 @@
       "mode": "0644"
     },
     "descriptions/releases/allgm.md": {
-      "sha256": "e8b33b7389f25b2f98c4a2d64e98d96ff021ffe45ec7fe8c99e0af73df059feb",
+      "sha256": "b449c4cd090033490d2bc2f1156bcaf847f176e5d92b6a8b5fa23e2156aa6742",
       "mode": "0644"
     },
     "descriptions/releases/general-1.0.0.txt": {
@@ -2107,7 +2107,7 @@
       "mode": "0755"
     },
     "scripts/setup_windows.py": {
-      "sha256": "7ec80c07824955871a1e5bc7a4f294f8613445c60dfb57c51f4e096a6db96f17",
+      "sha256": "78480395f32b0ef7d2c445f50b6d192fd292138e8a8d21f4e2c81e2c88e205a2",
       "mode": "0755"
     },
     "scripts/update_inventory.sh": {
@@ -2131,7 +2131,7 @@
       "mode": "0644"
     },
     "templates/windows/access.yml.example": {
-      "sha256": "41d0abf0e1b347c64ad3fd322e3c030c12654bd5fff0b2d39a01566f22c1aa6d",
+      "sha256": "0e9db5160d2796c76ce605d70b87e3296b72f51f66c6f99d14d60cb9591fb823",
       "mode": "0644"
     },
     "templates/windows/requirements-kerberos.txt": {
@@ -2143,7 +2143,7 @@
       "mode": "0644"
     },
     "templates/windows/settings.example.yml": {
-      "sha256": "07b237f5931e831fcd63ab46ce544424de810613387e450d79f45c6d67c9f1c3",
+      "sha256": "b6c034e14124ac5cebabd7744adfc2d51d36c6819f557a8ff0941e140a2ef262",
       "mode": "0644"
     },
     "tools/callbacks/script_job_results.py": {
@@ -2259,7 +2259,7 @@
       "mode": "0644"
     },
     "tools/windows_tests/test_windows_connection.py": {
-      "sha256": "fbd9e9e1f5558e1092f68598a3129b687f8a79cefb86b8498889a4c3d6576202",
+      "sha256": "bcd56fe8f51fbb7c7a4ba8588ce88833dbc4202d73a3ebb505147981a402946d",
       "mode": "0644"
     },
     "tools/windows_tests/test_windows_deployment.py": {

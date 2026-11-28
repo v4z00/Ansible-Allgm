@@ -7,7 +7,9 @@ windows_connection:
   certificate_validation: validate
   ca_trust_path: ''
   kinit_mode: managed
+  dns_suffix: ''  # Set a DNS suffix here for short inventory hostnames, e.g. '.example.invalid'.
   # transport: ntlm  # Optional only when features.kerberos is false.
+# A complete per-host DNS name replaces the suffix rule. An empty dns_name uses ansible_host.
 windows_host_connection: {}
 # Account fields are exclusively in secrets.yml; see secrets.yml.example.
 windows_script_root: 'C:\Scripte'
