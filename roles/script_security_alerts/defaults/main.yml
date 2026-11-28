@@ -1,5 +1,6 @@
 script_security_enabled: false
-script_security_channels: [mail, telegram]
+# Windows needs a configured relay before mail is explicitly selected.
+script_security_channels: "{{ ['telegram'] if security_is_windows else ['mail', 'telegram'] }}"
 # Existing group_vars/all values remain the defaults; host_vars can override them.
 script_security_config:
   MAIL_TO: "{{ script_jobs_mail_to | default('') }}"

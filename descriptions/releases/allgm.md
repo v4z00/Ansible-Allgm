@@ -1,5 +1,14 @@
 # Changelog
 
+## s0.9.5 – Windows security mail is opt-in
+
+Windows security alerts use Telegram by default. Add `mail` to
+`script_security_channels` and configure a relay to enable Windows host mail.
+The Windows retry worker holds queued deliveries for disabled channels and
+resumes them when the channel is re-enabled. Linux and the controller keep
+their mail settings. Reapply the security role to update an existing host
+configuration. Hosts with signing enabled need a signed bundle of the new library.
+
 ## s0.9.4 – Windows profiles and separate job failure delivery
 
 The preflight accepts the Kerberos backend provided by the installed pywinrm

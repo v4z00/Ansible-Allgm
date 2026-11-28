@@ -244,7 +244,7 @@
     "tools/pipe_install.py": "157eaba3117dc73aecb1c7e2a9f7424438196c62a761b9da96bb4822b4933ef0",
     "tools/set-controller-language.py": "afddd6d235955cf513ac139989ea0bb35f2ba6e486b0a922b6d427c6bd84bdde",
     "update_check/rollout.py": "5fee32129a8d78b1dc85e55e734ebc5845d5fbcde4a5cd92024fa83fd78e45f9",
-    "update_check/staging_manifest.py": "613b305ea18aaecdcbb10310803916e01796598328551baff749f34ecc5e199d"
+    "update_check/staging_manifest.py": "617eb790ea49e3c331677f2b71d5ebd1c7f8d04a4bdc92ffacb86ece127a5598"
   },
   "scope": "Basis und lokale Controller-Installation",
   "version_files": [

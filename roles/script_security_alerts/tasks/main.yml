@@ -5,10 +5,13 @@
       - ansible_limit | default('') | trim | length > 0
       - script_security_enabled | bool
 
-- name: Resolve only the selected security channel credentials
+- name: Identify the host platform for local security delivery
   ansible.builtin.set_fact:
     security_is_windows: "{{ ansible_connection | default('ssh') in ['winrm','psrp'] or inventory_hostname in groups.get('all_windows_systems', []) }}"
-    security_runtime_config: "{{ script_security_config | script_security_config(script_security_channels, ansible_connection | default('ssh') in ['winrm','psrp'] or inventory_hostname in groups.get('all_windows_systems', [])) }}"
+
+- name: Resolve only the selected security channel credentials
+  ansible.builtin.set_fact:
+    security_runtime_config: "{{ script_security_config | script_security_config(script_security_channels, security_is_windows) }}"
   no_log: true
 
 - name: Configure Linux immediate alarms and persistent retries

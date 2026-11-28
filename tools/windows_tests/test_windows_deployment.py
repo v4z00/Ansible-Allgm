@@ -60,6 +60,39 @@ class WindowsDeployment(unittest.TestCase):
         telegram=module.configuration(source,['telegram'],True)
         self.assertEqual(set(telegram),{'SECURITY_CHANNELS','BOT_TOKEN','CHAT_ID'})
         with self.assertRaises(ValueError):module.configuration({**source,'SMTP_TLS':'tls'},['mail'],True)
+
+    def test_default_security_channels_use_the_host_platform(self):
+        binary = Path(sys.executable).with_name('ansible-playbook')
+        if not binary.exists():
+            self.skipTest('Ansible required')
+        role = ROOT / 'roles/script_security_alerts'
+        defaults = yaml.safe_load((role / 'defaults/main.yml').read_text())
+        tasks = yaml.safe_load((role / 'tasks/main.yml').read_text())[:3]
+        expected = "(['telegram'] if inventory_hostname == 'windows_fixture' else ['mail', 'telegram'])"
+        tasks.append({'ansible.builtin.assert': {'that': [
+            f"security_runtime_config.SECURITY_CHANNELS == {expected}",
+            "('MAIL_TO' in security_runtime_config) == (inventory_hostname == 'linux_fixture')",
+        ]}})
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            inventory = root / 'inventory.yml'
+            inventory.write_text(yaml.safe_dump({'all': {'children': {
+                'all_windows_systems': {'hosts': {'windows_fixture': {}}},
+                'all_linux_systems': {'hosts': {'linux_fixture': {}}},
+            }}}))
+            playbook = root / 'playbook.yml'
+            settings = {**defaults, 'script_security_enabled': True, 'script_security_config': {
+                'MAIL_TO': 'recipient@example.invalid', 'BOT_TOKEN': '12345:synthetic-token', 'CHAT_ID': '-12345',
+            }}
+            playbook.write_text(yaml.safe_dump([{
+                'hosts': 'all', 'connection': 'local', 'gather_facts': False, 'vars': settings, 'tasks': tasks,
+            }]))
+            environment = {**os.environ, 'ANSIBLE_LOCAL_TEMP': str(root / 'tmp'),
+                           'ANSIBLE_FILTER_PLUGINS': str(role / 'filter_plugins')}
+            result = subprocess.run([str(binary), '-i', str(inventory), '--limit', 'all', str(playbook)],
+                                    env=environment, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_public_library_allowlist_excludes_runtime_binaries_and_configs(self):
         module=load('staging_public_windows','update_check/staging_manifest.py')
         for path in ('artifacts/script-library/windows/lib/ScriptLibrary.psm1',

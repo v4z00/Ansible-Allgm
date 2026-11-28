@@ -28,7 +28,7 @@
     "update_check/local_extensions.py": "ea5afc8741f12bd72e9b011465f3a4e7c06dbf3f84c4434742582c5fa2827a60",
     "update_check/probes.py": "3ef5592956d6f9e7072310b39b3a9cdf5e38057b194faa4790a30ea38c01fa70",
     "update_check/rollout.py": "5fee32129a8d78b1dc85e55e734ebc5845d5fbcde4a5cd92024fa83fd78e45f9",
-    "update_check/staging_manifest.py": "613b305ea18aaecdcbb10310803916e01796598328551baff749f34ecc5e199d",
+    "update_check/staging_manifest.py": "617eb790ea49e3c331677f2b71d5ebd1c7f8d04a4bdc92ffacb86ece127a5598",
     "update_check/tests/test_addons.py": "34dc7f58ce3c3a835094c17de1c3a6f2a3a58b06a48059607eec1f440d622d2c",
     "update_check/tests/test_apache_certificate_paths.py": "2228e2d8865bdfd7d18098a1d799b93aea7a9a1af5b66bab37f0ff520e710c59",
     "update_check/tests/test_branches.py": "381f52127176cf9fa4a1342ecabccc850b569902435a1aff91cdb02bcc053372",

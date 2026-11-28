@@ -60,6 +60,16 @@ elseif ($Case -eq 'security') {
     if ($rows[0].total -ne 1) { throw 'Duplicate alert persisted.' }
     Export-JobEvents -Store (Open-JobStore -Database $database -Sqlite $Sqlite) |
         ConvertTo-Json -Depth 20 -Compress | Set-Content -LiteralPath (Join-Path $Directory 'security.json') -Encoding utf8
+
+    $null = Save-SecurityAlert -Store $store -EventKey 'pause-mail' -Job 'event-check' -Summary 'Hold mail' -Channels @('mail', 'telegram')
+    $held = Send-SecurityAlertQueue -Store $store -Config @{ SECURITY_CHANNELS = @('telegram') }
+    $sent = @(& $module { $script:sent })
+    if ($held.pending -ne 0 -or ($sent -join ',') -ne 'mail,telegram,telegram') { throw 'Disabled email was retried.' }
+    $mail = @(Invoke-JobSql -Store $store -Sql "SELECT attempts FROM deliveries WHERE channel='mail' AND status='pending';")
+    if ($mail.Count -ne 1 -or $mail[0].attempts -ne 0) { throw 'The held mail receipt was modified.' }
+    $resumed = Send-SecurityAlertQueue -Store $store -Config $config
+    $sent = @(& $module { $script:sent })
+    if ($resumed.pending -ne 0 -or ($sent -join ',') -ne 'mail,telegram,telegram,mail') { throw 'Re-enabled mail did not resume.' }
 }
 elseif ($Case -eq 'retention') {
     $job = Start-ScriptJob -Store $store -Name 'old-job'
