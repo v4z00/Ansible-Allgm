@@ -18,6 +18,13 @@ Email and Telegram are acknowledged independently. If one channel fails, only th
 
 Configure this explicitly with `playbooks/scripts/setup_controller.yml`. It requires a schedule, targets and at least one complete notification channel. Updating Git alone does not enable summary cron. Configured Control commands also record their Ansible results. Homelab backups require the matching Homelab version. The summary replaces older immediate Control notifications.
 
+Set `script_jobs_separate_failure_jobs` to the exact job IDs that should report
+each failed run individually. Their successful runs remain in the daily summary.
+`script_jobs_failure_targets` limits the optional collection, and
+`script_jobs_failure_cron_minute` controls its cadence. Run
+`bin/control jobs-summary --failures-only` for an individual-failure collection.
+The separate Vzdump report and immediate host security alerts retain their own schedules.
+
 Select a private configuration with `--config /ABSOLUTE/controller-test.json`. It contains `database`, `targets` and optional `labels` and `source_overrides`. This can query existing test databases. Host-specific `source_overrides` accepts only absolute `root` and `database` paths, using the existing inventory and SSH/become settings.
 
 Incomplete host collection is a collection error. It does not count as a successful backup, and collection exits nonzero. Internal queries and summaries do not recursively generate reports.
@@ -82,6 +89,14 @@ erfassen die Control-Einstiege auch eigene Ansible-Ergebnisse; Homelab-Backups
 benötigen dazu den passenden Homelab-Stand. Alte sofortige Control-Meldungen
 werden dann durch die Summary ersetzt.
 
+Für einzeln gemeldete Fehler die betroffenen Job-IDs in
+`script_jobs_separate_failure_jobs` eintragen. Ein fehlgeschlagener Lauf
+bekommt eine eigene Nachricht und entfällt im Tagesbericht. Erfolgreiche Läufe
+bleiben dort sichtbar. `script_jobs_failure_targets` begrenzt die Abfrage,
+`script_jobs_failure_cron_minute` setzt den Takt. Der manuelle Einstieg heißt
+`bin/control jobs-summary --failures-only`. Sicherheitsalarme und der separate
+Vzdump-Bericht behalten ihre eigenen Abläufe.
+
 `--config /ABSOLUT/controller-test.json` wählt eine eigene private Konfiguration
 mit `database`, `targets`, optional `labels` und `source_overrides`. Damit können
 bestehende Testdatenbanken abgefragt werden. `source_overrides` erlaubt je
@@ -119,7 +134,20 @@ Gesunde oder absichtlich inaktive systemd-Beobachtungen bleiben in SQLite und jo
   "ref": "jobs-summary",
   "title": "Job-Zusammenfassung senden",
   "documented": false,
-  "fields": [],
+  "fields": [
+    {
+      "id": "failures_only",
+      "label": "Nur einzelne Jobfehler",
+      "description": "Sammelt und sendet die getrennt konfigurierten Fehler.",
+      "type": "boolean",
+      "required": false,
+      "sensitive": false,
+      "binding": {
+        "kind": "flag",
+        "name": "--failures-only"
+      }
+    }
+  ],
   "constraints": [],
   "sources": [
     "bin/control.d/jobs-summary.json",
@@ -130,8 +158,8 @@ Gesunde oder absichtlich inaktive systemd-Beobachtungen bleiben in SQLite und jo
   "source_hashes": {
     "bin/control.d/jobs-summary.json": "cd3547b41629df5f3397605610bdc437c8ccfd521afcd43539f9dc0def260705",
     "bin/control.d/jobs-summary.sh": "74416561b388b1d008581f335039243daff4241be88a850e9bcb26f2f974e853",
-    "scripts/job_summary.py": "b5a50589306ad0445faa0faea158925da781e121b72dd8cd256525bfea9c601f",
-    "playbooks/scripts/summary_jobs.yml": "bc1ff0dda2931384fe8cc72cefa2ba08f3f3fb6636108c37691d703d24bcde58"
+    "scripts/job_summary.py": "1f725396ebd73b39f07c276a8cbe5c4142a95ea3021dc201676ccd468a075df3",
+    "playbooks/scripts/summary_jobs.yml": "a700b3272841a77211b66abdd7923d83067a5be6267c552bf222574490eae436"
   },
   "i18n": {
     "de": {

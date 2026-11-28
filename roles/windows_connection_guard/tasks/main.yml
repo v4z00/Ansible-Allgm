@@ -24,7 +24,7 @@
     argv:
       - "{{ ansible_playbook_python }}"
       - -c
-      - "import shutil,sys,winrm,requests_kerberos,kerberos; sys.exit(0 if shutil.which('kinit') else 2)"
+      - "import shutil,sys; from winrm.transport import HAVE_KERBEROS; sys.exit(0 if HAVE_KERBEROS and shutil.which('kinit') else 2)"
   delegate_to: localhost
   become: false
   vars:

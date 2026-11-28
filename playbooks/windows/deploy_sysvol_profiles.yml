@@ -1,0 +1,9 @@
+---
+- name: Publish private Windows profile code to the selected writable DC
+  hosts: windows_domain_controllers
+  gather_facts: false
+  become: false
+  roles:
+    - role: windows_script_profiles
+      windows_script_profiles_mode: sysvol
+  tags: [windows, scripts, sysvol]

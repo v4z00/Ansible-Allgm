@@ -4,10 +4,15 @@ import argparse,json,os,subprocess,tempfile
 from pathlib import Path
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--limit');p.add_argument('--config',type=Path);a=p.parse_args();root=Path(__file__).resolve().parents[1]
+    p=argparse.ArgumentParser()
+    p.add_argument('--limit')
+    p.add_argument('--config',type=Path)
+    p.add_argument('--failures-only', action='store_true', help='Collect and send only the configured individual job failures')
+    a=p.parse_args();root=Path(__file__).resolve().parents[1]
     with tempfile.TemporaryDirectory(prefix='summary-') as tmp:
-        values={'script_jobs_targets':a.limit} if a.limit else {}
+        values={'script_jobs_query_override':a.limit} if a.limit else {}
         if a.config:values['script_jobs_controller_config_file']=str(a.config.resolve())
+        if a.failures_only:values['script_jobs_failures_only']=True
         path=Path(tmp)/'vars.json';path.write_text(json.dumps(values));path.chmod(0o600)
         env=os.environ.copy();env['SCRIPT_JOBS_CALLBACK']='0'
         return subprocess.call(['ansible-playbook','playbooks/scripts/summary_jobs.yml','-e','@'+str(path)],cwd=root,env=env)

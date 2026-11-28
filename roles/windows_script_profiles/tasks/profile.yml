@@ -1,0 +1,225 @@
+---
+- name: Require private settings to belong to a monitored local job
+  ansible.builtin.assert:
+    that:
+      - windows_script_profiles_settings is mapping
+      - >-
+        windows_profile.name not in windows_script_profiles_settings or
+        (windows_profile.task.record_job | default(false) and
+        windows_script_profiles_settings[windows_profile.name] is mapping)
+    fail_msg: Private script settings require a selected monitored local profile and a settings mapping.
+  no_log: true
+
+- name: Resolve the explicitly selected scheduled account
+  when: windows_profile.task | length > 0
+  block:
+    - name: Require credentials for a named task principal
+      ansible.builtin.assert:
+        that:
+          - windows_script_profiles_principals is mapping
+          - windows_profile.task.principal in windows_script_profiles_principals
+          - windows_task_principal.username | default('') | length > 0
+          - windows_task_principal.password | default('') | length > 0
+          - windows_task_principal.run_level | default('highest') in ['highest', 'limited']
+        fail_msg: Provide the named scheduled account in the private controller secrets.
+      when: windows_profile.task.principal | length > 0
+      no_log: true
+  vars:
+    windows_task_principal: "{{ windows_script_profiles_principals.get(windows_profile.task.principal, {}) }}"
+
+- name: Sign only the code listed in this profile
+  when: windows_signing_effective.enabled and not windows_script_profiles_use_presigned and not ansible_check_mode
+  block:
+    - name: Create a private temporary manifest on the controller
+      ansible.builtin.tempfile:
+        state: file
+        prefix: windows-profile-
+        suffix: .json
+      delegate_to: localhost
+      vars:
+        ansible_connection: local
+        ansible_become: false
+        ansible_shell_type: sh
+      register: windows_profile_sign_input
+      changed_when: false
+    - name: Provide the approved source mapping to the shared signer
+      ansible.builtin.copy:
+        dest: "{{ windows_profile_sign_input.path }}"
+        content: "{{ windows_profile.files | to_json }}"
+        mode: "0600"
+      delegate_to: localhost
+      vars:
+        ansible_connection: local
+        ansible_become: false
+        ansible_shell_type: sh
+      changed_when: false
+    - name: Sign on the configured host and verify the returned artifacts
+      ansible.builtin.include_role:
+        name: windows_code_signing
+        tasks_from: bundle
+      vars:
+        windows_signing_source_kind: manifest
+        windows_signing_source_path: "{{ windows_profile_sign_input.path }}"
+  always:
+    - name: Remove this run's temporary source manifest
+      ansible.builtin.file:
+        path: "{{ windows_profile_sign_input.path }}"
+        state: absent
+      delegate_to: localhost
+      vars:
+        ansible_connection: local
+        ansible_become: false
+        ansible_shell_type: sh
+      changed_when: false
+      when: windows_profile_sign_input.path is defined
+
+- name: Resolve the versioned destination and task ownership
+  ansible.builtin.set_fact:
+    windows_profile_root: '{{ windows_profiles_destination.result.root }}\{{ windows_profile.name }}'
+    windows_profile_revision: "{{ windows_signing_bundle.batch_id if windows_signing_effective.enabled and not windows_script_profiles_use_presigned and not ansible_check_mode else windows_profile.release }}"
+    windows_profile_task_description: "Managed by Ansible Windows script profile {{ windows_profile.name }}"
+
+- name: Resolve the paths of the profile release
+  ansible.builtin.set_fact:
+    windows_profile_release_path: '{{ windows_profile_root }}\{{ windows_profile_revision }}'
+    windows_profile_task_name: "{{ windows_profile.name if windows_profile.task and not windows_profile.task.on_demand else '' }}"
+    windows_profile_task_actions: []
+
+- name: Determine the explicit directory and code paths
+  ansible.builtin.set_fact:
+    windows_profile_dirs: "{{ [windows_profiles_destination.result.root, windows_profile_root, windows_profile_release_path] + (windows_profile.directories | windows_script_profile_paths(windows_profile_release_path)) }}"
+    windows_profile_files: "{{ (windows_profile.files | map(attribute='path') | list | windows_script_profile_paths(windows_profile_release_path)) + (['signed-manifest.json'] | windows_script_profile_paths(windows_profile_release_path) if windows_signing_effective.enabled and not windows_script_profiles_use_presigned else []) }}"
+
+- name: Reject reparse points and foreign scheduled tasks
+  ansible.windows.win_powershell:
+    script: "{{ lookup('ansible.builtin.file', role_path ~ '/files/Test-ProfileDestination.ps1') }}"
+    parameters:
+      Base: "{{ windows_profiles_destination.result.base }}"
+      Directories: "{{ windows_profile_dirs | to_json }}"
+      Files: "{{ windows_profile_files | to_json }}"
+      TaskName: "{{ windows_profile_task_name }}"
+      TaskDescription: "{{ windows_profile_task_description }}"
+
+- name: Protect the private namespace for local execution
+  ansible.builtin.include_role:
+    name: windows_private_paths
+  vars:
+    windows_private_paths: "{{ windows_profile_dirs }}"
+  when: windows_script_profiles_mode == 'local'
+
+- name: Create the SYSVOL directories using their inherited permissions
+  ansible.windows.win_file:
+    path: "{{ item }}"
+    state: directory
+  loop: "{{ windows_profile_dirs }}"
+  when: windows_script_profiles_mode == 'sysvol'
+
+- name: Copy only approved PowerShell code while preserving relative paths
+  ansible.windows.win_copy:
+    src: "{{ windows_signed_bundle_root ~ '/' ~ item.path if windows_signing_effective.enabled and not windows_script_profiles_use_presigned and not ansible_check_mode else item.source }}"
+    dest: "{{ item.path | windows_script_profile_path(windows_profile_release_path) }}"
+  loop: "{{ windows_profile.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Copy the signature receipt with no private key material
+  ansible.windows.win_copy:
+    src: "{{ windows_signed_bundle_root }}/signed-manifest.json"
+    dest: '{{ windows_profile_release_path }}\signed-manifest.json'
+  when: windows_signing_effective.enabled and not windows_script_profiles_use_presigned and not ansible_check_mode
+
+- name: Verify installed signatures before any task points to the release
+  ansible.windows.win_powershell:
+    script: >-
+      param([string]$Root,[string]$Files,[string]$Thumbprint)
+
+      {{ lookup('ansible.builtin.file', windows_script_profiles_allgm_root ~ '/artifacts/script-library/windows/lib/functions/Resolve-JobSigningPath.ps1', rstrip=False) }}
+
+      {{ lookup('ansible.builtin.file', windows_script_profiles_allgm_root ~ '/artifacts/script-library/windows/lib/functions/Test-JobSignedBundle.ps1', rstrip=False) }}
+
+      if (-not (Test-JobSignedBundle -Root $Root -Files ($Files | ConvertFrom-Json) -Thumbprint $Thumbprint)) { throw 'Profile signature verification failed.' };
+      $Ansible.Changed = $false;
+    parameters:
+      Root: "{{ windows_profile_release_path }}"
+      Files: "{{ windows_profile.files | to_json }}"
+      Thumbprint: "{{ windows_signing_bundle.certificate_thumbprint }}"
+  when: windows_signing_effective.enabled and not windows_script_profiles_use_presigned and not ansible_check_mode
+
+- name: Check installed hashes for verbatim copies
+  ansible.windows.win_stat:
+    path: "{{ item.path | windows_script_profile_path(windows_profile_release_path) }}"
+    checksum_algorithm: sha256
+  register: windows_profile_hash
+  failed_when: windows_profile_hash.stat.checksum | default('') != item.sha256
+  loop: "{{ windows_profile.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when: not windows_signing_effective.enabled and not windows_script_profiles_use_presigned and not ansible_check_mode
+
+- name: Verify interactive signatures against the configured publisher
+  ansible.windows.win_powershell:
+    script: |
+      param([string[]]$Paths, [string]$Thumbprint)
+      $ErrorActionPreference = 'Stop'
+      foreach ($path in $Paths) {
+          $signature = Get-AuthenticodeSignature -LiteralPath $path
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint -ne $Thumbprint) {
+              throw "Unexpected Authenticode publisher or invalid signature: $path"
+          }
+      }
+      $Ansible.Changed = $false
+    parameters:
+      Paths: "{{ windows_profile_files }}"
+      Thumbprint: "{{ (windows_signing_public_info.stdout | from_json).thumbprint }}"
+  when: windows_script_profiles_use_presigned and not ansible_check_mode
+
+- name: Prepare the private job specification for a monitored task
+  ansible.builtin.include_tasks: job.yml
+  when: windows_profile.task.record_job | default(false)
+
+- name: Build the actions in their scheduled execution order
+  ansible.builtin.set_fact:
+    windows_profile_task_actions: >-
+      {{ windows_profile_task_actions + [
+           {'path': windows_profile_shell,
+            'arguments': windows_profile_runner_args ~ ' -SpecFile "' ~ windows_profile_job_specs[item].spec ~ '"',
+            'working_directory': windows_profile_job_specs[item].directory}] }}
+  loop: "{{ [windows_profile.name] + (windows_profile.task.additional_profiles | default([])) }}"
+  vars:
+    windows_profile_shell: '{{ windows_profiles_destination.result.system_root }}\System32\WindowsPowerShell\v1.0\powershell.exe'
+    windows_profile_runner_args: >-
+      -NoLogo -NoProfile -NonInteractive -File
+      "{{ 'bin/script-jobs.ps1' | windows_script_profile_path(windows_script_profiles_library_root) }}"
+      -Command run -Database "{{ windows_script_profiles_job_database }}"
+      -Sqlite "{{ windows_script_profiles_job_sqlite }}"
+  when: windows_profile_task_name | length > 0 and windows_profile.task.record_job
+
+- name: Register the selected script without starting the scheduled task
+  community.windows.win_scheduled_task:
+    path: '\Ansible\PrivateScripts'
+    name: "{{ windows_profile_task_name }}"
+    description: "{{ windows_profile_task_description }}"
+    username: "{{ windows_task_principal.username if windows_profile.task.principal else 'SYSTEM' }}"
+    password: "{{ windows_task_principal.password if windows_profile.task.principal else omit }}"
+    logon_type: "{{ 'password' if windows_profile.task.principal else 'service_account' }}"
+    run_level: "{{ windows_task_principal.run_level | default('highest') if windows_profile.task.principal else omit }}"
+    update_password: "{{ windows_task_principal.update_password | default(false) | bool }}"
+    actions: "{{ windows_profile_task_actions if windows_profile.task.record_job else [windows_profile_direct_action] }}"
+    triggers: "{{ windows_profile.task.triggers }}"
+    enabled: "{{ windows_profile.task.enabled }}"
+    multiple_instances: "{{ windows_profile.task.multiple_instances }}"
+    state: present
+  when: windows_profile_task_name | length > 0
+  vars:
+    windows_task_principal: "{{ windows_script_profiles_principals.get(windows_profile.task.principal, {}) }}"
+    windows_profile_direct_action:
+      path: '{{ windows_profiles_destination.result.system_root }}\System32\WindowsPowerShell\v1.0\powershell.exe'
+      arguments: >-
+        -NoLogo -NoProfile -NonInteractive -File
+        "{{ windows_profile.task.script | windows_script_profile_path(windows_profile_release_path) }}"
+      working_directory: '{{ (windows_profile.task.script | dirname or ".") | windows_script_profile_path(windows_profile_release_path) }}'
+  no_log: "{{ windows_profile.task.principal | default('') | length > 0 }}"
+
+- name: Show the deployed or planned release path
+  ansible.builtin.debug:
+    var: windows_profile_release_path

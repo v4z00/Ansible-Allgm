@@ -1,6 +1,8 @@
 """Controller-only deployment checks; no remote Windows actions are executed."""
 import ast
+import hashlib
 import importlib.util
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -19,6 +21,35 @@ def load(name,path):
 
 
 class WindowsDeployment(unittest.TestCase):
+    def test_profile_task_plan_preserves_ordered_jobs_without_child_triggers(self):
+        from ansible.errors import AnsibleFilterError
+
+        module = load('windows_profiles', 'roles/windows_script_profiles/filter_plugins/windows_profiles.py')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            script = b'Write-Output "test"\n'
+            for name in ('parent', 'child-one', 'child-two'):
+                folder = root / name
+                folder.mkdir()
+                (folder / 'run.ps1').write_bytes(script)
+                (folder / 'deployment.json').write_text(json.dumps({'schema': 1, 'files': [{'path': 'run.ps1', 'sha256': hashlib.sha256(script).hexdigest()}]}))
+
+            profiles = {
+                'parent': {'task': {'script': 'run.ps1', 'triggers': [{'type': 'daily'}],
+                                    'additional_profiles': ['child-two', 'child-one']}},
+                'child-one': {'task': {'script': 'run.ps1', 'on_demand': True}},
+                'child-two': {'task': {'script': 'run.ps1', 'on_demand': True}},
+            }
+            planned = module.plan(profiles, ['child-one', 'child-two', 'parent'], root, 'local')
+            self.assertEqual(planned[-1]['task']['additional_profiles'], ['child-two', 'child-one'])
+            self.assertEqual(planned[0]['task']['triggers'], [])
+            self.assertTrue(planned[0]['task']['on_demand'])
+            with self.assertRaisesRegex(AnsibleFilterError, 'follow their on-demand profiles'):
+                module.plan(profiles, ['parent', 'child-one', 'child-two'], root, 'local')
+            profiles['child-one']['task']['principal'] = 'another-account'
+            with self.assertRaisesRegex(AnsibleFilterError, 'calling task'):
+                module.plan(profiles, ['child-one', 'child-two', 'parent'], root, 'local')
+
     def test_security_channel_filter_never_copies_unselected_credentials(self):
         module=load('security_configuration','roles/script_security_alerts/filter_plugins/security_config.py')
         source={'MAIL_TO':'receiver@example.invalid','BOT_TOKEN':'12345:synthetic-token','CHAT_ID':'-12345',

@@ -207,7 +207,61 @@ class Store:
                     import sys
                     print('One expired private job log could not be removed.',file=sys.stderr)
         return removed
-    def report(self,category='general',run_id=None,reserve=True,labels=None,channels=None):
+    @staticmethod
+    def _failure_job_names(names):
+        if not isinstance(names, (list, tuple)) or any(
+            not isinstance(name, str) or not name or len(name) > 160 for name in names
+        ) or len(names) > 100:
+            raise ValueError('Invalid list of separately reported jobs')
+        return tuple(dict.fromkeys(names))
+
+    def failure_reports(self, jobs, *, reserve=True, labels=None, channels=()):
+        """Keep each failed run and each delivery independently retryable."""
+        from job_report import format_report
+
+        jobs = self._failure_job_names(jobs)
+        if not isinstance(channels, (list, tuple)) or any(channel not in ('mail', 'telegram') for channel in channels):
+            raise ValueError('Invalid report channels')
+        if reserve and not channels:
+            raise ValueError('At least one delivery channel is required')
+        if not jobs:
+            return []
+        with self.transaction():
+            pending = [dict(row) for row in self.db.execute("""
+                SELECT p.id, p.body FROM reports p
+                WHERE p.category='job-failure' AND EXISTS (
+                    SELECT 1 FROM deliveries d WHERE d.report_id=p.id AND d.status!='sent'
+                )
+                ORDER BY p.created, p.id LIMIT 50
+            """)]
+            placeholders = ','.join('?' for _ in jobs)
+            rows = self.db.execute(f"""
+                SELECT r.* FROM runs r
+                WHERE r.category='general' AND r.status='failed' AND r.job IN ({placeholders})
+                AND NOT EXISTS (
+                    SELECT 1 FROM report_runs p
+                    WHERE p.source=r.source AND p.epoch=r.epoch AND p.run_id=r.run_id
+                )
+                ORDER BY r.finished, r.source, r.run_id LIMIT ?
+            """, (*jobs, 50-len(pending))).fetchall()
+            for row in rows:
+                run = dict(row)
+                key = (run['source'], run['epoch'], run['run_id'])
+                items = {key: [dict(item) for item in self.db.execute(
+                    'SELECT item_id,status,message FROM items WHERE source=? AND epoch=? AND run_id=?', key
+                )]}
+                identifier = str(uuid.uuid4())
+                body = format_report([run], items, [], 'job-failure', labels)
+                if reserve:
+                    now = utc()
+                    self.db.execute("INSERT INTO reports VALUES(?,'job-failure',?,?)", (identifier, now, body))
+                    self.db.execute('INSERT INTO report_runs VALUES(?,?,?,?)', (identifier, *key))
+                    self.db.executemany('INSERT INTO deliveries VALUES(?,?,?,0,0,?)',
+                                        [(identifier, channel, 'pending', now) for channel in dict.fromkeys(channels)])
+                pending.append({'id':identifier, 'body':body})
+            return pending
+
+    def report(self,category='general',run_id=None,reserve=True,labels=None,channels=None,separate_failures=()):
         from job_report import format_report,legacy_health,clean_legacy_body
         if channels is not None and (not isinstance(channels,(list,tuple)) or any(channel not in ('mail','telegram') for channel in channels)):
             raise ValueError('Invalid report channels')
@@ -237,6 +291,11 @@ class Store:
                 prepare_channels(report['id'])
                 return report
             params=list(cats);where='r.category IN ('+','.join('?'*len(cats))+') AND r.status!=?';params.append('running')
+            separate_failures = self._failure_job_names(separate_failures)
+            if category == 'general' and separate_failures:
+                placeholders = ','.join('?' for _ in separate_failures)
+                where += f" AND NOT (r.category='general' AND r.status='failed' AND r.job IN ({placeholders}))"
+                params.extend(separate_failures)
             # Service snapshots remain queryable, but healthy/optional inactive
             # units are not completed jobs. Use their recorded provenance, not
             # unit/job names (profiles may assign arbitrary observation names).

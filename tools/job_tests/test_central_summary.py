@@ -80,7 +80,7 @@ def deliver(channel,report,cfg,root):
             first = subprocess.run(command, env=env, cwd=project, capture_output=True, text=True)
             self.assertNotEqual(first.returncode, 0)
             sent = [json.loads(line) for line in messages.read_text().splitlines()]
-            self.assertEqual(len(sent), 4)  # two categories, each mail + Telegram
+            self.assertEqual(len(sent), 4, first.stdout + first.stderr)  # two categories, each mail + Telegram
             general = next(message['body'] for message in sent if message['body'].startswith('Job-'))
             self.assertIn('Server A Backup ✅', general)
             self.assertIn('Server B Backup ❌\n  storage: Backupziel nicht verfuegbar.', general)
@@ -102,6 +102,25 @@ def deliver(channel,report,cfg,root):
             self.assertEqual(len(state.runs()), 4)  # three host jobs + own Ansible run
             self.assertEqual(state.db.execute("SELECT count(*) FROM deliveries WHERE status='sent'").fetchone()[0], 4)
             state.close()
+
+            settings['failure_targets'] = 'beta'
+            settings['separate_failure_jobs'] = ['backup']
+            config.write_text(json.dumps(settings))
+            beta = Store(sources['beta']['database'], 'beta.example.invalid')
+            failure = beta.begin('backup')
+            beta.update(failure, 'failed', exit_code=1)
+            beta.close()
+            failure_command = command + ['-e', 'script_jobs_failures_only=true']
+            failures = subprocess.run(failure_command, env=env, cwd=project, capture_output=True, text=True)
+            self.assertEqual(failures.returncode, 0, failures.stdout + failures.stderr)
+            individual = [json.loads(line) for line in messages.read_text().splitlines()][len(sent):]
+            self.assertEqual({message['channel'] for message in individual}, {'telegram', 'mail'})
+            self.assertTrue(all(message['body'].startswith('Job fehlgeschlagen') for message in individual))
+            self.assertEqual(len(individual), 2)
+            repeated = subprocess.run(failure_command, env=env, cwd=project, capture_output=True, text=True)
+            self.assertEqual(repeated.returncode, 0, repeated.stdout + repeated.stderr)
+            self.assertEqual(len(messages.read_text().splitlines()), len(sent) + 2)
+
             # A failed subsequent query must be reported as an unavailable
             # collection, never as a new successful backup or a rerun.
             settings['source_overrides']['beta']['root'] = str(root / 'missing-helper')

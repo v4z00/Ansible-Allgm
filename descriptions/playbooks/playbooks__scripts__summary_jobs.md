@@ -27,7 +27,7 @@ Aufruf: `ansible-playbook playbooks/scripts/summary_jobs.yml`. Voraussetzungen u
     "playbooks/scripts/summary_jobs.yml"
   ],
   "source_hashes": {
-    "playbooks/scripts/summary_jobs.yml": "bc1ff0dda2931384fe8cc72cefa2ba08f3f3fb6636108c37691d703d24bcde58"
+    "playbooks/scripts/summary_jobs.yml": "a700b3272841a77211b66abdd7923d83067a5be6267c552bf222574490eae436"
   },
   "i18n": {
     "de": {

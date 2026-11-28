@@ -1,0 +1,53 @@
+---
+- name: Require a nonempty Windows target limit
+  ansible.builtin.assert:
+    that:
+      - windows_script_profiles_use_presigned is boolean
+      - ansible_limit | default('') | trim | length > 0
+      - windows_script_profiles_mode != 'sysvol' or (ansible_play_hosts_all | length == 1 and inventory_hostname == windows_script_profiles_sysvol_writer)
+
+- name: Plan only the selected and hash-approved sources
+  ansible.builtin.set_fact:
+    windows_script_profiles_plan: "{{ windows_script_profiles | windows_script_profile_plan(windows_script_profiles_selected, windows_script_profiles_source_root, windows_script_profiles_mode) }}"
+    windows_profile_job_specs: {}
+
+- name: Deploy explicitly selected Windows profiles
+  when: windows_script_profiles_plan | length > 0
+  block:
+    - name: Validate Windows connection and signing settings
+      ansible.builtin.include_role:
+        name: windows_code_signing
+        tasks_from: validate
+
+    - name: Resolve the Windows destination and check signature policy
+      ansible.windows.win_powershell:
+        script: "{{ lookup('ansible.builtin.file', role_path ~ '/files/Resolve-ProfileRoot.ps1') }}"
+        parameters:
+          Mode: "{{ windows_script_profiles_mode }}"
+          LocalRoot: "{{ windows_script_profiles_target_root }}"
+          SysvolSubdir: "{{ windows_script_profiles_sysvol_subdir }}"
+      vars:
+        ansible_become: "{{ windows_script_profiles_mode == 'sysvol' }}"
+        ansible_become_method: runas
+        ansible_become_user: SYSTEM
+      register: windows_profiles_destination
+
+    - name: Preserve enforced signing and require signing for SYSVOL
+      ansible.builtin.assert:
+        that:
+          - windows_signing_effective.enabled or (windows_script_profiles_mode == 'local' and windows_profiles_destination.result.policy != 'AllSigned')
+          - not windows_script_profiles_use_presigned or windows_signing_effective.enabled
+        fail_msg: Configure the central signer. SYSVOL or an effective AllSigned policy requires signed PowerShell.
+
+    - name: Configure the same public trust for interactively signed files
+      ansible.builtin.include_role:
+        name: windows_code_signing
+        tasks_from: trust
+      when: windows_script_profiles_use_presigned and not ansible_check_mode
+
+    - name: Use the site profile and its reviewed settings
+      ansible.builtin.include_tasks: profile.yml
+      loop: "{{ windows_script_profiles_plan }}"
+      loop_control:
+        loop_var: windows_profile
+        label: "{{ windows_profile.name }}"

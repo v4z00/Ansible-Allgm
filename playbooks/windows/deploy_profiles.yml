@@ -1,0 +1,8 @@
+---
+- name: Deploy private script profiles on Windows
+  hosts: all_windows_systems
+  gather_facts: false
+  become: false
+  roles:
+    - windows_script_profiles
+  tags: [windows, scripts, profiles]

@@ -1,0 +1,70 @@
+---
+- name: Resolve separate private runtime paths for the profile job
+  ansible.builtin.set_fact:
+    windows_profile_job_directory: "{{ ('config/profile-jobs/' ~ windows_profile.name) | windows_script_profile_path(windows_script_profiles_job_state) }}"
+
+- name: Resolve the job spec for this release
+  ansible.builtin.set_fact:
+    windows_profile_job_spec: "{{ (windows_profile_revision ~ '.json') | windows_script_profile_path(windows_profile_job_directory) }}"
+    windows_profile_settings_path: "{{ (windows_profile_revision ~ '-settings.json') | windows_script_profile_path(windows_profile_job_directory) }}"
+
+- name: Require the Windows SQLite runtime and runner before scheduling this job
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding(SupportsShouldProcess)]
+      param([string]$Runner, [string]$Database, [string]$Sqlite, [string]$ExpectedPublisher)
+      $ErrorActionPreference = 'Stop'
+      foreach ($path in @($Runner, $Database, $Sqlite)) {
+          if ($path -notmatch '^[A-Za-z]:\\' -or -not (Test-Path -LiteralPath $path -PathType Leaf)) {
+              throw 'Install or update the Windows job library and verified SQLite runtime first.'
+          }
+      }
+      $errors = $null
+      $ast = [Management.Automation.Language.Parser]::ParseFile($Runner, [ref]$null, [ref]$errors)
+      if ($errors -or 'SpecFile' -notin @($ast.ParamBlock.Parameters.Name.VariablePath.UserPath)) {
+          throw 'The installed Windows job runner requires an update.'
+      }
+      if ($ExpectedPublisher) {
+          $signature = Get-AuthenticodeSignature -LiteralPath $Runner
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Thumbprint -ne $ExpectedPublisher) {
+              throw 'The Windows job runner must be signed by the configured publisher.'
+          }
+      }
+      $Ansible.Changed = $false
+    parameters:
+      Runner: "{{ 'bin/script-jobs.ps1' | windows_script_profile_path(windows_script_profiles_library_root) }}"
+      Database: "{{ windows_script_profiles_job_database }}"
+      Sqlite: "{{ windows_script_profiles_job_sqlite }}"
+      ExpectedPublisher: "{{ (windows_signing_public_info.stdout | from_json).thumbprint if windows_signing_effective.enabled else '' }}"
+
+- name: Protect the job configuration directory
+  ansible.builtin.include_role:
+    name: windows_private_paths
+  vars:
+    windows_private_paths:
+      - "{{ 'config/profile-jobs' | windows_script_profile_path(windows_script_profiles_job_state) }}"
+      - "{{ windows_profile_job_directory }}"
+
+- name: Render the profile configuration outside the executable release
+  ansible.windows.win_copy:
+    content: "{{ windows_script_profiles_settings[windows_profile.name] | to_nice_json }}"
+    dest: "{{ windows_profile_settings_path }}"
+    backup: true
+  when: windows_profile.name in windows_script_profiles_settings
+  no_log: true
+
+- name: Write the approved program, identity and config path to the private specification
+  ansible.windows.win_copy:
+    content: >-
+      {{ {'name': windows_profile.name,
+          'program': windows_profile.task.script | windows_script_profile_path(windows_profile_release_path),
+          'config_files': [windows_profile_settings_path] if windows_profile.name in windows_script_profiles_settings else []}
+         | to_nice_json }}
+    dest: "{{ windows_profile_job_spec }}"
+
+- name: Retain the specification and working directory for task actions
+  ansible.builtin.set_fact:
+    windows_profile_job_specs: >-
+      {{ windows_profile_job_specs | combine({windows_profile.name: {
+           'spec': windows_profile_job_spec,
+           'directory': (windows_profile.task.script | dirname or '.') | windows_script_profile_path(windows_profile_release_path)}}) }}

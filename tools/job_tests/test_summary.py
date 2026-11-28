@@ -50,6 +50,34 @@ class Summary(unittest.TestCase):
         self.assertIn('Docker01 Backup ❌\n  Zeitlimit erreicht (Exitcode 124).', body)
         self.assertNotIn('line 20', body)
 
+    def test_selected_failures_are_independent_of_daily_success_and_each_other(self):
+        names = ['ptr-dns-sync']
+        runs = [self.finish('ptr-dns-sync', 'failed', summary=detail)
+                for detail in ('Anfrage fehlgeschlagen', 'Zone nicht lesbar')]
+        self.finish('ptr-dns-sync')
+        self.finish('other-backup', 'failed', summary='Unchanged report policy')
+        preview = self.store.failure_reports(names, reserve=False)
+        self.assertEqual(len(preview), 2)
+        self.assertTrue(all('Job fehlgeschlagen\n\nDocker01 Ptr dns sync ❌' in row['body'] for row in preview))
+        self.assertEqual(self.store.db.execute('SELECT COUNT(*) FROM reports').fetchone()[0], 0)
+        daily = self.store.report(reserve=False, separate_failures=names)['body']
+        self.assertIn('Docker01 Ptr dns sync ✅', daily)
+        self.assertIn('Unchanged report policy', daily)
+        self.assertNotIn('Zone nicht lesbar', daily)
+        reports = self.store.failure_reports(names, channels=['mail', 'telegram'])
+        self.assertEqual(len(reports), 2)
+        self.assertEqual({row[0] for row in self.store.db.execute('SELECT run_id FROM report_runs')}, set(runs))
+        for report in reports:
+            self.assertTrue(self.store.claim(report['id'], 'telegram'))
+            self.store.delivered(report['id'], 'telegram', True)
+        second = self.store.failure_reports(names, channels=['mail', 'telegram'])
+        self.assertEqual({r['id'] for r in second}, {r['id'] for r in reports})
+        for report in second:
+            self.assertFalse(self.store.claim(report['id'], 'telegram'))
+            self.assertTrue(self.store.claim(report['id'], 'mail'))
+            self.store.delivered(report['id'], 'mail', True)
+        self.assertEqual(self.store.failure_reports(names, channels=['mail', 'telegram']), [])
+
     def test_healthy_service_snapshots_do_not_create_reports_or_fill_the_backlog(self):
         rows = [(self.store.host, self.store.epoch, 'observation-' + str(i), 'custom-daemon',
                  'general', 'skipped' if i % 2 else 'success', i, i, i, 0, 'Observed')

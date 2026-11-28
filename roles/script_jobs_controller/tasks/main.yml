@@ -13,6 +13,7 @@
       - script_jobs_controller_db is match('^/[^\n]+$')
       - script_jobs_report_labels is mapping
       - script_jobs_source_overrides is mapping
+      - script_jobs_separate_failure_jobs is sequence and script_jobs_separate_failure_jobs is not string
   no_log: true
 - name: Create the private controller directory
   ansible.builtin.file:
@@ -21,7 +22,7 @@
     mode: '0700'
 - name: Write local connection settings for the controller
   ansible.builtin.copy:
-    content: "{{ {'database': script_jobs_controller_db, 'targets': script_jobs_targets, 'labels': script_jobs_report_labels, 'source_overrides': script_jobs_source_overrides, 'schema': 1} | to_nice_json }}\n"
+    content: "{{ {'database': script_jobs_controller_db, 'targets': script_jobs_targets, 'labels': script_jobs_report_labels, 'source_overrides': script_jobs_source_overrides, 'separate_failure_jobs': script_jobs_separate_failure_jobs, 'failure_targets': script_jobs_failure_targets, 'schema': 1} | to_nice_json }}\n"
     dest: "{{ script_jobs_controller_root }}/config/script_jobs_controller.json"
     mode: '0600'
 - name: Initialize the results database
@@ -36,3 +37,9 @@
     hour: "{{ script_jobs_summary_cron.hour }}"
     weekday: "{{ script_jobs_summary_cron.weekday }}"
     job: "{{ (script_jobs_controller_root ~ '/bin/control') | quote }} jobs-summary >> {{ (script_jobs_controller_db | dirname ~ '/summary.log') | quote }} 2>&1"
+- name: Manage the separate collection and delivery of selected job failures
+  ansible.builtin.cron:
+    name: script-jobs-failures
+    state: "{{ 'present' if script_jobs_separate_failure_jobs | length > 0 else 'absent' }}"
+    minute: "{{ script_jobs_failure_cron_minute }}"
+    job: "{{ (script_jobs_controller_root ~ '/bin/control') | quote }} jobs-summary --failures-only >> {{ (script_jobs_controller_db | dirname ~ '/failures.log') | quote }} 2>&1"

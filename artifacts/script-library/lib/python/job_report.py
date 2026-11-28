@@ -24,6 +24,8 @@ def clean(value):
 
 
 def title(category):
+    if category == 'job-failure':
+        return 'Job fehlgeschlagen'
     return 'Vzdump-Zusammenfassung' if category == 'vzdump' else 'Job-Zusammenfassung'
 
 

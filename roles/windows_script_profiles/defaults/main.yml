@@ -1,0 +1,16 @@
+---
+windows_script_profiles_source_root: /root/skripte-config/windows
+windows_script_profiles_principals: {}
+windows_script_profiles_target_root: 'C:\ProgramData\Ansible\PrivateScripts'
+windows_script_profiles: {}
+windows_script_profiles_selected: []
+windows_script_profiles_settings: {}
+windows_script_profiles_mode: local
+windows_script_profiles_sysvol_writer: ""
+windows_script_profiles_sysvol_subdir: AnsibleProfiles
+windows_script_profiles_allgm_root: "{{ role_path }}/../.."
+windows_script_profiles_use_presigned: false
+windows_script_profiles_library_root: "{{ windows_script_root | default('C:\\Scripte') }}"
+windows_script_profiles_job_state: "{{ windows_state_root | default('C:\\ProgramData\\ScriptJobs') }}"
+windows_script_profiles_job_database: "{{ windows_job_database | default('jobs.sqlite3' | windows_script_profile_path(windows_script_profiles_job_state)) }}"
+windows_script_profiles_job_sqlite: "{{ windows_sqlite_exe | default('runtime/sqlite3.exe' | windows_script_profile_path(windows_script_profiles_library_root)) }}"

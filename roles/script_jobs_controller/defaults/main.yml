@@ -2,3 +2,6 @@ script_jobs_controller_db: /var/lib/script-jobs/controller.sqlite3
 script_jobs_controller_root: "{{ lookup('ansible.builtin.env', 'ANSIBLE_PROJECT_ROOT') or ((playbook_dir ~ '/../..') | realpath) }}"
 script_jobs_report_labels: {}
 script_jobs_source_overrides: {}
+script_jobs_separate_failure_jobs: []
+script_jobs_failure_targets: ''
+script_jobs_failure_cron_minute: '*/15'

@@ -1,5 +1,19 @@
 # Changelog
 
+## s0.9.4 – Windows profiles and separate job failure delivery
+
+The preflight accepts the Kerberos backend provided by the installed pywinrm
+and still requires `kinit`. The pinned runtime can use pywinrm's bundled
+authentication module without a separate requests-kerberos installation.
+
+Approved Windows profiles can use the existing job database and a named
+scheduled account. A scheduled task can run several profiles in a fixed order,
+with a separate job result for each step. SYSVOL shares receive only
+manifest-listed PowerShell code.
+Selected jobs can send individual failures with per-channel receipts. Their
+successful runs remain in the daily summary. The additional schedule starts
+only when configured. The job module is 0.6.2.
+
 ## s0.9.3 – Separate WinRM DNS names from inventory addresses
 
 WinRM accepts an environment DNS suffix, an explicit inventory name and a
